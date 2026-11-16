@@ -301,10 +301,6 @@ export class RxQueryBase<
         counter: number;
     }> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-        let result: {
-            result: RxDocumentData<RxDocType>[] | number;
-            counter: number;
-        };
 
         /**
          * Snapshot the counter before running the query.
@@ -312,6 +308,18 @@ export class RxQueryBase<
          * when we check it below, and we need to signal re-evaluation.
          */
         const counterBefore = this.collection._changeEventBuffer.getCounter();
+
+        /**
+         * Starts as the empty result of a query with limit 0,
+         * which never returns documents so that the storage is not asked.
+         */
+        let result: {
+            result: RxDocumentData<RxDocType>[] | number;
+            counter: number;
+        } = {
+            result: [],
+            counter: counterBefore
+        };
 
         if (this.op === 'findByIds') {
             const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
@@ -354,7 +362,7 @@ export class RxQueryBase<
                     counter: this.collection._changeEventBuffer.getCounter()
                 };
             }
-        } else {
+        } else if (this.mangoQuery.limit !== 0) {
             const resultWindowBuffer = getResultWindowBuffer<RxDocType>(this as any);
             if (resultWindowBuffer) {
                 /**
@@ -722,6 +730,13 @@ export function createRxQuery<RxDocType>(
         other
     });
 
+    if ((queryObj.limit as number) < 0) {
+        throw newRxError('QU23', {
+            collection: collection.name,
+            query: queryObj
+        });
+    }
+
     let ret = new RxQueryBase<RxDocType, any>(op, queryObj, collection, other);
 
     // ensure when created with same params, only one is created
@@ -849,8 +864,8 @@ function __ensureEqual<RxDocType>(
                     ret = true; // true because results changed
                     rxQuery._setResultData(newCount as any);
                 }
-            } else {
-                // 'find' or 'findOne' query
+            } else if (rxQuery.mangoQuery.limit !== 0) {
+                // 'find' or 'findOne' query, with limit 0 no event can change the empty result
                 const resultWindowBuffer = getResultWindowBuffer<RxDocType>(rxQuery as any);
                 const eventReduceResult = resultWindowBuffer ? calculateNewResultsWithResultWindowBuffer(
                     resultWindowBuffer,

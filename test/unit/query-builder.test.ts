@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { assertThrows } from 'async-test-util';
 
 import {
     addRxPlugin,
@@ -186,6 +187,36 @@ describe('query-builder.test.js', () => {
         });
     });
     describe('RxQuery', () => {
+        it('limit(0) must return zero documents, also when more building steps are chained', async () => {
+            const c = await humansCollection.create(3);
+
+            assert.strictEqual((await c.find().limit(0).exec()).length, 0);
+            assert.strictEqual((await c.find().where('age').gte(0).limit(0).exec()).length, 0);
+
+            const chainedQueries = [
+                c.find().limit(0).sort('passportId'),
+                c.find().limit(0).skip(1),
+                c.find().limit(0).where('age').gte(0),
+                c.find({ selector: {}, limit: 0 }).sort('-passportId').skip(1)
+            ];
+            for (const query of chainedQueries) {
+                assert.strictEqual(query.mangoQuery.limit, 0);
+                assert.strictEqual((await query.exec()).length, 0);
+            }
+
+            // a later limit() replaces the limit 0
+            const limitOne = await c.find().limit(0).limit(1).exec();
+            assert.strictEqual(limitOne.length, 1);
+
+            c.database.close();
+        });
+        it('limit() with a negative value must throw', async () => {
+            const c = await humansCollection.create(1);
+            await assertThrows(() => c.find().limit(-1), 'RxError', 'QU23');
+            await assertThrows(() => c.find().where('age').gte(0).sort('age').limit(-5), 'RxError', 'QU23');
+            await assertThrows(() => c.find({ selector: {}, limit: 2 }).limit(-1), 'RxError', 'QU23');
+            c.database.close();
+        });
         it('should merge an operator into a selector shorthand value via .where(object)', async () => {
             const c = await humansCollection.create(0);
             await c.bulkInsert([

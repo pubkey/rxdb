@@ -501,6 +501,13 @@ await myDatabase.addCollections({
 
 
 <Faq>
+<FaqItem question="What does limit: 0 return in an RxDB query?">
+
+<div>
+  A query with `limit: 0` returns zero documents, same as `LIMIT 0` in SQL databases. The limit is often calculated from variables in your own code, and when that calculation ends at `0`, fetching zero documents is the expected result instead of all documents of the collection. To get all documents, leave out the `limit`. A negative `limit` throws the error [`QU23`](./errors.md#QU23), also when [dev-mode](./dev-mode.md) is not used.
+</div>
+
+</FaqItem>
 <FaqItem question="Why does RxDB use the Mango query syntax instead of SQL?">
 
 <div>

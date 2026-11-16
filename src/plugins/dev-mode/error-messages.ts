@@ -194,6 +194,12 @@ export const ERROR_MESSAGES = {
         fix: 'Use only values that are valid JSON: strings, finite numbers, booleans, null, arrays and plain objects. Leave out the limit to get all documents and store dates as strings or numbers.',
         docs: 'https://rxdb.info/rx-query-examples.html?console=errors&code=QU22#query-rules'
     },
+    QU23: {
+        message: 'The limit of a query must not be negative.',
+        cause: 'A query was created with a negative limit. There is no result set with a negative amount of documents, so RxDB does not guess what was meant.',
+        fix: 'Use a limit of 0 or more. A limit of 0 returns no documents. Leave out the limit to get all documents. When the limit is calculated, check its boundaries before the query is created, for example with Math.max(0, limit).',
+        docs: 'https://rxdb.info/rx-query.html?console=errors&code=QU23#faq'
+    },
 
     // mquery.js
     MQ1: {
