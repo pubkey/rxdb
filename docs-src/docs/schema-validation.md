@@ -38,6 +38,7 @@ RxDB has different implementations to validate data, each of them is based on a 
 A validation-module that does the schema-validation. This one is using [ajv](https://github.com/epoberezkin/ajv) as validator which is a bit faster. Better compliant to the jsonschema-standard but also has a bigger build-size.
 
 ```javascript
+import { createRxDatabase, randomToken } from 'rxdb/plugins/core';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
@@ -47,7 +48,7 @@ const storage = wrappedValidateAjvStorage({
 });
 
 const db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage
 });
 ```
@@ -119,6 +120,7 @@ The validation itself runs at the same speed as with `validate-ajv`, because ajv
 Both `is-my-json-valid` and `validate-ajv` use `eval()` to perform validation which might not be wanted when `'unsafe-eval'` is not allowed in Content Security Policies. This one is using [z-schema](https://github.com/zaggino/z-schema) as validator which doesn't use `eval`.
 
 ```javascript
+import { createRxDatabase, randomToken } from 'rxdb/plugins/core';
 import { wrappedValidateZSchemaStorage } from 'rxdb/plugins/validate-z-schema';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
@@ -128,7 +130,7 @@ const storage = wrappedValidateZSchemaStorage({
 });
 
 const db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage
 });
 ```
@@ -141,6 +143,7 @@ const db = await createRxDatabase({
 The `validate-is-my-json-valid` plugin uses [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) for schema validation.
 
 ```javascript
+import { createRxDatabase, randomToken } from 'rxdb/plugins/core';
 import {
     wrappedValidateIsMyJsonValidStorage
 } from 'rxdb/plugins/validate-is-my-json-valid';
@@ -152,7 +155,7 @@ const storage = wrappedValidateIsMyJsonValidStorage({
 });
 
 const db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage
 });
 ```

@@ -137,9 +137,12 @@ export function TodosList() {
   // RxQuery -> Preact Signal
   const todosSignal = db.todos.find().$$;
 
+  // the value is undefined until the query has emitted its first result
+  const todos = todosSignal.value || [];
+
   return (
     <ul>
-      {todosSignal.value.map((doc: any) => (
+      {todos.map((doc: any) => (
         <li key={doc.primary}>
             {doc.title}
         </li>

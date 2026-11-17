@@ -153,8 +153,7 @@ const migrationState = todosCollection.getMigrationState();
 // 'start' the observable
 migrationState.$.subscribe({
     next: state => console.dir(state),
-    error: error => console.error(error),
-    complete: () => console.log('done')
+    error: error => console.error(error)
 });
 
 // the emitted states look like this:
@@ -253,7 +252,7 @@ const migrationStrategies = {
         // update the data field of a single attachment to change its data. 
         oldDoc._attachments.myFile.data = await createBlob(
           'my new text',
-          oldDoc._attachments.myFile.content_type
+          oldDoc._attachments.myFile.type
         );
         return oldDoc;
       }

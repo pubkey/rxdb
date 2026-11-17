@@ -100,7 +100,7 @@ app.get('/pull', async (req, res) => {
             ]
         })
         .sort({updatedAt: 1, id: 1})
-        .limit(parseInt(req.query.batchSize, 10)).toArray();
+        .limit(parseInt(req.query.limit, 10)).toArray();
     const newCheckpoint = documents.length === 0 ? { id, updatedAt } : {
         id: lastOfArray(documents).id,
         updatedAt: lastOfArray(documents).updatedAt
@@ -124,7 +124,7 @@ const replicationState = await replicateRxCollection({
         async handler(checkpointOrNull, batchSize){
             const updatedAt = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
             const id = checkpointOrNull ? checkpointOrNull.id : '';
-            const url = 'https://localhost/pull'
+            const url = 'http://localhost/pull'
                 + `?updatedAt=${updatedAt}`
                 + `&id=${id}`
                 + `&limit=${batchSize}`;
@@ -159,7 +159,7 @@ import { Subject } from 'rxjs';
 let lastEventId = 0;
 const pullStream$ = new Subject();
 
-app.get('/push', async (req, res) => {
+app.post('/push', async (req, res) => {
     const changeRows = req.body;
     const conflicts = [];
     const event = {
@@ -191,9 +191,10 @@ app.get('/push', async (req, res) => {
             conflicts.push(realMasterState);
         } else {
             // no conflict -> write the document
-            await mongoCollection.updateOne(
+            await mongoCollection.replaceOne(
                 {id: changeRow.newDocumentState.id},
-                changeRow.newDocumentState
+                changeRow.newDocumentState,
+                {upsert: true}
             );
             event.documents.push(changeRow.newDocumentState);
             event.checkpoint = {
@@ -204,7 +205,7 @@ app.get('/push', async (req, res) => {
         }
     }
     if(event.documents.length > 0){
-        myPullStream$.next(event);
+        pullStream$.next(event);
     }
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(conflicts));
@@ -226,7 +227,7 @@ const replicationState = await replicateRxCollection({
     /* ... */
     push: {
         async handler(changeRows){
-            const rawResponse = await fetch('https://localhost/push', {
+            const rawResponse = await fetch('http://localhost/push', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -324,9 +325,12 @@ const eventSource = new EventSource(
 );
 eventSource.onmessage = () => myPullStream$.next('RESYNC');
 const replicationState = await replicateRxCollection({
+    /* ... */
     pull: {
+        /* ... */
         stream$: myPullStream$.asObservable()
     }
+    /* ... */
 });
 ```
 
