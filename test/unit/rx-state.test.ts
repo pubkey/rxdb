@@ -449,6 +449,42 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 await state3.collection.database.close();
                 await state2.collection.database.close();
             });
+            it('should not miss a write of another instance that happens while the state is created', async () => {
+                type CounterState = {
+                    [key: string]: number;
+                };
+                const databaseName = randomToken(10);
+                const database1 = await getDatabase(databaseName);
+                const state1 = await database1.addState<CounterState>();
+                await state1.set('before', () => 1);
+
+                /**
+                 * In each round the first instance writes at a different
+                 * point in time while the state of the second instance is created.
+                 */
+                const rounds = config.storage.name.includes('random-delay') ? 5 : 50;
+                for (let round = 0; round < rounds; round++) {
+                    const database2 = await getDatabase(databaseName);
+                    const writeDuringCreation = (async () => {
+                        for (let i = 0; i < round; i++) {
+                            await Promise.resolve();
+                        }
+                        await state1.set('during' + round, () => round);
+                    })();
+                    const state2 = await database2.addState<CounterState>();
+                    await writeDuringCreation;
+
+                    /**
+                     * No further write happens here, so the write
+                     * must be part of the state without a later event.
+                     */
+                    await waitUntil(() => state2.get('during' + round) === round, 2000);
+
+                    assert.deepStrictEqual(state2.get(), state1.get());
+                    await database2.close();
+                }
+                await database1.close();
+            });
             runXTimes(1, () => {
                 it('should have a deterministic output when 2 instances write at the same time', async () => {
                     // TODO shouldn't we fix this test for these storages?

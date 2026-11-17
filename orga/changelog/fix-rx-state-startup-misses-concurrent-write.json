@@ -1,0 +1,5 @@
+{
+    "text": "FIX `addState()` missed a write of another instance (browser tab) that happened while the state was loaded from the storage, so that the RxState never contained that value",
+    "links": [],
+    "priority": 5
+}
