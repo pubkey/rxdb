@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX replication processed the events of the `pull.stream$` out of order when the async `pull.modifier` (or the loading of the attachments data) took longer for an earlier event than for a later one, so that an older document state could overwrite a newer one",
+    "links": [],
+    "priority": 5
+}
