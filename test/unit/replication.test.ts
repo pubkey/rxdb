@@ -514,6 +514,65 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
+        it('should push and resolve a conflicting document again when the conflict handler has thrown once', async () => {
+            let mustThrow = true;
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false, undefined, {
+                isEqual: defaultConflictHandler.isEqual,
+                resolve(i) {
+                    if (mustThrow) {
+                        mustThrow = false;
+                        throw new Error('temporary failure in conflict handler');
+                    }
+                    return i.realMasterState;
+                }
+            });
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+
+            // the conflicting document must be in the first push batch
+            await Promise.all([localCollection, remoteCollection].map((c, i) => c.insert({
+                id: 'a-conflicting-doc',
+                name: 'myname',
+                updatedAt: 1001,
+                age: i
+            })));
+            await localCollection.insert({
+                id: 'b-other-doc',
+                name: 'myname',
+                updatedAt: 1002,
+                age: 5
+            });
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                    batchSize: 1
+                },
+                retryTime: 100
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            assert.strictEqual(errors.length, 1);
+            assert.strictEqual(mustThrow, false);
+
+            // the other document must be pushed
+            const remoteOther = await remoteCollection.findOne('b-other-doc').exec(true);
+            assert.strictEqual(remoteOther.age, 5);
+
+            // the conflict must be resolved to the master state
+            const localDoc = await localCollection.findOne('a-conflicting-doc').exec(true);
+            const remoteDoc = await remoteCollection.findOne('a-conflicting-doc').exec(true);
+            assert.strictEqual(remoteDoc.age, 1);
+            assert.strictEqual(localDoc.age, 1);
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
         it('should never resolve awaitInitialReplication() on erroring replication', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: isFastMode() ? 3 : 10, remote: isFastMode() ? 3 : 10 });
             const replicationState = replicateRxCollection({

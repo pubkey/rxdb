@@ -291,12 +291,13 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         });
         nonPersistedFromMaster.checkpoint = checkpoint;
 
+        let upDocsById: ById<RxDocumentData<RxDocType>> = {};
         persistenceQueue = persistenceQueue.then(async () => {
             if (state.events.canceled.getValue()) {
                 return false;
             }
 
-            const upDocsById: ById<RxDocumentData<RxDocType>> = nonPersistedFromMaster.docs;
+            upDocsById = nonPersistedFromMaster.docs;
             nonPersistedFromMaster.docs = {};
             const useCheckpoint = nonPersistedFromMaster.checkpoint;
             const docIds = Object.keys(upDocsById);
@@ -586,6 +587,17 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
             return hadConflictWrites;
         }).catch(unhandledError => {
+            /**
+             * The documents of a failed cycle are not persisted to the master.
+             * They are added back to the non-persisted list so that
+             * the next cycle processes them together with its own documents
+             * and no up-checkpoint is stored that skips them.
+             */
+            Object.entries(upDocsById).forEach(([docId, docData]) => {
+                if (!nonPersistedFromMaster.docs[docId]) {
+                    nonPersistedFromMaster.docs[docId] = docData;
+                }
+            });
             state.events.error.next(unhandledError);
             return false;
         });
