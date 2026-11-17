@@ -175,7 +175,7 @@ First install `pouchdb-adapter-react-native-sqlite` and `react-native-sqlite-2`.
 npm install pouchdb-adapter-react-native-sqlite react-native-sqlite-2
 ```
 
-Then you have to [link](https://facebook.github.io/react-native/docs/linking-libraries-ios) the library.
+Then you have to [link](https://reactnative.dev/docs/linking-libraries-ios) the library.
 ```bash
 react-native link react-native-sqlite-2
 ```
@@ -222,7 +222,7 @@ const database = await createRxDatabase({
 
 ## asyncstorage
 
-Uses react-native's [asyncstorage](https://facebook.github.io/react-native/docs/asyncstorage).
+Uses react-native's [asyncstorage](https://reactnative.dev/docs/asyncstorage).
 
 :::note
 There are [known problems](https://github.com/pubkey/rxdb/issues/2286) with this adapter and it is **not** recommended to use it.
