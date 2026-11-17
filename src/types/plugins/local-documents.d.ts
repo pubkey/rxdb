@@ -35,7 +35,7 @@ export declare type RxLocalDocument<Parent, Data = any, Reactivity = unknown> = 
     RxDocumentBase<RxLocalDocumentData<Data>, {}, Reactivity>,
     {
         readonly parent: Parent;
-        isLocal(): true;
+        readonly isLocal: true;
 
         /**
              * Because local documents store their relevant data inside of the 'data' property,
