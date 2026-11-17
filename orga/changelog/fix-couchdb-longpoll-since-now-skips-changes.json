@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the live CouchDB replication skipped a server change forever when it happened after the checkpoint pull and before the first long polling request with `since=now` reached the server",
+    "links": [],
+    "priority": 5
+}
