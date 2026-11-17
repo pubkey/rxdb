@@ -13,6 +13,46 @@ import type {
 import { newRxError, newRxTypeError } from '../../rx-error.ts';
 import { deepEqual, findUndefinedPath } from '../utils/index.ts';
 import { prepareQuery } from '../../rx-query-helper.ts';
+import { RxQueryBase } from '../../rx-query.ts';
+
+const COUNT_QUERY_WRITE_METHODS = [
+    'remove',
+    'incrementalRemove',
+    'patch',
+    'incrementalPatch',
+    'modify',
+    'incrementalModify',
+    'update'
+];
+const COUNT_QUERY_WRITE_CHECKS = new WeakSet<Function>();
+
+/**
+ * The result of a count query is a number,
+ * so it has no documents that can be changed or removed.
+ * The write methods of the RxQuery prototype are wrapped each time a query is created,
+ * so that methods which other plugins set after the dev-mode plugin was added
+ * (like update() of the update plugin) are checked as well.
+ */
+export function ensureCountQueryWriteMethodsThrow() {
+    const proto: any = RxQueryBase.prototype;
+    COUNT_QUERY_WRITE_METHODS.forEach(method => {
+        const original: Function = proto[method];
+        if (COUNT_QUERY_WRITE_CHECKS.has(original)) {
+            return;
+        }
+        const withCheck = function (this: RxQueryBase<any, any>, ...args: any[]) {
+            if (this.op === 'count') {
+                return Promise.reject(newRxError('QU21', {
+                    collection: this.collection.name,
+                    query: this.mangoQuery
+                }));
+            }
+            return original.apply(this, args);
+        };
+        COUNT_QUERY_WRITE_CHECKS.add(withCheck);
+        proto[method] = withCheck;
+    });
+}
 
 /**
  * accidentally passing a non-valid object into the query params

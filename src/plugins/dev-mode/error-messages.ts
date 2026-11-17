@@ -188,6 +188,12 @@ export const ERROR_MESSAGES = {
         fix: 'Write array indexes with the dot notation, for example { \'foo.bar.3\': \'asc\' }.',
         docs: 'https://rxdb.info/rx-query-examples.html?console=errors&code=QU20#sorting'
     },
+    QU21: {
+        message: 'RxQuery: remove(), patch(), modify(), update() and their incremental variants cannot be used on count() queries',
+        cause: 'The result of a count query is a number, so the query has no documents that can be changed or removed.',
+        fix: 'Use find() with the same selector to change or remove the documents.',
+        docs: 'https://rxdb.info/rx-query.html?console=errors&code=QU21#count'
+    },
     QU22: {
         message: 'The query contains a value that cannot be represented in JSON. RxDB queries are JSON, so NaN, Infinity, -Infinity, bigint, functions, symbols, Date, Map, Set and class instances are not allowed.',
         cause: 'The value at the given path of the query is dropped or changed by JSON.stringify(). Such a query would behave differently depending on the RxStorage and could share a cached RxQuery with a different query.',
