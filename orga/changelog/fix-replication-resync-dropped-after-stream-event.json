@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX replication dropped a `RESYNC` (from `reSync()` or the `pull.stream$`) when it came in after a stream event while a pull was still running, so documents that were written on the server without an event were not pulled",
+    "links": [],
+    "priority": 5
+}
