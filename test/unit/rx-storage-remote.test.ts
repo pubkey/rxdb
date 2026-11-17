@@ -141,7 +141,7 @@ describe('rx-storage-remote.test.ts', () => {
         it('should answer the requests of the client after the exposed RxDatabase was closed', async () => {
             const serverDb = await createRxDatabase({
                 name: randomToken(10),
-                storage: wrappedValidateAjvStorage({ storage: getRxStorageMemory() }),
+                storage: config.storage.getStorage(),
                 multiInstance: false
             });
             await serverDb.addCollections({ humans: { schema: schemas.human } });
