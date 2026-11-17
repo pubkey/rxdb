@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a pipeline handler that reads from the destination collection after an awaited timer or request, or from deeply nested function calls, was blocked forever when the JavaScript engine has no async stack traces or cuts the stack trace at its frame limit",
+    "links": [],
+    "priority": 5
+}
