@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxReplicationState.remove()` rejected with a storage `closed` error and kept the replication meta data when it was called after `cancel()`",
+    "links": [],
+    "priority": 5
+}
