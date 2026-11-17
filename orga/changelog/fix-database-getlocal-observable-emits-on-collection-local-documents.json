@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDatabase.getLocal$()` emitted the unchanged local document again each time a local document with the same id was written on one of the collections of the database",
+    "links": [],
+    "priority": 4
+}
