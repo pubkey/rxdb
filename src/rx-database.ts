@@ -71,7 +71,8 @@ import {
     mergeMap
 } from 'rxjs/operators';
 import {
-    createRxCollection
+    createRxCollection,
+    OPEN_COLLECTIONS
 } from './rx-collection.ts';
 import {
     flatCloneDocWithMeta,
@@ -690,11 +691,21 @@ export class RxDatabaseBase<
                 closingError = err as Error;
             }
 
-            // close all collections
+            /**
+             * Close all collections.
+             * This includes collections that are still created by a running addCollections() call
+             * and therefore are not in this.collections.
+             * Each collection must be closed only once because
+             * a second close() call would run the onClose handlers again.
+             */
             await Promise.all(
-                Object.keys(this.collections as any)
-                    .map(key => (this.collections as any)[key])
-                    .map(col => col.close())
+                Array.from(
+                    new Set(
+                        Array.from(OPEN_COLLECTIONS)
+                            .filter(col => col.database === this.asRxDatabase)
+                            .concat(Object.values(this.collections as any))
+                    )
+                ).map(col => col.close())
             );
 
             // close internal storage instances
