@@ -7,10 +7,6 @@ import {
     fillWithDefaultSettings,
     randomToken
 } from '../../plugins/core/index.mjs';
-import type {
-    RxStorage,
-    RxStorageInstanceCreationParams
-} from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
     schemas,
@@ -154,33 +150,17 @@ describe('rx-storage-remote.test.ts', () => {
         return;
     }
     /**
-     * These tests create the remote storage explicitly,
-     * so they run independent of the default storage.
+     * These tests start their own websocket server
+     * on top of the config.storage, so they run with each config.storage.
      */
     describe('dropped connections', () => {
         it('should close the storage instance on the server when the last client connection drops without sending close()', async () => {
             const port = await nextPort();
-            const memoryStorage = getRxStorageMemory();
-            let created = 0;
-            let closed = 0;
-            const countingStorage: RxStorage<any, any> = {
-                name: memoryStorage.name,
-                rxdbVersion: memoryStorage.rxdbVersion,
-                async createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>) {
-                    const instance = await memoryStorage.createStorageInstance<RxDocType>(params);
-                    created++;
-                    const closeInstance = instance.close.bind(instance);
-                    instance.close = () => {
-                        closed++;
-                        return closeInstance();
-                    };
-                    return instance;
-                }
-            };
             const server = startRxStorageRemoteWebsocketServer({
                 port,
-                storage: countingStorage
+                storage: config.storage.getStorage()
             });
+            const openInstances = server.exposeState.instanceByFullName;
             const instanceParams = {
                 databaseInstanceToken: randomToken(10),
                 databaseName: randomToken(10),
@@ -196,11 +176,11 @@ describe('rx-storage-remote.test.ts', () => {
                 mode: 'one'
             });
             const droppedInstance = await droppedClientStorage.createStorageInstance(instanceParams);
-            assert.strictEqual(created, 1);
+            assert.strictEqual(openInstances.size, 1);
 
             // drop the connection without a close() call from the client
             server.serverState.server.clients.forEach(socket => socket.terminate());
-            await waitUntil(() => closed === 1, 2000);
+            await waitUntil(() => openInstances.size === 0, 2000);
 
             // a new client can open and close the same storage instance
             const otherClientStorage = getRxStorageRemoteWebsocket({
@@ -208,9 +188,9 @@ describe('rx-storage-remote.test.ts', () => {
                 mode: 'one'
             });
             const otherInstance = await otherClientStorage.createStorageInstance(instanceParams);
+            assert.strictEqual(openInstances.size, 1);
             await otherInstance.close();
-            assert.strictEqual(created, 2);
-            assert.strictEqual(closed, 2);
+            assert.strictEqual(openInstances.size, 0);
 
             await droppedInstance.close().catch(() => { });
             await server.serverState.close();
