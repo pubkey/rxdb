@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX replication skipped documents of the server when `pause()` was called during a running pull and an event of `pull.stream$` came in before, because the checkpoint of the stream event was stored although the checkpoint iteration had not finished",
+    "links": [],
+    "priority": 5
+}
