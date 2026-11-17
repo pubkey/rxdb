@@ -442,6 +442,21 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 await state.collection.database.remove();
             });
+            it('set() should remove a property of an array item when the modifier returns undefined', async () => {
+                const databaseName = randomToken(10);
+                const state = await getPathState(databaseName);
+                await fillPathState(state);
+
+                await state.set('list.1.foo', () => undefined as any);
+                assert.deepStrictEqual(state.get('list'), [{ foo: 'a' }, {}]);
+                await state.set('list[0].foo' as 'list.0.foo', () => undefined as any);
+                assert.deepStrictEqual(state.get('list'), [{}, {}]);
+                await state.collection.database.close();
+
+                const state2 = await getPathState(databaseName);
+                assert.deepStrictEqual(state2.get('list'), [{}, {}]);
+                await state2.collection.database.remove();
+            });
             it('set() should write an array item with the dot notation so that get() returns it for the same path', async () => {
                 const state = await getPathState();
                 await fillPathState(state);
