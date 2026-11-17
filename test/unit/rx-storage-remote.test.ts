@@ -138,15 +138,14 @@ describe('rx-storage-remote.test.ts', () => {
         });
     });
     /**
-     * Uses an in-process message channel and its own base storage,
-     * so it runs with each config.storage.
+     * Uses an in-process message channel to the config.storage.
      */
     describe('mode: one with a failed messageChannelCreator() call', () => {
         function getOneModeRemote() {
             const toRemote$ = new Subject<MessageToRemote>();
             const fromRemote$ = new Subject<MessageFromRemote>();
             exposeRxStorageRemote({
-                storage: getRxStorageMemory(),
+                storage: config.storage.getStorage(),
                 messages$: toRemote$,
                 send(msg) {
                     fromRemote$.next(msg);
