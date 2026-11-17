@@ -72,6 +72,65 @@ describe('dbviewer.test.ts', () => {
                 { url: 'http://x, y:z' }
             );
         });
+        it('single quoted strings handle an escaped backslash and escaped quotes like double quoted strings', () => {
+            const pairs: [string, string][] = [
+                ['{ name: { $regex: \'^\\\\d+$\' } }', '{ "name": { "$regex": "^\\\\d+$" } }'],
+                ['{ name: \'a\\\\\' }', '{ "name": "a\\\\" }'],
+                ['{ name: \'say \\"hi\\"\' }', '{ "name": "say \\"hi\\"" }']
+            ];
+            pairs.forEach(([singleQuoted, doubleQuoted]) => {
+                const expected = parseViewerSelector(doubleQuoted).selector;
+                assert.ok(expected, doubleQuoted);
+                assert.deepStrictEqual(parseViewerSelector(singleQuoted).selector, expected, singleQuoted);
+            });
+            assert.deepStrictEqual(parseViewerSelector('{ name: { $regex: \'^\\\\d+$\' } }').selector, { name: { $regex: '^\\d+$' } });
+            assert.deepStrictEqual(parseViewerSelector('{ name: \'it\\\'s\' }').selector, { name: 'it\'s' });
+            assert.deepStrictEqual(parseViewerSelector('{ name: \'say "hi"\' }').selector, { name: 'say "hi"' });
+            assert.deepStrictEqual(parseViewerSelector('{ name: \'a\\\\\' }').selector, { name: 'a\\' });
+        });
+        it('single quoted strings keep a backslash that does not start an escape', () => {
+            const cases: [string, string][] = [
+                [String.raw`{ name: { $regex: '\d+' } }`, String.raw`\d+`],
+                [String.raw`{ name: { $regex: '^\w+\.\s$' } }`, String.raw`^\w+\.\s$`],
+                [String.raw`{ name: { $regex: 'C:\dir' } }`, String.raw`C:\dir`],
+                [String.raw`{ name: { $regex: '\u00' } }`, String.raw`\u00`],
+                [String.raw`{ name: { $regex: '\d\'\\' } }`, String.raw`\d'` + '\\']
+            ];
+            cases.forEach(([input, regex]) => {
+                assert.deepStrictEqual(parseViewerSelector(input).selector, { name: { $regex: regex } }, input);
+            });
+        });
+        it('single quoted strings keep a backslash in front of a letter of a JSON escape', () => {
+            const cases: [string, string][] = [
+                [String.raw`{ name: { $regex: '\bLearn\b' } }`, String.raw`\bLearn\b`],
+                [String.raw`{ name: { $regex: '\f\n\r\t' } }`, String.raw`\f\n\r\t`],
+                [String.raw`{ name: { $regex: 'a\nb' } }`, String.raw`a\nb`],
+                [String.raw`{ name: { $regex: 'A' } }`, String.raw`A`],
+                [String.raw`{ name: { $regex: 'a\/b' } }`, String.raw`a\/b`]
+            ];
+            cases.forEach(([input, regex]) => {
+                assert.deepStrictEqual(parseViewerSelector(input).selector, { name: { $regex: regex } }, input);
+            });
+
+            const matchingNames = (input: string, names: string[]) => {
+                const selector = parseViewerSelector(input).selector;
+                assert.ok(selector, input);
+                const regex = new RegExp(selector.name.$regex);
+                return names.filter(name => regex.test(name));
+            };
+            assert.deepStrictEqual(
+                matchingNames(String.raw`{ name: { $regex: '\bLearn\b' } }`, ['Learn RxDB', 'Relearn things']),
+                ['Learn RxDB']
+            );
+            assert.deepStrictEqual(
+                matchingNames(String.raw`{ name: { $regex: 'a\nb' } }`, ['a\nb', 'anb']),
+                ['a\nb']
+            );
+
+            // double quoted strings stay strict JSON
+            assert.deepStrictEqual(parseViewerSelector(String.raw`{ name: "a\nbA" }`).selector, { name: 'a\nbA' });
+            assert.ok(parseViewerSelector(String.raw`{ name: { $regex: "\d+" } }`).error);
+        });
         it('should still error on broken relaxed input', () => {
             assert.ok(parseViewerSelector('{ name: }').error);
         });

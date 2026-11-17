@@ -130,18 +130,29 @@ export function relaxViewerSelectorInput(input: string): string {
         }
         if (char === '\'') {
             i = i + 1;
+            /**
+             * The content is written as a JSON string literal.
+             * A backslash is an escape only in front of a backslash,
+             * a single quote or a double quote, and gives that character.
+             * Any other backslash is a literal backslash, so a regex
+             * like '\bfoo\d+' works as typed and \b is not read
+             * as the backspace of a JSON string.
+             */
+            const toJsonChar = (c: string) => c === '"' || c === '\\' || c < ' ' ? JSON.stringify(c).slice(1, -1) : c;
             let value = '';
             while (i < input.length && input[i] !== '\'') {
-                if (input[i] === '\\' && i + 1 < input.length) {
-                    value = value + (input[i + 1] === '\'' ? '\'' : input[i] + input[i + 1]);
+                const c = input[i];
+                const next = input[i + 1];
+                if (c === '\\' && (next === '\\' || next === '\'' || next === '"')) {
+                    value = value + toJsonChar(next);
                     i = i + 2;
                 } else {
-                    value = value + input[i];
+                    value = value + toJsonChar(c);
                     i = i + 1;
                 }
             }
             i = i + 1;
-            out = out + JSON.stringify(value);
+            out = out + '"' + value + '"';
             continue;
         }
         if (char === '{' || char === '[') {
