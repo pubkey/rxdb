@@ -165,17 +165,7 @@ export class RxMigrationState {
              * migratePromise() or after the DONE emission do not throw.
              */
             concatMap(async (status) => {
-                if (
-                    status.status === 'DONE' &&
-                    !this.runsMigration &&
-                    /**
-                     * The read fails when the database is closed in the meantime,
-                     * which must not end the status stream with an error.
-                     */
-                    !(await mustMigrate(this).catch(() => true))
-                ) {
-                    this.collection.migrationInProgress = false;
-                }
+                await this.releaseWriteBlockWhenDoneElsewhere(status);
                 return status;
             }),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
@@ -184,6 +174,25 @@ export class RxMigrationState {
 
     getStatus() {
         return firstValueFrom(this.$);
+    }
+
+    /**
+     * Allows writes to the collection again when the given status is DONE
+     * and the migration was run by another instance.
+     * The instance that runs the migration releases the write block itself.
+     */
+    private async releaseWriteBlockWhenDoneElsewhere(status: RxMigrationStatus): Promise<void> {
+        if (
+            status.status === 'DONE' &&
+            !this.runsMigration &&
+            /**
+             * The read fails when the database is closed in the meantime,
+             * which must not end the status stream with an error.
+             */
+            !(await mustMigrate(this).catch(() => true))
+        ) {
+            this.collection.migrationInProgress = false;
+        }
     }
 
 
@@ -1032,6 +1041,12 @@ export class RxMigrationState {
                 error: result.error
             });
         } else {
+            /**
+             * The status document is observed directly here and not via this.$,
+             * so the write block has to be released here too
+             * before the promise resolves.
+             */
+            await this.releaseWriteBlockWhenDoneElsewhere(result);
             return result;
         }
 
