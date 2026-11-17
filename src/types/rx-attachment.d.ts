@@ -16,6 +16,14 @@ export type RxAttachmentCreator = {
     data: Blob;
 };
 
+/**
+ * Document data for insert and upsert calls
+ * with optional inline attachments.
+ */
+export type WithInlineAttachments<RxDocType> = RxDocType | (RxDocType & {
+    _attachments?: RxAttachmentCreator[];
+});
+
 export type RxAttachmentCreatorBase64 = {
     id: string;
     /**
