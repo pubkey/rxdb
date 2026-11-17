@@ -24,6 +24,8 @@ import {
 } from '../../plugins/utils/index.ts';
 import { rxDocumentProperties } from './entity-properties.ts';
 
+export const FIELD_NAME_REGEX_STRING = '^[a-zA-Z](?:[a-zA-Z0-9_]*[a-zA-Z0-9])?$';
+
 /**
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars
@@ -41,8 +43,7 @@ export function checkFieldNameRegex(fieldName: string) {
         });
     }
 
-    const regexStr = '^[a-zA-Z](?:[a-zA-Z0-9_]*[a-zA-Z0-9])?$';
-    const regex = new RegExp(regexStr);
+    const regex = new RegExp(FIELD_NAME_REGEX_STRING);
     if (
         /**
          * It must be allowed to set _id as primaryKey.
@@ -53,7 +54,7 @@ export function checkFieldNameRegex(fieldName: string) {
         !fieldName.match(regex)
     ) {
         throw newRxError('SC1', {
-            regex: regexStr,
+            regex: FIELD_NAME_REGEX_STRING,
             fieldName
         });
     }
