@@ -294,7 +294,7 @@ describe('webmcp.test.ts', () => {
     itWithDom('changes tool should mark removed documents as deleted', async () => {
         db.registerWebMCP();
         const tools = getTools();
-        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}_humans`));
+        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}.humans.`));
 
         await collection.insert(schemaObjects.humanData('removed_alice'));
         const live = await collection.insert(schemaObjects.humanData('removed_bob'));
