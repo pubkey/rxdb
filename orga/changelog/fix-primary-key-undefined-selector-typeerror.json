@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a query with an `undefined` primary key value in the selector, like `find({ selector: { id: undefined } })`, threw a raw `TypeError` instead of the dev-mode error `QU19`",
+    "links": [],
+    "priority": 4
+}
