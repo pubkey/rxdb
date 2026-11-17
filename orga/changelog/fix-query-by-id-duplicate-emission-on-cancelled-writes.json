@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX queries by primary key and `findByIds().$` emitted the same result twice when `liveQueryUpdateThrottleTime` grouped writes that cancel each other out, like the insert and the delete of the same document",
+    "links": [],
+    "priority": 4
+}
