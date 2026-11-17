@@ -1,6 +1,11 @@
 import { countUntilNotMatching } from './plugins/utils/index.ts';
 import { newRxError } from './rx-error.ts';
 import { getSchemaByObjectPath } from './rx-schema-helper.ts';
+import { getStringLengthOfIndexNumber } from './custom-index.ts';
+import {
+    INDEX_MAX,
+    INDEX_MIN
+} from './query-planner-bounds.ts';
 import type {
     FilledMangoQuery,
     MangoQuerySelector,
@@ -11,24 +16,16 @@ import type {
     RxQueryPlanerOpts
 } from './types/index.d.ts';
 
-export const INDEX_MAX = String.fromCharCode(65535);
+export {
+    INDEX_MAX,
+    INDEX_MIN
+};
 
 /**
  * The biggest single character string that is sorted
  * before all strings that start with INDEX_MAX.
  */
 const INDEX_MAX_LOWER_BOUND = String.fromCharCode(65534);
-
-/**
- * Do not use -Infinity here because it would be
- * transformed to null on JSON.stringify() which can break things
- * when the query plan is sent to the storage as json.
- * @link https://stackoverflow.com/a/16644751
- * Notice that for IndexedDB IDBKeyRange we have
- * to transform the value back to -Infinity
- * before we can use it in IDBKeyRange.bound.
- */
-export const INDEX_MIN = Number.MIN_SAFE_INTEGER;
 
 /**
  * Returns the query plan which contains
@@ -108,6 +105,7 @@ export function getQueryPlan<RxDocType>(
         let inclusiveEnd = true;
         let inclusiveStart = true;
         let hasIndexMaxSelectorValue = false;
+        let rangeIsEmpty = false;
         const opts: RxQueryPlanerOpts[] = index.map(indexField => {
             const matcher = (selector as any)[indexField];
             const operators = matcher ? Object.keys(matcher) : [];
@@ -172,29 +170,46 @@ export function getQueryPlan<RxDocType>(
             }
 
             /**
-             * When a numeric bound falls outside the schema minimum/maximum,
-             * getNumberIndexString() clamps it to the boundary value.
-             * An exclusive bound clamped to the same string as a boundary
-             * document would incorrectly exclude that document, so we
-             * promote it to inclusive here.
+             * A query value can be any number, also one that is outside
+             * of the schema minimum/maximum or between two steps of the
+             * index precision. getNumberIndexString() cannot represent
+             * these values, so a lower bound is moved up and an upper bound
+             * is moved down to the next representable value, which is then inclusive.
+             * When no representable value is left between the bounds, the range is empty.
              */
             const schemaPart = getSchemaByObjectPath(schema, indexField);
-            if (schemaPart && (schemaPart.type === 'number' || schemaPart.type === 'integer')) {
-                if (
-                    !matcherOpts.inclusiveStart &&
-                    typeof matcherOpts.startKey === 'number' &&
-                    typeof schemaPart.minimum === 'number' &&
-                    matcherOpts.startKey < schemaPart.minimum
-                ) {
-                    matcherOpts.inclusiveStart = true;
-                }
-                if (
-                    !matcherOpts.inclusiveEnd &&
-                    typeof matcherOpts.endKey === 'number' &&
-                    typeof schemaPart.maximum === 'number' &&
-                    matcherOpts.endKey > schemaPart.maximum
-                ) {
-                    matcherOpts.inclusiveEnd = true;
+            if (
+                schemaPart &&
+                (schemaPart.type === 'number' || schemaPart.type === 'integer') &&
+                typeof schemaPart.minimum === 'number' &&
+                typeof schemaPart.maximum === 'number' &&
+                typeof schemaPart.multipleOf === 'number'
+            ) {
+                const startKey = matcherOpts.startKey;
+                const endKey = matcherOpts.endKey;
+                const hasStart = typeof startKey === 'number' && startKey !== INDEX_MIN;
+                const hasEnd = typeof endKey === 'number' && endKey !== INDEX_MIN;
+                if (hasStart || hasEnd) {
+                    const parsedLengths = getStringLengthOfIndexNumber(schemaPart);
+                    let start = parsedLengths.minimum;
+                    let end = parsedLengths.maximum;
+                    if (hasStart) {
+                        start = Math.max(start, roundToIndexStep(parsedLengths, startKey as number, Math.ceil));
+                        if (start !== startKey) {
+                            matcherOpts.startKey = start;
+                            matcherOpts.inclusiveStart = true;
+                        }
+                    }
+                    if (hasEnd) {
+                        end = Math.min(end, roundToIndexStep(parsedLengths, endKey as number, Math.floor));
+                        if (end !== endKey) {
+                            matcherOpts.endKey = end;
+                            matcherOpts.inclusiveEnd = true;
+                        }
+                    }
+                    if (start > end) {
+                        rangeIsEmpty = true;
+                    }
                 }
             }
 
@@ -209,8 +224,19 @@ export function getQueryPlan<RxDocType>(
         });
 
 
-        const startKeys = opts.map(opt => opt.startKey);
-        const endKeys = opts.map(opt => opt.endKey);
+        /**
+         * When the number bounds of one field cannot match any value,
+         * no document matches the query. The bounds of the other fields
+         * of a compound index would still span documents, so the plan
+         * gets a range that is empty for every index and every storage:
+         * it starts after the highest key and ends before the lowest key.
+         */
+        if (rangeIsEmpty) {
+            inclusiveStart = false;
+            inclusiveEnd = false;
+        }
+        const startKeys = rangeIsEmpty ? index.map(() => INDEX_MAX) : opts.map(opt => opt.startKey);
+        const endKeys = rangeIsEmpty ? index.map(() => INDEX_MIN) : opts.map(opt => opt.endKey);
 
         /**
          * Compute the index compare string once per index,
@@ -231,9 +257,16 @@ export function getQueryPlan<RxDocType>(
             inclusiveEnd,
             inclusiveStart,
             sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === indexCompareString,
-            selectorSatisfiedByIndex: !hasIndexMaxSelectorValue && isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
+            selectorSatisfiedByIndex: rangeIsEmpty || (
+                !hasIndexMaxSelectorValue &&
+                isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
+            )
         };
-        const quality = rateQueryPlan(
+        /**
+         * A plan with an empty range reads no documents,
+         * so no other index can be better.
+         */
+        const quality = rangeIsEmpty ? Infinity : rateQueryPlan(
             schema,
             query,
             queryPlan
@@ -259,6 +292,24 @@ export function getQueryPlan<RxDocType>(
     }
 
     return currentBestQueryPlan;
+}
+
+/**
+ * Rounds a query value that lies between two steps of the index precision
+ * to the next step with the given rounding function.
+ * Values that differ from a step only by the floating point
+ * error are returned unchanged because they get the index string
+ * of that step, same as document values.
+ */
+function roundToIndexStep(
+    parsedLengths: ReturnType<typeof getStringLengthOfIndexNumber>,
+    value: number,
+    round: (value: number) => number
+): number {
+    const scaled = value * parsedLengths.multiplier;
+    return Math.abs(scaled - Math.round(scaled)) <= Number.EPSILON * 4 * Math.max(1, Math.abs(scaled)) ?
+        value :
+        round(scaled) / parsedLengths.multiplier;
 }
 
 export const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);

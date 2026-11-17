@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX queries on an indexed `number` or `integer` field returned wrong results on the memory and localStorage storages when the query value was not a `multipleOf` step or was outside of `minimum`/`maximum`, like `{ age: { $lt: 4.5 } }` or `{ age: 11 }` with `maximum: 10`",
+    "links": [],
+    "priority": 5
+}
