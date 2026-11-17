@@ -441,6 +441,37 @@ describe('rx-database.test.ts', () => {
 
                 await db2.close();
             });
+            it('should be able to add the collection with an adjusted schema after the first creation failed', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage()
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => db.addCollections({
+                        items: {
+                            schema: schemas.human,
+                            statics: {
+                                insert: () => 'foobar'
+                            }
+                        }
+                    }),
+                    'RxError',
+                    'COL17'
+                );
+
+                const collections = await db.addCollections({
+                    items: {
+                        schema: { ...schemas.human, description: 'changed' },
+                        statics: {
+                            foobar: () => 'foobar'
+                        }
+                    }
+                });
+                await collections.items.insert(schemaObjects.humanData());
+                const docs = await collections.items.find().exec();
+                assert.strictEqual(docs.length, 1);
+                await db.remove();
+            });
         });
         describe('negative', () => {
             it('broken schema (nostringIndex)', async () => {

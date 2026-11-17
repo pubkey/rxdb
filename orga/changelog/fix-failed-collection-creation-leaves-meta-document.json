@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `addCollections()` left the collection meta document and the storage instance behind when the creation of the collection failed after the storage instance was created (for example with `COL17`), so that adding the collection again with an adjusted schema threw `DB6`",
+    "links": [],
+    "priority": 4
+}
