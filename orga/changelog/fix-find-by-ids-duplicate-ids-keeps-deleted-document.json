@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `findByIds()` with an id that is given multiple times kept returning the document after it was deleted",
+    "links": [],
+    "priority": 4
+}
