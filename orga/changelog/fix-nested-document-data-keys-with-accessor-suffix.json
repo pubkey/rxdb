@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX Reading a nested data key that ends with `_` or `$` from a free-form object field of an RxDocument (for example `doc.meta.user_` or `doc.meta.price$`) threw `DOC5` or returned an Observable instead of the stored value. The same happened when calling `JSON.stringify()` or spreading the nested object. The `fieldName$`, `fieldName$$` and `fieldName_` accessors now only apply when the object has no data key with that exact name.",
+    "links": [],
+    "priority": 4
+}
