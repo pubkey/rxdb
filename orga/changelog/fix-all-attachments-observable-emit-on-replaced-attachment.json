@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDocument.allAttachments$` did not emit when an existing attachment was replaced by `putAttachment()` with the same id and other content, so subscribers kept `RxAttachment` objects with the old digest and length",
+    "links": [],
+    "priority": 5
+}
