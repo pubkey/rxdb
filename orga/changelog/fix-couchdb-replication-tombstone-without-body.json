@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX CouchDB replication did not delete the local document and emitted `RC_PULL` with a schema validation error when the document was deleted on the CouchDB server with a `DELETE` request, because the tombstone from the `_changes` feed contains no document fields",
+    "links": [],
+    "priority": 5
+}
