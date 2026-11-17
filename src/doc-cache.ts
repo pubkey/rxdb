@@ -236,7 +236,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
  * Determines if the given document state has to overwrite
  * the currently cached latest state of that document.
  */
-function isNewerDocumentState<RxDocType>(
+export function isNewerDocumentState<RxDocType>(
     checkState: RxDocumentData<RxDocType>,
     currentLatest: RxDocumentData<RxDocType>
 ): boolean {
