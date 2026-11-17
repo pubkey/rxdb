@@ -182,6 +182,66 @@ describe('replication.test.ts', () => {
             await localCollection.database.close();
             await remoteCollection.database.close();
         });
+        it('pause() must resolve while the handlers keep failing and start() must finish the run', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: 2,
+                remote: 3
+            });
+            const pullHandler = getPullHandler(remoteCollection);
+            const pushHandler = getPushHandler(remoteCollection);
+            let handlersFail = true;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                retryTime: 20,
+                pull: {
+                    handler: (lastPulledCheckpoint: CheckpointType, pullBatchSize: number) => {
+                        if (handlersFail) {
+                            throw new Error('pull handler failed');
+                        }
+                        return pullHandler(lastPulledCheckpoint, pullBatchSize);
+                    }
+                },
+                push: {
+                    handler: (rows) => {
+                        if (handlersFail) {
+                            throw new Error('push handler failed');
+                        }
+                        return pushHandler(rows);
+                    }
+                }
+            });
+            const errors: unknown[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await waitUntil(() => errors.length > 0);
+
+            const pauseResult = await Promise.race([
+                replicationState.pause().then(() => 'paused'),
+                wait(1000).then(() => 'timeout')
+            ]);
+            assert.strictEqual(pauseResult, 'paused');
+            assert.strictEqual(replicationState.isPaused(), true);
+            assert.strictEqual(replicationState.isStopped(), false);
+
+            // the retries must stop while paused
+            await wait(50);
+            const errorsWhilePaused = errors.length;
+            await wait(100);
+            assert.strictEqual(errors.length, errorsWhilePaused);
+            assert.strictEqual((await localCollection.find().exec()).length, 2);
+            assert.strictEqual((await remoteCollection.find().exec()).length, 3);
+
+            // start() continues the run and the non-live replication cancels itself afterwards
+            handlersFail = false;
+            await replicationState.start();
+            assert.strictEqual(replicationState.isStopped(), true);
+            assert.strictEqual((await localCollection.find().exec()).length, 5);
+            assert.strictEqual((await remoteCollection.find().exec()).length, 5);
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
         it('should allow asynchronous push and pull modifiers', async () => {
             const docsPerSide = 5;
             const { localCollection, remoteCollection } = await getTestCollections({

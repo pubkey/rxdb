@@ -9,6 +9,7 @@ import {
     BehaviorSubject,
     combineLatest,
     filter,
+    firstValueFrom,
     mergeMap,
     Observable,
     Subject,
@@ -110,6 +111,11 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     public startQueue: Promise<any> = PROMISE_RESOLVE_VOID;
 
     public onCancel: (() => void)[] = [];
+
+    /**
+     * Amount of pause() calls that still wait in the startQueue.
+     */
+    private readonly pendingPauses$ = new BehaviorSubject<number>(0);
 
     constructor(
         /**
@@ -221,7 +227,23 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          * just re-sync once and continue.
          */
         if (this.wasStarted) {
+            const internalState = this.internalReplicationState;
+            let resyncQueued: Promise<any> = PROMISE_RESOLVE_VOID;
+            if (!this.live && internalState) {
+                /**
+                 * The RESYNC reaches the replication protocol asynchronously.
+                 * The upstream gets it before the downstream, so when the downstream
+                 * has added the task, both stream queues contain the resync run.
+                 */
+                const tasksBefore = internalState.stats.down.addNewTask;
+                resyncQueued = firstValueFrom(
+                    internalState.events.active.down.pipe(
+                        filter(() => internalState.stats.down.addNewTask > tasksBefore)
+                    )
+                );
+            }
             this.reSync();
+            await this.awaitNonLiveDone(resyncQueued);
             return;
         }
         this.wasStarted = true;
@@ -484,20 +506,41 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             );
         }
 
-        /**
-         * Non-live replications run once
-         * and then automatically get canceled.
-         */
-        if (!this.live) {
-            await awaitRxStorageReplicationFirstInSync(this.internalReplicationState);
-            await awaitRxStorageReplicationInSync(this.internalReplicationState);
+        await this.awaitNonLiveDone(PROMISE_RESOLVE_VOID);
+    }
+
+    /**
+     * Non-live replications run once
+     * and then automatically get canceled.
+     * The run blocks the startQueue, so a pause() call has to interrupt
+     * the waiting, otherwise it would not resolve while a handler keeps failing.
+     * A paused non-live replication is not canceled,
+     * the run goes on when start() is called again.
+     */
+    private async awaitNonLiveDone(runQueued: Promise<any>): Promise<void> {
+        const internalState = this.internalReplicationState;
+        if (!this.live && internalState) {
+            const gotPaused = await Promise.race([
+                firstValueFrom(
+                    this.pendingPauses$.pipe(filter(pending => pending > 0))
+                ).then(() => true),
+                runQueued
+                    .then(() => awaitRxStorageReplicationFirstInSync(internalState))
+                    .then(() => awaitRxStorageReplicationInSync(internalState))
+                    .then(() => false)
+            ]);
+            if (gotPaused) {
+                return;
+            }
             await this._cancel();
         }
         this.callOnStart();
     }
 
     pause() {
+        this.pendingPauses$.next(this.pendingPauses$.getValue() + 1);
         this.startQueue = this.startQueue.then(() => {
+            this.pendingPauses$.next(this.pendingPauses$.getValue() - 1);
             /**
              * It must be possible to .pause() the replication
              * at any time, even if it has not been started yet.

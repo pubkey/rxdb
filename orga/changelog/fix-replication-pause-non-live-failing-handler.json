@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxReplicationState.pause()` never resolved on a non-live replication (`live: false`) while a pull or push handler kept failing. `pause()` now resolves and stops the retries, the replication is not canceled, and a later `start()` continues the run and cancels the replication when it is in sync",
+    "links": [],
+    "priority": 5
+}
