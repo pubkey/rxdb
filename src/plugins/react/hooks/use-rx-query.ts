@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 
 import type {
     MangoQuery,
@@ -7,8 +7,8 @@ import type {
     RxQuery,
 } from '../../../types/index.d.ts';
 import { isRxCollection } from '../../../rx-collection.ts';
-import { useRxCollection } from './use-rx-collection.ts';
-import { useRxDatabase } from './use-rx-database.ts';
+import { useRxCollectionByName } from './use-rx-collection.ts';
+import { RxDatabaseContext } from '../database-context.ts';
 import { newRxError } from '../../../rx-error.ts';
 
 export type UseRxQueryOptions<
@@ -77,6 +77,14 @@ export function useRxQueryBase<
         error: string | null;
     } | null>(null);
 
+    const collectionByName = useRxCollectionByName<
+        RxDocumentType,
+        OrmMethods,
+        StaticMethods,
+        InstanceCreationOptions,
+        Reactivity
+    >(typeof collection === 'string' ? collection : undefined);
+    const database = useContext(RxDatabaseContext);
     let dbCollection: RxCollection<
         RxDocumentType,
         OrmMethods,
@@ -85,18 +93,10 @@ export function useRxQueryBase<
         Reactivity
     > | null;
     if (typeof collection === 'string') {
-        const collectionByName = useRxCollection<
-            RxDocumentType,
-            OrmMethods,
-            StaticMethods,
-            InstanceCreationOptions,
-            Reactivity
-        >(collection);
         /**
          * In the first render after the name or the provided database has changed,
-         * useRxCollection() still returns the collection of the previous name or database.
+         * useRxCollectionByName() still returns the collection of the previous name or database.
          */
-        const database = useRxDatabase();
         dbCollection = collectionByName &&
             collectionByName.name === collection &&
             collectionByName.database === database
