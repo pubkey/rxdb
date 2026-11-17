@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX nested objects and arrays inside of a schema `default` value were shared by reference between the schema and all inserted documents, so mutating them in a `preInsert` hook changed the defaults of later documents (or threw in dev-mode because the schema is frozen)",
+    "links": [],
+    "priority": 5
+}
