@@ -50,8 +50,8 @@ export function ensureDatabaseNameIsValid(args: RxDatabaseCreator<any, any>) {
  * like the name fooBar. This makes it way less confusing when naming
  * collections with a JavaScript variable name convention.
  */
-const validCouchDBStringRegexStr = '^[a-z][_$a-zA-Z0-9\\-]*$';
-const validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
+export const DATABASE_AND_COLLECTION_NAME_REGEX_STRING = '^[a-z][_$a-zA-Z0-9\\-]*$';
+const validCouchDBStringRegex = new RegExp(DATABASE_AND_COLLECTION_NAME_REGEX_STRING);
 
 /**
  * Validates that a given string is ok to be used with couchdb-collection-names.
@@ -87,7 +87,7 @@ export function validateDatabaseName(name: string): true {
         name !== ':memory:'
     ) {
         throw newRxError('UT2', {
-            regex: validCouchDBStringRegexStr,
+            regex: DATABASE_AND_COLLECTION_NAME_REGEX_STRING,
             givenName: name,
         });
     }

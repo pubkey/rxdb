@@ -6,6 +6,7 @@ image: /headers/rx-collection.jpg
 ---
 
 import { NON_PREMIUM_COLLECTION_LIMIT } from '../src/constants';
+import { DATABASE_AND_COLLECTION_NAME_REGEX_STRING } from '../../src/plugins/dev-mode/unallowed-properties';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxCollection
@@ -46,7 +47,7 @@ Without the Premium Plugins, RxDB allows up to {NON_PREMIUM_COLLECTION_LIMIT} op
 
 ### name
 
-The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: `^[a-z][_$a-zA-Z0-9\-]*$`.
+The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: <code>{DATABASE_AND_COLLECTION_NAME_REGEX_STRING}</code>.
 
 ### schema
 
