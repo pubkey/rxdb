@@ -20,7 +20,12 @@ import { rxStorageInstanceToReplicationHandler } from '../../replication-protoco
 import {
     PROMISE_RESOLVE_VOID, getFromMapOrCreate
 } from '../../plugins/utils/index.ts';
-import { Subject } from 'rxjs';
+import { Subject, concatMap } from 'rxjs';
+import {
+    deserializeAttachmentsOfWriteRows,
+    serializeAttachmentsOfDocs,
+    serializeAttachmentsOfPullResult
+} from './websocket-attachments.ts';
 
 export function startSocketServer(options: ServerOptions): WebsocketServerState {
     const wss = new WebSocketServer(options);
@@ -109,7 +114,9 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
              * it means that the client requested the masterChangeStream$
              */
             if (typeof method !== 'function') {
-                const changeStreamSub = handler.masterChangeStream$.subscribe((ev: any) => {
+                const changeStreamSub = handler.masterChangeStream$.pipe(
+                    concatMap(ev => serializeAttachmentsOfPullResult(ev))
+                ).subscribe((ev: any) => {
                     const streamResponse: WebsocketMessageResponseType = {
                         id: 'stream',
                         collection: message.collection,
@@ -120,7 +127,15 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
                 onCloseHandlers.push(() => changeStreamSub.unsubscribe());
                 return;
             }
-            const result = await (method as any)(...message.params);
+            let result: any;
+            if (message.method === 'masterWrite') {
+                const rows = await deserializeAttachmentsOfWriteRows(message.params[0]);
+                result = await serializeAttachmentsOfDocs(await handler.masterWrite(rows));
+            } else {
+                result = await serializeAttachmentsOfPullResult(
+                    await (method as any)(...message.params)
+                );
+            }
             const response: WebsocketMessageResponseType = {
                 id: message.id,
                 collection: message.collection,
