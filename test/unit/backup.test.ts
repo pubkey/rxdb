@@ -402,13 +402,14 @@ describe('backup.test.ts', () => {
             // the backup directory is reachable again
             fs.renameSync(movedDirectory, directory);
             const doc3 = await collection.insert(schemaObjects.humanData());
+            /**
+             * The write event is emitted after the file was written,
+             * so both must be awaited.
+             */
             await waitUntil(() => {
                 return [doc2, doc3].every(doc => fs.existsSync(
                     path.join(directory, toFileName(doc.primary), 'document.json')
-                ));
-            });
-            [doc2, doc3].forEach(doc => {
-                assert.ok(emitted.find(ev => ev.documentId === doc.primary && !ev.deleted));
+                ) && emitted.find(ev => ev.documentId === doc.primary && !ev.deleted));
             });
 
             /**
