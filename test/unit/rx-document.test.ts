@@ -13,6 +13,7 @@ import {
     enableKeyCompression
 } from '../../plugins/test-utils/index.mjs';
 import { wrappedKeyCompressionStorage } from '../../plugins/key-compression/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 import {
     createRxDatabase,
@@ -958,6 +959,43 @@ describe('rx-document.test.js', () => {
             assert.strictEqual(count, 1);
 
             c.database.close();
+        });
+        it('should not reject the valid writes of a batch when another write of the same document is invalid', async () => {
+            const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                })
+            });
+            await db.addCollections({
+                human: {
+                    schema: schemas.human
+                }
+            });
+            const c = db.human;
+            const doc = await c.insert(schemaObjects.humanData());
+
+            // all three writes are queued together and end up in the same batch
+            const results = await Promise.allSettled([
+                doc.incrementalPatch({ firstName: 'valid1' }),
+                // invalid because of the maximum of the age field
+                doc.incrementalPatch({ age: 9999 }),
+                doc.incrementalPatch({ lastName: 'valid2' })
+            ]);
+            assert.strictEqual(results[0].status, 'fulfilled');
+            assert.strictEqual(results[1].status, 'rejected');
+            assert.strictEqual(results[2].status, 'fulfilled');
+
+            const after = await c.findOne(doc.primary).exec(true);
+            assert.strictEqual(after.firstName, 'valid1');
+            assert.strictEqual(after.lastName, 'valid2');
+            assert.strictEqual(after.age, doc.age);
+
+            // the queue must still work afterwards
+            const patched = await after.incrementalPatch({ firstName: 'valid3' });
+            assert.strictEqual(patched.firstName, 'valid3');
+
+            db.close();
         });
         /**
          * @link https://github.com/pubkey/rxdb/issues/9234

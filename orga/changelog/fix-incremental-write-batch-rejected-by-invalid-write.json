@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX incremental writes (`incrementalPatch()`, `incrementalModify()`, ...) that were batched together with an invalid write to the same document have all been rejected with the error of that invalid write. Now only the write that fails on its own is rejected",
+    "links": [],
+    "priority": 5
+}

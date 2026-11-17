@@ -36,6 +36,11 @@ type IncrementalWriteQueueItem<RxDocType> = {
     modifier: IncrementalWriteModifier<RxDocType>;
     resolve: (d: RxDocumentData<RxDocType>) => void;
     reject: (error: RxError) => void;
+    /**
+     * If true, the item is written in its own write row
+     * instead of being merged with the other items of the same document.
+     */
+    runAlone?: boolean;
 };
 
 /**
@@ -94,10 +99,20 @@ export class IncrementalWriteQueue<RxDocType> {
          */
         const itemsById = this.queueByDocId;
         this.queueByDocId = new Map();
+        /**
+         * Items that are not processed in this run because
+         * an item of the same document must be written alone first.
+         */
+        const deferredById = new Map<string, IncrementalWriteQueueItem<RxDocType>[]>();
         try {
             await Promise.all(
                 Array.from(itemsById.entries())
-                    .map(async ([docId, allItems]) => {
+                    .map(async ([docId, queuedItems]) => {
+                        let allItems = queuedItems;
+                        if (allItems[0].runAlone && allItems.length > 1) {
+                            deferredById.set(docId, allItems.slice(1));
+                            allItems = [allItems[0]];
+                        }
                         const oldData = findNewestOfDocumentStates(
                             allItems.map(i => i.lastKnownDocumentState)
                         );
@@ -167,8 +182,24 @@ export class IncrementalWriteQueue<RxDocType> {
                         this.postWrite(result);
                         const items = getFromMapOrThrow(itemsById, docId);
                         items.forEach(item => item.resolve(result));
+                        const deferred = deferredById.get(docId);
+                        if (deferred) {
+                            deferred.forEach(item => item.lastKnownDocumentState = result);
+                        }
                     })
                 );
+            }
+
+            /**
+             * Add the deferred items back to the queue
+             * in front of the items that have been added in the meantime.
+             */
+            deferredById.forEach((deferred, docId) => {
+                const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
+                ar.unshift(...deferred);
+            });
+
+            if (writeResult) {
 
                 // process errors
                 writeResult.error
@@ -190,9 +221,21 @@ export class IncrementalWriteQueue<RxDocType> {
                                     ensureNotFalsy(ar).unshift(item);
                                 });
                         } else {
-                            // other error -> must be thrown
-                            const rxError = rxStorageWriteErrorToRxError(error);
-                            items.forEach(item => item.reject(rxError));
+                            if (items.length > 1) {
+                                /**
+                                 * The write row contains the merged result of multiple modifiers,
+                                 * so it is not known which one caused the error.
+                                 * Run them again one by one so that only
+                                 * the writes that fail on their own are rejected.
+                                 */
+                                const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
+                                items.forEach(item => item.runAlone = true);
+                                ar.unshift(...items);
+                            } else {
+                                // other error -> must be thrown
+                                const rxError = rxStorageWriteErrorToRxError(error);
+                                items[0].reject(rxError);
+                            }
                         }
                     });
             }
