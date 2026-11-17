@@ -59,7 +59,7 @@ export async function backupSingleDocument(
     await writeJsonToFile(fileLocation, data);
     writtenFiles.push(fileLocation);
 
-    if (options.attachments) {
+    if (options.attachments && rxDocument.collection.schema.jsonSchema.attachments) {
         const attachmentsFolder = path.join(
             docFolder,
             'attachments'
