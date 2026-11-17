@@ -797,6 +797,13 @@ describe('local-documents.test.ts', () => {
                     localDocuments: true
                 });
 
+                /**
+                 * The local documents state of a database is created in the background.
+                 * Events of writes that are done by another instance before that state exists,
+                 * are not emitted on db2.$, so the state must exist before the first write.
+                 */
+                await db2.getLocal('foobar');
+
                 for (let i = 0; i < runs; i++) {
                     const id = 'foobar' + i;
                     await db.insertLocal<TestDocType>(id, { foo: 'bar' });
