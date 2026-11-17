@@ -22,7 +22,7 @@ import {
 } from 'rxjs';
 import { Observable } from 'rxjs';
 
-import { getLocalDocStateByParent } from './local-documents-helper.ts';
+import { getLocalDocStateByParent, throwLocalDocumentWriteError } from './local-documents-helper.ts';
 import { getSingleDocument, writeSingle } from '../../rx-storage-helper.ts';
 import { isRxDatabase } from '../../rx-database.ts';
 
@@ -55,7 +55,10 @@ export async function insertLocal<DocData extends Record<string, any> = any, Rea
             document: docData
         },
         'local-document-insert'
-    ).then(newDocData => state.docCache.getCachedRxDocument(newDocData) as any);
+    ).then(
+        newDocData => state.docCache.getCachedRxDocument(newDocData) as any,
+        err => throwLocalDocumentWriteError(this, id, err)
+    );
 }
 
 /**
@@ -93,7 +96,8 @@ export async function upsertLocal<DocData extends Record<string, any> = any, Rea
                     return data;
                 });
             }
-        } catch (err: any) {
+        } catch (error: any) {
+            const err = error && error.code === 'CONFLICT' ? error.parameters.writeError : error;
             if (err && err.status === 409) {
                 if (err.documentInDb) {
                     state.docCache.getCachedRxDocument(err.documentInDb);
@@ -105,7 +109,7 @@ export async function upsertLocal<DocData extends Record<string, any> = any, Rea
                 }
                 continue;
             }
-            throw err;
+            throw error;
         }
     }
 }
