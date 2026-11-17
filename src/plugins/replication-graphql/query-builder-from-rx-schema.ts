@@ -177,7 +177,12 @@ function generateGQLOutputFields(options: GenerateGQLOutputFieldsOptions) {
         while (value.type === "array" && value.items) {
             value = value.items as any;
         }
-        if (value.type === "object") {
+        /**
+         * A GraphQL selection set must not be empty,
+         * so an object without known properties
+         * is selected as a leaf field like a scalar.
+         */
+        if (value.type === "object" && value.properties && Object.keys(value.properties).length > 0) {
             outputFields.push(
                 LINE_SPACING + NESTED_SPACING + key + " {",
                 generateGQLOutputFields({ schema: value, spaceCount, depth: depth + 1 }),
