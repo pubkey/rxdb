@@ -1,0 +1,5 @@
+{
+    "text": "FIX closing a database that has an `RxState` while the cleanup plugin is active caused an unhandled promise rejection with the error `COL21`",
+    "links": [],
+    "priority": 4
+}
