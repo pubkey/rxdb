@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX schema migration failed again with the stored error of a previous failed run: after a migration strategy has thrown, the next start with a fixed migration strategy made `addCollections()` and `migratePromise()` reject with the old `DM4` error while the migration ran in the background. The stored migration status is now reset to `RUNNING` when a migration run starts",
+    "links": [],
+    "priority": 5
+}
