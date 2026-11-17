@@ -199,14 +199,21 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     const startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
     graphqlReplicationState.start = () => {
         if (mustUseSocket) {
-            const httpHeaders = pull.includeWsHeaders ? mutateableClientState.headers : undefined;
+            const httpHeaders = pull.includeWsHeaders ? () => mutateableClientState.headers : undefined;
             const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders, pull.wsOptions);
 
+            const streamQueryBuilder = ensureNotFalsy(pull.streamQueryBuilder);
+            const query: any = streamQueryBuilder(mutateableClientState.headers);
+
             wsClient.on('connected', () => {
+                /**
+                 * graphql-ws sends the same query object again when it subscribes on a new connection.
+                 * Updating that object ensures that the stream query
+                 * is built from the headers that are set at that time.
+                 */
+                Object.assign(query, streamQueryBuilder(mutateableClientState.headers));
                 pullStream$.next('RESYNC');
             });
-
-            const query: any = ensureNotFalsy(pull.streamQueryBuilder)(mutateableClientState.headers);
 
             wsClient.subscribe(
                 query,
