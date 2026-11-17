@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX calling `RxCollection.close()` multiple times without awaiting ran the close logic multiple times, which emitted the `CLOSED` event on `RxDatabase.collections$` more than once and closed the storage instance twice",
+    "links": [],
+    "priority": 4
+}
