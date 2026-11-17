@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE Updated [event-reduce-js](https://github.com/pubkey/event-reduce) from `7.4.0` to `8.0.0`. EventReduce now handles a query with `limit: 0` as a query without results and throws `EventReduce:NEG_LIMIT` for a negative limit. It also throws `EventReduce:CMP_ZERO` instead of guessing the order when a sort comparator returns `0` for two different documents, which the RxDB sort comparator never does because the primary key is always the last sort field",
+    "links": [],
+    "priority": 3
+}
