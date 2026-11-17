@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDocument.patch()` and `incrementalPatch()` with an `undefined` value on a CRDT collection stored the operation as `$set` with an `undefined` value, which is lost when the operation is serialized, so the removed field came back after a conflict resolution and dev-mode threw `SNH` on the next write after a reopen. The field is now removed with a `$unset` operation. Added a testcase",
+    "links": [],
+    "priority": 5
+}
