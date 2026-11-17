@@ -15,11 +15,11 @@ const RXQUERY_OTHER_FLAG = 'queryBuilderPath';
 export function runBuildingStep<RxDocumentType, RxQueryResult>(
     rxQuery: RxQuery<RxDocumentType, RxQueryResult>,
     functionName: string,
-    value: any
+    ...args: any[]
 ): RxQuery<RxDocumentType, RxQueryResult> {
     const queryBuilder = createQueryBuilder(clone(rxQuery.mangoQuery), rxQuery.other[RXQUERY_OTHER_FLAG]);
 
-    (queryBuilder as any)[functionName](value); // run
+    (queryBuilder as any)[functionName](...args); // run
 
     const queryBuilderJson = queryBuilder.toJSON();
 
@@ -38,14 +38,14 @@ export function applyBuildingStep(
     proto: any,
     functionName: string
 ): void {
-    proto[functionName] = function (this: RxQuery, value: any) {
+    proto[functionName] = function (this: RxQuery, ...args: any[]) {
         if (overwritable.isDevMode() && this.op === 'findByIds') {
             throw newRxError('QU17', {
                 collection: this.collection.name,
                 query: this.mangoQuery
             });
         }
-        return runBuildingStep(this, functionName, value);
+        return runBuildingStep(this, functionName, ...args);
     };
 }
 

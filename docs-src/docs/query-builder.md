@@ -80,7 +80,7 @@ Each operator method maps to the mango operator with the same name:
 | `nin(array)` | `$nin` | `.where('tags').nin(['rxdb'])` | `todo2`, `todo4` |
 | `exists(boolean)` | `$exists` | `.where('note').exists(true)` | `todo2` |
 | `regex(value)` | `$regex` | `.where('name').regex('.*RxDB.*')` | `todo1` |
-| `mod([divisor, remainder])` | `$mod` | `.where('priority').mod([2, 0])` | `todo1`, `todo3` |
+| `mod([divisor, remainder])` / `mod(divisor, remainder)` | `$mod` | `.where('priority').mod(2, 0)` | `todo1`, `todo3` |
 
 On an array field like `tags`, `in()` matches when at least one element of the array is in the given list, and `nin()` matches when no element is in the list.
 
@@ -94,7 +94,7 @@ const results = await myDatabase.todos.find()
 // > [RxDocument[todo3], RxDocument[todo4]]
 ```
 
-Notice that on an `RxQuery`, each chained method takes exactly one argument and applies to the field that was selected with `where()` before. The two-argument forms like `.gt('priority', 5)` or `.exists('note')` are not supported. Always select the field with `where()` first.
+Notice that on an `RxQuery`, each chained method takes exactly one argument and applies to the field that was selected with `where()` before. The two-argument forms like `.gt('priority', 5)` or `.exists('note')` are not supported. Always select the field with `where()` first. The only exception is `mod()`, which also accepts the divisor and the remainder as two arguments and the form `.mod('priority', 2, 0)` with the field as first argument.
 
 ## Regex Queries
 

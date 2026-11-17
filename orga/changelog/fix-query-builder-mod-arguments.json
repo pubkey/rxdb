@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the query-builder plugin dropped all arguments after the first one, so `query.mod('age', 2, 0)` threw `MQ5` and `query.where('age').mod(2, 0)` created an invalid `$mod` selector. The `mod()` typings now also allow the documented `mod([divisor, remainder])` form",
+    "links": [],
+    "priority": 4
+}
