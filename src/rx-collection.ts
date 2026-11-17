@@ -329,6 +329,7 @@ export class RxCollectionBase<
                 return createNewRxDocument(this.asRxCollection, documentConstructor, docData);
             }
         );
+        this._subs.push(this._docCache.changesSub);
 
 
         const listenToRemoveSub = this.database.internalStore.changeStream().pipe(

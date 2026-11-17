@@ -14,7 +14,7 @@ import {
 import {
     overwritable
 } from './overwritable.ts';
-import { Observable } from 'rxjs';
+import type { Observable, Subscription } from 'rxjs';
 
 /**
  * Because we have to create many cache items,
@@ -136,6 +136,13 @@ export class DocumentCache<RxDocType, OrmMethods> {
         }) as any :
         undefined;
 
+    /**
+     * Subscription to the changes$ stream.
+     * Must be unsubscribed by the owner of the cache
+     * when the cache is no longer used.
+     */
+    public readonly changesSub: Subscription;
+
     constructor(
         public readonly primaryPath: string,
         public readonly changes$: Observable<RxStorageChangeEvent<RxDocType>[]>,
@@ -144,7 +151,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
          */
         public documentCreator: (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods>
     ) {
-        changes$.subscribe((events: RxStorageChangeEvent<RxDocType>[]) => {
+        this.changesSub = changes$.subscribe((events: RxStorageChangeEvent<RxDocType>[]) => {
             this.tasks.add(() => {
                 const cacheItemByDocId = this.cacheItemByDocId;
                 for (let index = 0; index < events.length; index++) {
