@@ -118,6 +118,43 @@ describe('rx-schema.test.ts', () => {
                 it('validate with defaults', () => {
                     checkSchema(schemas.humanDefault);
                 });
+                it('validate default and enum values that contain keys which are not valid field names', () => {
+                    checkSchema({
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            settings: {
+                                type: 'object',
+                                default: {
+                                    'dark-mode': {
+                                        enabled: true
+                                    },
+                                    theme: {
+                                        default: 'light'
+                                    }
+                                },
+                                additionalProperties: true
+                            },
+                            mode: {
+                                type: 'object',
+                                enum: [
+                                    {
+                                        'read-only': {
+                                            enabled: true
+                                        }
+                                    }
+                                ],
+                                additionalProperties: true
+                            }
+                        },
+                        required: ['id']
+                    });
+                });
                 it('validate point', () => {
                     checkSchema(schemas.point);
                 });
