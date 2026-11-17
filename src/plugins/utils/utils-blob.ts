@@ -22,9 +22,14 @@ export async function createBlobFromBase64(
     base64String: string,
     type: string
 ): Promise<Blob> {
-    const base64Response = await fetch(`data:${type};base64,${base64String}`);
+    /**
+     * The type must not be part of the data URL
+     * because characters like a comma or a hash
+     * inside of the type would end the header of the URL.
+     */
+    const base64Response = await fetch('data:;base64,' + base64String);
     const blob = await base64Response.blob();
-    return blob;
+    return blob.slice(0, blob.size, type);
 }
 
 export function blobToString(blob: Blob | string): Promise<string> {
