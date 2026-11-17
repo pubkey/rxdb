@@ -1,5 +1,3 @@
-import { ensureNotFalsy } from '../utils/index.ts';
-
 /**
  * This is the most hacky thing we do in RxDB.
  * When a pipeline "transaction" is running,
@@ -124,16 +122,20 @@ export const FLAGGED_FUNCTIONS = {
 
 const ids: (keyof typeof FLAGGED_FUNCTIONS)[] = Object.keys(FLAGGED_FUNCTIONS) as any;
 
+/**
+ * The key that is shared when all other keys are in use.
+ * Sharing a key is safe because the origin of a call is detected
+ * by the PIPELINE_FN_PREFIX, which all flagged functions have in common.
+ */
+const SHARED_FLAGGED_FUNCTION_KEY: keyof typeof FLAGGED_FUNCTIONS = 'rx_pipeline_fn_1_';
+
 export function blockFlaggedFunctionKey(): keyof typeof FLAGGED_FUNCTIONS {
-    /**
-     * If this happens and we have no more flagged keys left
-     * it means that more pipeline handlers are running in parallel.
-     * To fix this, add more functions.
-     */
-    const id = ensureNotFalsy(ids.pop(), 'no flagged keys left');
-    return id;
+    const id = ids.pop();
+    return id ? id : SHARED_FLAGGED_FUNCTION_KEY;
 }
 
 export function releaseFlaggedFunctionKey(key: keyof typeof FLAGGED_FUNCTIONS) {
-    ids.push(key);
+    if (!ids.includes(key)) {
+        ids.push(key);
+    }
 }
