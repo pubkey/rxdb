@@ -68,6 +68,24 @@ Only collections that exist in the new database at the time you call migrateStor
 This allows you to selectively migrate only certain collections if desired, by choosing which collections to define before invoking `migrateStorage()`.
 :::
 
+## Migrate Encrypted Collections
+
+When a collection has `encrypted` fields, you have to wrap the `oldStorage` with the same [encryption](./encryption.md) plugin that the old database used. The old storage is opened with the `password` of the new database, so the new database must be created with the same password as the old one.
+
+```ts
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
+
+await migrateStorage({
+    database: db as any,
+    oldDatabaseName: 'myOldDatabaseName',
+    oldStorage: wrappedKeyEncryptionCryptoJsStorage({
+        storage: getRxStorageLocalstorage()
+    })
+});
+```
+
 ## Migrate from a previous RxDB major version
 
 To migrate from a previous RxDB major version, you have to install the 'old' RxDB in the `package.json`

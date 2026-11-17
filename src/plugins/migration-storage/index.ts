@@ -104,7 +104,8 @@ export async function migrateCollection<RxDocType>(
         options: {},
         schema: schema,
         databaseInstanceToken: oldDatabaseInstanceToken,
-        devMode: false
+        devMode: false,
+        password: collection.database.password
     });
 
 

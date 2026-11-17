@@ -17,6 +17,9 @@ addRxPlugin(RxDBAttachmentsPlugin);
 import {
     wrappedValidateAjvStorage
 } from '../../plugins/validate-ajv/index.mjs';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from '../../plugins/encryption-crypto-js/index.mjs';
 
 
 import {
@@ -477,6 +480,81 @@ testStorages.forEach(storages => {
                 await db.col1.findOne().exec(true);
                 await db.col2.findOne().exec(true);
                 await db.col2.findOne().exec(true);
+
+                await db.remove();
+            });
+            it('should migrate a collection with encrypted fields', async () => {
+                if (storages.createRxDatabaseOld !== createRxDatabase) {
+                    return;
+                }
+                const password = 'my-password-' + randomToken(12);
+                const schema = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        secret: {
+                            type: 'string'
+                        }
+                    },
+                    required: ['id', 'secret'],
+                    encrypted: ['secret']
+                } as const;
+                const oldDatabaseName = DB_PREFIX + randomToken(12);
+                const oldDb = await createRxDatabase({
+                    name: oldDatabaseName,
+                    storage: wrappedKeyEncryptionCryptoJsStorage({
+                        storage: config.storage.getStorage()
+                    }),
+                    password,
+                    multiInstance: false
+                });
+                await oldDb.addCollections({
+                    col1: {
+                        schema
+                    }
+                });
+                await oldDb.col1.bulkInsert([
+                    { id: 'a', secret: 'secret-a' },
+                    { id: 'b', secret: 'secret-b' }
+                ]);
+                await oldDb.close();
+
+                const db = await createRxDatabase({
+                    name: DB_PREFIX + randomToken(12),
+                    storage: wrappedKeyEncryptionCryptoJsStorage({
+                        storage: config.storage.getStorage()
+                    }),
+                    password,
+                    multiInstance: false
+                });
+                await db.addCollections({
+                    col1: {
+                        schema
+                    }
+                });
+
+                await migrateStorage({
+                    database: db,
+                    oldDatabaseName,
+                    oldStorage: wrappedKeyEncryptionCryptoJsStorage({
+                        storage: config.storage.getStorage()
+                    }),
+                    batchSize: 1
+                });
+
+                const docs = await db.col1.find({ sort: [{ id: 'asc' }] }).exec();
+                assert.deepStrictEqual(
+                    docs.map(d => d.toJSON()),
+                    [
+                        { id: 'a', secret: 'secret-a' },
+                        { id: 'b', secret: 'secret-b' }
+                    ]
+                );
 
                 await db.remove();
             });
