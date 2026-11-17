@@ -13,6 +13,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     schemaObjects,
+    schemas,
     humansCollection
 } from '../../plugins/test-utils/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
@@ -288,6 +289,39 @@ describe('rx-pipeline.test.js', () => {
 
             await cDestination.database.close();
             await c1.database.close();
+        });
+        it('should start from the beginning when the destination collection was removed', async () => {
+            const identifier = randomToken(10);
+            const source = await humansCollection.create(3);
+            const destinationDatabase = (await humansCollection.create(0)).database;
+            const runPipeline = async () => {
+                const destination = destinationDatabase.collections.human;
+                const pipeline = await source.addPipeline({
+                    destination,
+                    waitForLeadership: false,
+                    handler: async (docs) => {
+                        for (const doc of docs) {
+                            await destination.upsert(schemaObjects.humanData(doc.passportId));
+                        }
+                    },
+                    identifier
+                });
+                await pipeline.awaitIdle();
+                return destination;
+            };
+
+            const destinationBefore = await runPipeline();
+            assert.strictEqual((await destinationBefore.find().exec()).length, 3);
+            await destinationBefore.remove();
+
+            await destinationDatabase.addCollections({
+                human: { schema: schemas.human }
+            });
+            const destinationAfter = await runPipeline();
+            assert.strictEqual((await destinationAfter.find().exec()).length, 3);
+
+            await destinationDatabase.close();
+            await source.database.close();
         });
     });
     describe('multiInstance', () => {
