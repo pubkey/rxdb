@@ -7,6 +7,8 @@ import {
     createRxDatabase,
     randomToken,
     RxDatabase,
+    RxCollection,
+    RxJsonSchema,
     isRxDatabaseFirstTimeInstantiated,
     defaultHashSha256,
     prepareQuery,
@@ -471,6 +473,60 @@ describe('rx-database.test.ts', () => {
                 const docs = await collections.items.find().exec();
                 assert.strictEqual(docs.length, 1);
                 await db.remove();
+            });
+            it('should open a collection again when the schema has a property named "constructor"', async () => {
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
+                type DocType = {
+                    id: string;
+                    nested: {
+                        constructor: {
+                            a: number;
+                        };
+                    };
+                };
+                const schema: RxJsonSchema<DocType> = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', maxLength: 100 },
+                        nested: {
+                            type: 'object',
+                            properties: {
+                                constructor: {
+                                    type: 'object',
+                                    properties: {
+                                        a: { type: 'number' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    required: ['id']
+                };
+                const name = randomToken(10);
+                const storage = config.storage.getStorage();
+                const db = await createRxDatabase<{ docs: RxCollection<DocType>; }>({
+                    name,
+                    storage
+                });
+                await db.addCollections({ docs: { schema } });
+                await db.docs.insert({
+                    id: 'a',
+                    nested: { constructor: { a: 1 } }
+                });
+                await db.close();
+
+                const db2 = await createRxDatabase<{ docs: RxCollection<DocType>; }>({
+                    name,
+                    storage
+                });
+                await db2.addCollections({ docs: { schema } });
+                const doc = await db2.docs.findOne('a').exec(true);
+                assert.deepStrictEqual(doc.toJSON().nested, { constructor: { a: 1 } });
+                await db2.close();
             });
         });
         describe('negative', () => {
