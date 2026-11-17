@@ -8,6 +8,7 @@ import type {
     RxCollection,
     RxDatabase,
     RxDocument,
+    RxDocumentData,
     RxDocumentWriteData,
     RxLocalDocument,
     RxLocalDocumentData
@@ -123,14 +124,41 @@ export async function getLocal<DocData = any, Reactivity = unknown>(this: any, i
         );
     }
 
-    // if not found, check in storage instance
-    return getSingleDocument(state.storageInstance, id)
-        .then((docData) => {
-            if (!docData) {
-                return null;
+    /**
+     * If not found, check in storage instance.
+     * Change events of documents that are not in the doc-cache are not stored anywhere.
+     * So when the document is written while the read is running,
+     * the read is repeated because its result might be an older state.
+     */
+    let docData: RxDocumentData<RxLocalDocumentData> | undefined;
+    let changedWhileReading = true;
+    while (changedWhileReading) {
+        changedWhileReading = false;
+        const sub = docCache.changes$.subscribe(events => {
+            if (events.some(event => event.documentId === id)) {
+                changedWhileReading = true;
             }
-            return state.docCache.getCachedRxDocument(docData) as any;
         });
+        try {
+            docData = await getSingleDocument(state.storageInstance, id);
+        } finally {
+            sub.unsubscribe();
+        }
+    }
+    if (!docData) {
+        return null;
+    }
+
+    /**
+     * Another call might have added a newer state to the doc-cache
+     * while the read was running, so return the latest known state.
+     */
+    docCache.getCachedRxDocument(docData);
+    const latest = docCache.getLatestDocumentData(id);
+    if (latest._deleted) {
+        return null;
+    }
+    return docCache.getCachedRxDocument(latest) as any;
 }
 
 export function getLocal$<DocData = any, Reactivity = unknown>(this: RxCollection, id: string): Observable<RxLocalDocument<DocData, any, Reactivity> | null> {
