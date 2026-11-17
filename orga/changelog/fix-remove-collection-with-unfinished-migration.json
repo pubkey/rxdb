@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDatabase.remove()`, `RxCollection.remove()` and `removeRxDatabase()` throwing `removed already ... plugin-local-documents-...` on the memory storage when the collection has an unfinished or failed schema migration, because the local documents storage of the collection was removed once per stored schema version",
+    "links": [],
+    "priority": 5
+}
