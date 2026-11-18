@@ -133,10 +133,6 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
     remove(): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     incrementalRemove(): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
 
-    // only for temporary documents
-    set(objPath: string, value: any): RxDocument<RxDocType, OrmMethods, Reactivity>;
-    save(): Promise<boolean>;
-
     // attachments
     putAttachment(
         creator: RxAttachmentCreator
