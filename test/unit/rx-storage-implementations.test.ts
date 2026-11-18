@@ -46,7 +46,7 @@ import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression/index.mjs';
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
-import { defaultHashSha256 } from '../../plugins/utils/index.mjs';
+import { defaultHashSha256, errorToPlainJson } from '../../plugins/utils/index.mjs';
 import {
     clone,
     randomString,
@@ -3178,9 +3178,14 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                         thrown = err;
                     }
                     assert.ok(thrown, 'bulkWrite() must reject');
-                    assert.strictEqual(thrown.code, 'AT5');
-                    assert.strictEqual(thrown.parameters.documentId, documentId);
-                    assert.strictEqual(thrown.parameters.attachmentId, 'stubOne');
+                    /**
+                     * Storages that run in another process, like the remote storage,
+                     * rethrow the error with the serialized RxError in the message.
+                     */
+                    const errorText = JSON.stringify(errorToPlainJson(thrown));
+                    ['AT5', documentId, 'stubOne'].forEach(part => {
+                        assert.ok(errorText.includes(part), 'error must contain ' + part + ': ' + errorText);
+                    });
                 };
 
                 // insert where the wrong row is the only row of the write
