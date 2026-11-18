@@ -249,17 +249,17 @@ describe('crdt.test.ts', () => {
             const [docA, docB] = await Promise.all(
                 [clientACollection, clientBCollection].map(collection => collection.insertCRDT({
                     selector: {
-                        passportId: {
-                            $exists: false
+                        age: {
+                            $gte: 1
                         }
                     },
                     ifMatch: {
-                        $set: writeData
-                    },
-                    ifNotMatch: {
                         $inc: {
                             age: 1
                         }
+                    },
+                    ifNotMatch: {
+                        $set: writeData
                     }
                 }))
             );
@@ -271,7 +271,7 @@ describe('crdt.test.ts', () => {
                 realMasterState: docB.toMutableJSON(true)
             }, 'crdt-conditional-insert');
 
-            // one client inserted the document, the other one incremented the age
+            // one client has set the document data, the other one incremented the age
             assert.strictEqual(resolved.age, 2);
             assert.strictEqual(resolved.firstName, writeData.firstName);
 
@@ -301,19 +301,17 @@ describe('crdt.test.ts', () => {
             const [docA, docB] = await Promise.all(
                 [clientACollection, clientBCollection].map(collection => collection.insertCRDT({
                     selector: {
-                        passportId: {
-                            $exists: false
-                        }
+                        firstName: 'Alice'
                     },
                     ifMatch: {
-                        $set: {
-                            passportId: 'foobar',
-                            firstName: 'Alice'
+                        $inc: {
+                            score: 1
                         }
                     },
                     ifNotMatch: {
-                        $inc: {
-                            score: 1
+                        $set: {
+                            passportId: 'foobar',
+                            firstName: 'Alice'
                         }
                     }
                 }))
@@ -327,6 +325,69 @@ describe('crdt.test.ts', () => {
             }, 'crdt-conditional-insert-defaults');
             assert.strictEqual(resolved.score, 6);
             assert.strictEqual(resolved.firstName, 'Alice');
+
+            clientACollection.database.close();
+            clientBCollection.database.close();
+        });
+        it('should set the composite primary key without a condition on the primary key', async () => {
+            type DocType = {
+                id?: string;
+                firstName: string;
+                lastName: string;
+                age?: number;
+            };
+            const schemaWithCompositePrimary: RxJsonSchema<DocType> = {
+                version: 0,
+                primaryKey: {
+                    key: 'id',
+                    fields: ['firstName', 'lastName'],
+                    separator: '|'
+                },
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    firstName: { type: 'string', maxLength: 40 },
+                    lastName: { type: 'string', maxLength: 40 },
+                    age: { type: 'integer', minimum: 0, maximum: 150 }
+                },
+                required: ['id', 'firstName', 'lastName']
+            };
+            const clientACollection = await getCRDTCollection<DocType>(schemaWithCompositePrimary);
+            const clientBCollection = await getCRDTCollection<DocType>(schemaWithCompositePrimary);
+
+            const [docA, docB] = await Promise.all(
+                [clientACollection, clientBCollection].map(collection => collection.insertCRDT({
+                    selector: {
+                        age: {
+                            $gte: 1
+                        }
+                    },
+                    ifMatch: {
+                        $inc: {
+                            age: 1
+                        }
+                    },
+                    ifNotMatch: {
+                        $set: {
+                            firstName: 'Alice',
+                            lastName: 'Wilson',
+                            age: 1
+                        }
+                    }
+                }))
+            );
+            assert.strictEqual(docA.primary, 'Alice|Wilson');
+            const operations = ensureNotFalsy(docA.toJSON().crdts).operations.flat();
+            operations.forEach(operation => operation.body.forEach(entry => {
+                assert.strictEqual(Object.keys(entry.selector ? entry.selector : {}).includes('id'), false);
+            }));
+
+            const resolved = await clientACollection.conflictHandler.resolve({
+                newDocumentState: docA.toMutableJSON(true),
+                realMasterState: docB.toMutableJSON(true)
+            }, 'crdt-conditional-insert-composite-primary');
+            assert.strictEqual(resolved.id, 'Alice|Wilson');
+            assert.strictEqual(resolved.age, 2);
 
             clientACollection.database.close();
             clientBCollection.database.close();

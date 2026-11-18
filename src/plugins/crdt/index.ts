@@ -126,7 +126,7 @@ export async function insertCRDT<RxDocType>(
     /**
      * The schema default values and the composite primary key
      * are filled by RxDB and are not part of the given entry.
-     * They are added to the operation as conditional parts,
+     * They are added to the operation as additional parts,
      * so that rebuildFromCRDT() (conflict resolution) creates the same
      * document state as the one that is stored.
      */
@@ -144,18 +144,26 @@ export async function insertCRDT<RxDocType>(
             typeof value !== 'undefined' &&
             typeof (insertData as any)[key] === 'undefined'
         ) {
-            filledParts.push({
-                selector: {
-                    [key]: {
-                        $exists: false
-                    }
-                },
+            const filledPart = {
                 ifMatch: {
                     $set: {
                         [key]: value
                     }
                 }
-            } as CRDTEntry<RxDocType>);
+            } as CRDTEntry<RxDocType>;
+            /**
+             * The primary key is the same in all states of a document.
+             * Only a default value needs a condition,
+             * so that it does not overwrite the value of another operation.
+             */
+            if (key !== this.schema.primaryPath) {
+                filledPart.selector = {
+                    [key]: {
+                        $exists: false
+                    }
+                } as any;
+            }
+            filledParts.push(filledPart);
         }
     });
     if (filledParts.length > 0) {
