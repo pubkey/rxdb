@@ -275,6 +275,8 @@ const replicationState = await replicateRxCollection({
          * Notice that the modifier can be called
          * multiple times and should not contain
          * any side effects.
+         * The modifier must not throw, a throwing
+         * modifier cancels the replication.
          * (optional)
          */
         modifier: d => d,
@@ -344,6 +346,8 @@ const replicationState = await replicateRxCollection({
          * Notice that the modifier can be called
          * multiple times and should not contain
          * any side effects.
+         * The modifier must not throw, a throwing
+         * modifier cancels the replication.
          * (optional)
          */
         modifier: d => d,
@@ -443,6 +447,14 @@ replicationState.error$.subscribe((error) => {
     }
 });
 ```
+
+### Errors in the modifiers
+
+The `pull.modifier` and the `push.modifier` must not throw. Errors of the handlers are retried, but a modifier that throws on a document will throw on the same document again, and skipping the document would lose data.
+
+When a modifier throws, the error is emitted once on `error$` as [`RC_PULL`](./errors.md#RC_PULL) or [`RC_PUSH`](./errors.md#RC_PUSH) and the replication is canceled, same as when you call [cancel()](#cancel). The documents of the failed batch are not written and not sent, and no checkpoint is stored for them. `isStopped()` returns `true` and the replication state can no longer be started.
+
+To continue, fix the modifier and call `replicateRxCollection()` again with the same `replicationIdentifier`, for example by reloading the app. The new replication continues from the last checkpoint, so it pulls and pushes the documents of the failed batch again and no document is skipped.
 
 ## Security
 
