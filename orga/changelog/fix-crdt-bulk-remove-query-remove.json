@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX CRDT plugin: `RxCollection.bulkRemove()` and `RxQuery.remove()` did not store the delete as CRDT operation, so the document became undeleted again on the next conflict resolution",
+    "links": [],
+    "priority": 5
+}
