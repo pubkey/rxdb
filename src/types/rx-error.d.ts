@@ -41,6 +41,7 @@ export interface RxErrorParameters {
     readonly fieldName?: string;
     readonly id?: string;
     readonly documentId?: string;
+    readonly attachmentId?: string;
     readonly data?: any;
     readonly missingCollections?: string[];
     readonly primaryPath?: string;
@@ -162,7 +163,6 @@ export type RxStorageWriteErrorBase<RxDocType> = {
     status: number
     | 409 // conflict
     | 422 // schema validation error
-    | 510 // attachment data missing
     ;
 
     /**
@@ -213,14 +213,7 @@ export type RxStorageWriteErrorValidation<RxDocType> = RxStorageWriteErrorBase<R
     schema: RxJsonSchema<RxDocumentData<RxDocType>>;
 };
 
-export type RxStorageWriteErrorAttachment<RxDocType> = RxStorageWriteErrorBase<RxDocType> & {
-    status: 510;
-    attachmentId: string;
-    documentInDb?: RxDocumentData<RxDocType>;
-};
-
 
 export type RxStorageWriteError<RxDocType> =
     RxStorageWriteErrorConflict<RxDocType> |
-    RxStorageWriteErrorValidation<RxDocType> |
-    RxStorageWriteErrorAttachment<RxDocType>;
+    RxStorageWriteErrorValidation<RxDocType>;

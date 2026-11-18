@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX `RxStorageInstance.bulkWrite()` emitted an `INSERT` or `UPDATE` change event for a row that was rejected with the `510` attachment error (attachment without `data`), and threw `ensureNotFalsy() is falsy` instead of returning the error when that row was the only one of the write",
-    "links": [],
+    "text": "FIX `RxStorageInstance.bulkWrite()` emitted an `INSERT` or `UPDATE` change event for a row with a new attachment without `data` and threw `ensureNotFalsy() is falsy` when that row was the only one of the write. `categorizeBulkWriteRows()` now throws the error `AT5` so that the whole `bulkWrite()` call rejects, no document of that write is stored and no event is emitted. The per-document write error with status `510` and the type `RxStorageWriteErrorAttachment` are removed",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9470",
+            "linkText": "#9470"
+        }
+    ],
     "priority": 5
 }
