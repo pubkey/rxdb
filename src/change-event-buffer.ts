@@ -41,6 +41,13 @@ export class ChangeEventBuffer<RxDocType> {
     */
     private buffer: RxStorageChangeEvent<RxDocType>[] = [];
 
+    /**
+     * Pointers lower than this value are out of bounds,
+     * so that queries which have not processed these events
+     * re-execute over the storage instead of using the buffer.
+     */
+    private minPointer: number = 0;
+
     public limit: number = 100;
 
 
@@ -76,6 +83,9 @@ export class ChangeEventBuffer<RxDocType> {
     private _handleChangeEvents(events: RxStorageChangeEvent<RxDocType>[]) {
         const counterBefore = this.counter;
         this.counter = this.counter + events.length;
+        if (this.hasNewerState(events)) {
+            this.minPointer = this.counter + 1;
+        }
         if (events.length > this.limit) {
             this.buffer = events.slice(events.length * -1);
         } else {
@@ -88,6 +98,32 @@ export class ChangeEventBuffer<RxDocType> {
             const event = events[index];
             eventCounterMap.set(event, counterBase + index);
         }
+    }
+
+    /**
+     * Events of other instances arrive asynchronously,
+     * so they can arrive after the event of a later write to the same document.
+     * Applying such an event on top of the newer state gives a wrong query result.
+     * The revision ends with the token of the instance that has written it,
+     * so events of own writes are skipped which keeps this check cheap.
+     * @return true if the buffer contains a newer state of one of the event documents
+     */
+    private hasNewerState(events: RxStorageChangeEvent<RxDocType>[]): boolean {
+        const ownRevisionEnd = '-' + this.collection.database.token;
+        let lwtByDocId: Map<string, number> | undefined;
+        return events.some(event => {
+            if (event.documentData._rev.endsWith(ownRevisionEnd)) {
+                return false;
+            }
+            if (!lwtByDocId) {
+                const map = lwtByDocId = new Map<string, number>();
+                this.buffer.forEach(buffered => map.set(
+                    buffered.documentId,
+                    Math.max(map.get(buffered.documentId) || 0, buffered.documentData._meta.lwt)
+                ));
+            }
+            return (lwtByDocId.get(event.documentId) as number) > event.documentData._meta.lwt;
+        });
     }
 
     getCounter() {
@@ -105,6 +141,9 @@ export class ChangeEventBuffer<RxDocType> {
      */
     getArrayIndexByPointer(pointer: number): number | null {
         this.processTasks();
+        if (pointer < this.minPointer) {
+            return null;
+        }
         const oldestEvent = this.buffer[0];
         const oldestCounter = this.eventCounterMap.get(
             oldestEvent

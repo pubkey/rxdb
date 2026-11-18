@@ -140,6 +140,70 @@ describe('cross-instance.test.js', () => {
     });
 
     describe('RxQuery', () => {
+        it('should have the correct query results when the event of another instance arrives after the event of a later own write', async () => {
+            const name = randomToken(10);
+            async function createInstance(storage: RxStorage<any, any>): Promise<RxCollection<HumanDocumentType>> {
+                const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
+                    name,
+                    storage,
+                    multiInstance: true,
+                    ignoreDuplicate: true
+                });
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.human
+                    }
+                });
+                return collections.human;
+            }
+            const heldEventsStorage = getStorageWithHeldEvents();
+            const c1 = await createInstance(heldEventsStorage.storage);
+            const c2 = await createInstance(config.storage.getStorage());
+            const query = c1.find({ sort: [{ passportId: 'asc' }] });
+            const toState = (docs: RxDocument<HumanDocumentType>[]) => docs.map(d => d.passportId + '|' + d.firstName);
+
+            let lastEmitted: string[] = [];
+            let lastCount = -1;
+            const eventsByDocId = new Map<string, number>();
+            const subs = [
+                query.$.subscribe(docs => lastEmitted = toState(docs)),
+                c1.count().$.subscribe(count => lastCount = count),
+                c1.$.subscribe(event => eventsByDocId.set(
+                    event.documentId,
+                    (eventsByDocId.get(event.documentId) ?? 0) + 1
+                ))
+            ];
+
+            const iterations = 3;
+            for (let i = 0; i < iterations; i++) {
+                const id = 'doc' + i;
+                /**
+                 * The upsert of c1 writes on top of the state of c2
+                 * and c1 gets its own event before the insert event of c2 arrives.
+                 */
+                heldEventsStorage.holdEvents = true;
+                await c2.insert(schemaObjects.humanData(id, 20, 'other'));
+                await waitUntil(() => heldEventsStorage.heldEvents() > 0);
+                heldEventsStorage.holdEvents = false;
+                await c1.upsert(schemaObjects.humanData(id, 20, 'own'));
+                await waitUntil(() => eventsByDocId.get(id) === 1);
+                heldEventsStorage.releaseEvents();
+                await waitUntil(() => eventsByDocId.get(id) === 2);
+
+                const storageState = toState(await c2.find({ sort: [{ passportId: 'asc' }] }).exec());
+                assert.strictEqual(storageState.length, i + 1);
+                assert.strictEqual(storageState[i], id + '|own');
+                assert.deepStrictEqual(toState(await query.exec()), storageState, 'exec() in iteration ' + i);
+                await waitUntil(() => lastEmitted.length === storageState.length, 1000).catch(() => { });
+                assert.deepStrictEqual(lastEmitted, storageState, 'find().$ in iteration ' + i);
+                assert.strictEqual(await c1.count().exec(), i + 1, 'count().exec() in iteration ' + i);
+                assert.strictEqual(lastCount, i + 1, 'count().$ in iteration ' + i);
+            }
+
+            subs.forEach(sub => sub.unsubscribe());
+            await c1.database.close();
+            await c2.database.close();
+        });
         it('should not apply a write of another instance twice when the query result already contains it', async () => {
             const name = randomToken(10);
             const createCollection = async (storage: RxStorage<any, any>) => {
