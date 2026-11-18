@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the remote storage with `mode: 'one'` caused an unhandled promise rejection in `getRxStorageRemote()` when the `messageChannelCreator()` call failed and kept the failed message channel, so that each later `createStorageInstance()` call failed with the old error",
+    "links": [],
+    "priority": 5
+}

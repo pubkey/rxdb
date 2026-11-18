@@ -202,6 +202,75 @@ describe('rx-storage-remote.test.ts', () => {
         });
     });
     /**
+     * Uses an in-process message channel to the config.storage.
+     */
+    describe('mode: one with a failed messageChannelCreator() call', () => {
+        function getOneModeRemote() {
+            const toRemote$ = new Subject<MessageToRemote>();
+            const fromRemote$ = new Subject<MessageFromRemote>();
+            exposeRxStorageRemote({
+                storage: config.storage.getStorage(),
+                messages$: toRemote$,
+                send(msg) {
+                    fromRemote$.next(msg);
+                }
+            });
+            const state = {
+                creatorCalls: 0
+            };
+            const storage = getRxStorageRemote({
+                identifier: 'one-mode-' + randomToken(10),
+                mode: 'one',
+                messageChannelCreator: () => {
+                    state.creatorCalls = state.creatorCalls + 1;
+                    if (state.creatorCalls === 1) {
+                        return Promise.reject(new Error('message-channel-failed-once'));
+                    }
+                    return Promise.resolve({
+                        messages$: fromRemote$,
+                        send(msg: MessageToRemote) {
+                            toRemote$.next(msg);
+                        },
+                        close() {
+                            return Promise.resolve();
+                        }
+                    });
+                }
+            });
+            return { storage, state };
+        }
+        function getCreationParams() {
+            return {
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            };
+        }
+        it('should call messageChannelCreator() again after the first createStorageInstance() failed', async () => {
+            const { storage, state } = getOneModeRemote();
+            await assertThrows(
+                () => storage.createStorageInstance(getCreationParams()),
+                Error,
+                'message-channel-failed-once'
+            );
+            const storageInstance = await storage.createStorageInstance(getCreationParams());
+            assert.strictEqual(state.creatorCalls, 2);
+            await storageInstance.close();
+        });
+        it('should not have an unhandled rejection when messageChannelCreator() fails before the first createStorageInstance()', async () => {
+            const { storage, state } = getOneModeRemote();
+            await new Promise(res => setTimeout(res, 50));
+            assert.strictEqual(state.creatorCalls, 1);
+            const storageInstance = await storage.createStorageInstance(getCreationParams());
+            assert.strictEqual(state.creatorCalls, 2);
+            await storageInstance.close();
+        });
+    });
+    /**
      * Notice: Most use cases for the remote storage
      * are tests by having a full unit-test run where all
      * tests are run with the remote websocket storage.
