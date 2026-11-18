@@ -12,6 +12,7 @@ import {
     firstValueFrom,
     concatMap,
     Observable,
+    share,
     Subject,
     Subscription
 } from 'rxjs';
@@ -277,6 +278,22 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          */
         const pushModifier = userPushModifier ? (d: WithDeleted<RxDocType>) => userPushModifier(clone(d)) : DEFAULT_MODIFIER;
 
+        /**
+         * A throwing pull modifier is not retried.
+         * The error is emitted and the documents of that batch are not written.
+         */
+        const runPullModifier = async (docs: WithDeleted<RxDocType>[]): Promise<WithDeleted<RxDocType>[]> => {
+            try {
+                return await Promise.all(docs.map(d => pullModifier(d)));
+            } catch (err: any | Error | Error[]) {
+                this.subjects.error.next(newRxError('RC_PULL', {
+                    errors: toArray(err).map(er => errorToPlainJson(er)),
+                    direction: 'pull'
+                }));
+                return [];
+            }
+        };
+
         const database = this.collection.database;
         const metaInfo = await this.metaInfoPromise;
 
@@ -330,28 +347,16 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         if (ev === 'RESYNC') {
                             return ev;
                         }
-                        try {
-                            const useEv = flatClone(ev);
-                            useEv.documents = handlePulledDocuments(this.collection, this.deletedField, useEv.documents);
-                            useEv.documents = await Promise.all(
-                                useEv.documents.map((d: WithDeleted<RxDocType>) => pullModifier(d))
-                            );
-                            return useEv;
-                        } catch (err: any | Error | Error[]) {
-                            /**
-                             * An error in here would end the stream subscription
-                             * of the replication protocol.
-                             * So the error is emitted and the event is replaced with a RESYNC,
-                             * which fetches the documents via masterChangesSince()
-                             * where failed calls are retried.
-                             */
-                            this.subjects.error.next(newRxError('RC_PULL', {
-                                errors: toArray(err).map(er => errorToPlainJson(er)),
-                                direction: 'pull'
-                            }));
-                            return 'RESYNC' as const;
-                        }
-                    })
+                        const useEv = flatClone(ev);
+                        useEv.documents = handlePulledDocuments(this.collection, this.deletedField, useEv.documents);
+                        useEv.documents = await runPullModifier(useEv.documents);
+                        return useEv;
+                    }),
+                    /**
+                     * The replication protocol subscribes multiple times,
+                     * the pull modifier must only run once per event.
+                     */
+                    share()
                 ),
                 masterChangesSince: async (
                     checkpoint: CheckpointType | undefined,
@@ -369,22 +374,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                      * error handling.
                      */
                     let done = false;
-                    let useResult: ReplicationPullHandlerResult<RxDocType, CheckpointType> = {} as any;
+                    let result: ReplicationPullHandlerResult<RxDocType, CheckpointType> = {} as any;
                     while (!done && !this.isStoppedOrPaused()) {
                         try {
-                            const result = await this.pull.handler(
+                            result = await this.pull.handler(
                                 checkpoint,
                                 batchSize
-                            );
-                            /**
-                             * Processing the result must be inside of the retry loop,
-                             * because a malformed handler result or a throwing pull modifier
-                             * must be handled like an error of the handler itself.
-                             */
-                            useResult = flatClone(result);
-                            useResult.documents = handlePulledDocuments(this.collection, this.deletedField, useResult.documents);
-                            useResult.documents = await Promise.all(
-                                useResult.documents.map(d => pullModifier(d))
                             );
                             done = true;
                         } catch (err: any | Error | Error[]) {
@@ -405,6 +400,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         };
                     }
 
+                    const useResult = flatClone(result);
+                    useResult.documents = handlePulledDocuments(this.collection, this.deletedField, useResult.documents);
+                    useResult.documents = await runPullModifier(useResult.documents);
                     return useResult;
                 },
                 masterWrite: async (
@@ -421,61 +419,44 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     });
 
                     /**
-                     * The push modifier runs in a retry loop like the push handler.
-                     * The rows are only mutated after the modifier has succeeded for all rows,
-                     * so that a retry never runs the modifier on an already modified document.
+                     * A throwing push modifier is not retried.
+                     * The rejection is handled by the replication protocol
+                     * which emits the error.
                      */
-                    type ModifiedStates = Pick<RxReplicationWriteToMasterRow<RxDocType>, 'newDocumentState' | 'assumedMasterState'>;
-                    let modifiedStates: ModifiedStates[] | undefined;
-                    while (!modifiedStates && !this.isStoppedOrPaused()) {
-                        try {
-                            modifiedStates = await Promise.all(
-                                rows.map(async (row) => {
-                                    const newDocumentState = await pushModifier(row.newDocumentState);
-                                    const assumedMasterState = newDocumentState !== null && row.assumedMasterState
-                                        ? await pushModifier(row.assumedMasterState)
-                                        : row.assumedMasterState;
-                                    return { newDocumentState, assumedMasterState };
-                                })
-                            );
-                        } catch (err: any | Error | Error[]) {
-                            this.subjects.error.next(newRxError('RC_PUSH', {
-                                pushRows: rows,
-                                errors: toArray(err).map(er => errorToPlainJson(er)),
-                                direction: 'push'
-                            }));
-                            await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
-                        }
-                    }
-                    if (!modifiedStates) {
-                        return [];
-                    }
-                    const useModifiedStates = modifiedStates;
-
-                    const useRowsOrNull = rows.map((row, idx) => {
-                        row.newDocumentState = useModifiedStates[idx].newDocumentState;
-                        if (row.newDocumentState === null) {
-                            return null;
-                        }
-                        row.assumedMasterState = useModifiedStates[idx].assumedMasterState;
-                        /**
-                         * The deletedField swap must not mutate the original row,
-                         * because that row is later forwarded to processed.up
-                         * which feeds sent$. sent$ is typed as
-                         * Observable<WithDeleted<RxDocType>> and must always emit
-                         * documents in the WithDeleted format with `_deleted: boolean`,
-                         * never the master-format `deletedField`.
-                         */
-                        if (this.deletedField !== '_deleted') {
-                            return {
-                                ...row,
-                                newDocumentState: swapDefaultDeletedTodeletedField(this.deletedField, row.newDocumentState) as any,
-                                assumedMasterState: row.assumedMasterState
-                                    ? swapDefaultDeletedTodeletedField(this.deletedField, row.assumedMasterState) as any
-                                    : undefined
-                            };
-                        }
-                        return row;
+                    const useRowsOrNull = await Promise.all(
+                        rows.map(async (row) => {
+                            row.newDocumentState = await pushModifier(row.newDocumentState);
+                            if (row.newDocumentState === null) {
+                                return null;
+                            }
+                            if (row.assumedMasterState) {
+                                row.assumedMasterState = await pushModifier(row.assumedMasterState);
+                            }
+                            /**
+                             * The deletedField swap must not mutate the original row,
+                             * because that row is later forwarded to processed.up
+                             * which feeds sent$. sent$ is typed as
+                             * Observable<WithDeleted<RxDocType>> and must always emit
+                             * documents in the WithDeleted format with `_deleted: boolean`,
+                             * never the master-format `deletedField`.
+                             */
+                            if (this.deletedField !== '_deleted') {
+                                return {
+                                    ...row,
+                                    newDocumentState: swapDefaultDeletedTodeletedField(this.deletedField, row.newDocumentState) as any,
+                                    assumedMasterState: row.assumedMasterState
+                                        ? swapDefaultDeletedTodeletedField(this.deletedField, row.assumedMasterState) as any
+                                        : undefined
+                                };
+                            }
+                            return row;
+                        })
+                    ).catch((err: any | Error | Error[]) => {
+                        throw newRxError('RC_PUSH', {
+                            pushRows: rows,
+                            errors: toArray(err).map(er => errorToPlainJson(er)),
+                            direction: 'push'
+                        });
                     });
                     const useRows: RxReplicationWriteToMasterRow<RxDocType>[] = useRowsOrNull.filter(arrayFilterNotEmpty);
 

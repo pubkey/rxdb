@@ -2487,10 +2487,10 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
-        it('should emit the error and continue the replication when the pull modifier throws', async () => {
+        it('should emit the error without a retry when the pull modifier throws', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 2 });
 
-            let throwOnNextCall = true;
+            let modifierThrows = true;
             const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -2500,9 +2500,8 @@ describe('replication.test.ts', () => {
                     handler: getPullHandler(remoteCollection),
                     stream$: getPullStream(remoteCollection),
                     modifier: (doc) => {
-                        if (throwOnNextCall) {
-                            throwOnNextCall = false;
-                            throw new Error('transient pull modifier error');
+                        if (modifierThrows) {
+                            throw new Error('pull modifier error');
                         }
                         return doc;
                     }
@@ -2519,24 +2518,35 @@ describe('replication.test.ts', () => {
             assert.strictEqual(initialReplicationResult, 'resolved');
             assert.strictEqual(errors.length, 1);
             assert.strictEqual(errors[0].code, 'RC_PULL');
-            assert.ok(JSON.stringify(errors[0].parameters).includes('transient pull modifier error'));
+            assert.ok(JSON.stringify(errors[0].parameters).includes('pull modifier error'));
+
+            // the batch is not written and not pulled again by a retry
+            await wait(300);
+            assert.strictEqual(errors.length, 1);
+            assert.strictEqual((await localCollection.find().exec()).length, 0);
+            assert.strictEqual(replicationState.isStopped(), false);
+
+            // the checkpoint was not moved, so the next pull run fetches the documents
+            modifierThrows = false;
+            replicationState.reSync();
+            await replicationState.awaitInSync();
             assert.strictEqual((await localCollection.find().exec()).length, 2);
 
             // the modifier throws on an event of the pull.stream$
-            throwOnNextCall = true;
-            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-after-sync' }));
-            await waitUntil(async () => {
-                const docs = await localCollection.find().exec();
-                return docs.length === 3;
-            }, 2000);
-            assert.strictEqual(errors.length, 2);
+            modifierThrows = true;
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-with-error' }));
+            await waitUntil(() => errors.length === 2, 2000);
             assert.strictEqual(errors[1].code, 'RC_PULL');
+            await wait(300);
+            assert.strictEqual(errors.length, 2);
+            assert.strictEqual((await localCollection.find().exec()).length, 2);
 
             // later events must still be replicated
+            modifierThrows = false;
             await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-after-error' }));
             await waitUntil(async () => {
-                const docs = await localCollection.find().exec();
-                return docs.length === 4;
+                const doc = await localCollection.findOne('insert-after-error').exec();
+                return !!doc;
             }, 2000);
             assert.strictEqual(errors.length, 2);
 
@@ -3691,7 +3701,7 @@ describe('replication.test.ts', () => {
         });
     });
     describe('push-only', () => {
-        it('should emit the error and retry the push when the push modifier throws', async () => {
+        it('should emit the error without a retry when the push modifier throws', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 2, remote: 0 });
 
             let throwOnNextCall = true;
@@ -3705,7 +3715,7 @@ describe('replication.test.ts', () => {
                     modifier: (doc) => {
                         if (throwOnNextCall) {
                             throwOnNextCall = false;
-                            throw new Error('transient push modifier error');
+                            throw new Error('push modifier error');
                         }
                         return doc;
                     }
@@ -3714,13 +3724,23 @@ describe('replication.test.ts', () => {
             const errors: (RxError | RxTypeError)[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
 
+            await waitUntil(() => errors.length === 1, 2000);
+            assert.strictEqual(errors[0].code, 'RC_PUSH');
+            assert.ok(JSON.stringify(errors[0].parameters).includes('push modifier error'));
+
+            // the batch is not pushed again by a retry
+            await wait(300);
+            assert.strictEqual(errors.length, 1);
+            assert.strictEqual((await remoteCollection.find().exec()).length, 0);
+            assert.strictEqual(replicationState.isStopped(), false);
+
+            // the next push cycle sends the documents of the failed batch too
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-after-error' }));
             await waitUntil(async () => {
                 const docs = await remoteCollection.find().exec();
-                return docs.length === 2;
+                return docs.length === 3;
             }, 2000);
             assert.strictEqual(errors.length, 1);
-            assert.strictEqual(errors[0].code, 'RC_PUSH');
-            assert.ok(JSON.stringify(errors[0].parameters).includes('transient push modifier error'));
 
             await localCollection.database.close();
             await remoteCollection.database.close();
