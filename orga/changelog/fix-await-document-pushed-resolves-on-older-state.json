@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `replicationState.awaitDocumentPushed()` resolved when an older state of the document was pushed while the given state had not reached the server yet. Also the cancel handler of each call is now removed when the promise settles.",
+    "links": [],
+    "priority": 5
+}
