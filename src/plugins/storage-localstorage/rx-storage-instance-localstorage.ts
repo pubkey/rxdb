@@ -5,6 +5,7 @@ import {
     arrayBufferToBase64,
     ensureNotFalsy,
     createBlobFromBase64,
+    getFromMapOrThrow,
     now,
     toArray
 } from '../utils/index.ts';
@@ -318,7 +319,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
 
         // attachments — use pre-converted base64 data (synchronous)
         categorized.attachmentsAdd.forEach(attachment => {
-            const base64 = ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data));
+            const base64 = getFromMapOrThrow(attachmentBase64Map, attachment.attachmentData.data);
             const mimeType = attachment.attachmentData.type || 'application/octet-stream';
             this.localStorage.setItem(
                 this.attachmentsKey +
@@ -328,7 +329,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             );
         });
         categorized.attachmentsUpdate.forEach(attachment => {
-            const base64 = ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data));
+            const base64 = getFromMapOrThrow(attachmentBase64Map, attachment.attachmentData.data);
             const mimeType = attachment.attachmentData.type || 'application/octet-stream';
             this.localStorage.setItem(
                 this.attachmentsKey +
