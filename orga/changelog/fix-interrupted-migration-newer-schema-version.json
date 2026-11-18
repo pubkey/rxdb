@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the schema migration lost the documents that an interrupted migration had already handled when the collection was then opened with a newer schema version, and `migrationNeeded()` stayed `true`",
+    "links": [],
+    "priority": 6
+}
