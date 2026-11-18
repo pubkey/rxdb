@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a replication `pull.modifier` that throws left the pull of the replication stuck with an unhandled promise rejection and without emitting on `error$`. The error of a throwing `pull.modifier` or `push.modifier` is now emitted on `error$` as `RC_PULL` or `RC_PUSH`. Modifiers must not throw, so the failed batch is not retried",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9480",
+            "linkText": "#9480"
+        }
+    ],
+    "priority": 5
+}
