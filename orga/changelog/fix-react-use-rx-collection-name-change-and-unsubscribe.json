@@ -1,0 +1,5 @@
+{
+    "text": "FIX `useRxCollection()` of the React plugin kept returning the previous collection when the `name` changed to a collection that does not exist, and it never unsubscribed from `database.collections$`, so closing the collection of a previous name reset the hook to `null`",
+    "links": [],
+    "priority": 5
+}

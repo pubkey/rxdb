@@ -59,13 +59,23 @@ export function useRxCollectionByName<
     InstanceCreationOptions,
     Reactivity
 > | null {
-    const [collection, setCollection] = useState<RxCollection<
+    type CollectionType = RxCollection<
         RxDocumentType,
         OrmMethods,
         StaticMethods,
         InstanceCreationOptions,
         Reactivity
-    > | null>(null);
+    >;
+    /**
+     * The state remembers for which database and name
+     * the collection was resolved, so that a collection
+     * is never returned for another database or name.
+     */
+    const [state, setState] = useState<{
+        database: RxDatabase;
+        name: string;
+        collection: CollectionType;
+    } | null>(null);
     const database = useContext(RxDatabaseContext) as RxDatabase | null;
     if (name !== undefined && database == null) {
         throw newRxError('R2');
@@ -75,34 +85,26 @@ export function useRxCollectionByName<
         if (database == null || name === undefined) {
             return;
         }
-        const dbCollection = database.collections[name] as RxCollection<
-            RxDocumentType,
-            OrmMethods,
-            StaticMethods,
-            InstanceCreationOptions,
-            Reactivity
-        >;
-        if (dbCollection != null) {
-            setCollection(dbCollection);
-        }
-        database.collections$
+        const dbCollection = database.collections[name] as CollectionType | undefined;
+        setState(dbCollection != null ? { database, name, collection: dbCollection } : null);
+        const subscription = database.collections$
             .pipe(filter((evt: RxCollectionEvent) => evt.collection.name === name))
             .subscribe((evt: RxCollectionEvent) => {
                 if (evt.type == 'ADDED') {
-                    setCollection(
-                        evt.collection as RxCollection<
-                            RxDocumentType,
-                            OrmMethods,
-                            StaticMethods,
-                            InstanceCreationOptions,
-                            Reactivity
-                        >,
-                    );
+                    setState({
+                        database,
+                        name,
+                        collection: evt.collection as CollectionType
+                    });
                 } else if (evt.type == 'CLOSED') {
-                    setCollection(null);
+                    setState(null);
                 }
             });
+        return () => subscription.unsubscribe();
     }, [database, name]);
 
-    return name === undefined ? null : collection;
+    if (state && state.database === database && state.name === name) {
+        return state.collection;
+    }
+    return null;
 }
