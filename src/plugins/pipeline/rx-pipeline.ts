@@ -105,6 +105,7 @@ export class RxPipeline<RxDocType> {
          * must process all source documents again.
          */
         this.destination.onRemove.push(() => this.remove());
+        this.destination.onClose.push(() => this.close());
         this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
         this.subs.push(
             this.source.eventBulks$.pipe(
