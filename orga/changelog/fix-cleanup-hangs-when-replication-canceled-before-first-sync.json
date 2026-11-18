@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `collection.cleanup()` and the automatic cleanup of collections and `RxState` never finished when a replication of the collection was canceled before its first sync cycle was done, because the cleanup kept waiting for `awaitInSync()` of the canceled replication",
+    "links": [],
+    "priority": 5
+}
