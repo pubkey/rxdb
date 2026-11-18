@@ -168,10 +168,20 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const startPromiseWithResolvers = createPromiseWithResolvers<void>();
         this.callOnStart = startPromiseWithResolvers.resolve;
         this.startPromise = startPromiseWithResolvers.promise;
+        const stopRequestedPromiseWithResolvers = createPromiseWithResolvers<void>();
+        this.callOnStopRequested = stopRequestedPromiseWithResolvers.resolve;
+        this.stopRequestedPromise = stopRequestedPromiseWithResolvers.promise;
     }
 
     private callOnStart: () => void = undefined as any;
     private cancelOnCollectionClose = () => this.cancel();
+
+    /**
+     * Resolves as soon as cancel() or remove() is called,
+     * before these calls are processed in the startQueue.
+     */
+    private stopRequestedPromise: Promise<void>;
+    private callOnStopRequested: () => void = undefined as any;
 
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     public metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
@@ -539,20 +549,24 @@ export class RxReplicationState<RxDocType, CheckpointType> {
      * the waiting, otherwise it would not resolve while a handler keeps failing.
      * A paused non-live replication is not canceled,
      * the run goes on when start() is called again.
+     * cancel() and remove() are queued behind the run too,
+     * so the waiting also ends when a stop is requested.
+     * The queued cancel() or remove() then stops the replication.
      */
     private async awaitNonLiveDone(runQueued: Promise<any>): Promise<void> {
         const internalState = this.internalReplicationState;
         if (!this.live && internalState) {
-            const gotPaused = await Promise.race([
+            const hasFinished = await Promise.race([
                 firstValueFrom(
                     this.pendingPauses$.pipe(filter(pending => pending > 0))
-                ).then(() => true),
+                ).then(() => false),
+                this.stopRequestedPromise.then(() => false),
                 runQueued
                     .then(() => awaitRxStorageReplicationFirstInSync(internalState))
                     .then(() => awaitRxStorageReplicationInSync(internalState))
-                    .then(() => false)
+                    .then(() => true)
             ]);
-            if (gotPaused) {
+            if (!hasFinished) {
                 return;
             }
             await this._cancel();
@@ -773,6 +787,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
 
     async cancel() {
+        this.callOnStopRequested();
         this.startQueue = this.startQueue.catch(() => { }).then(async () => {
             await this._cancel(this.removeRequested);
         });
