@@ -88,6 +88,13 @@ export async function updateCRDT<RxDocType>(
 }
 
 
+/**
+ * Contains the document data objects of insertCRDT() calls.
+ * These already have their CRDT operations,
+ * so bulkInsert() must store them as they are.
+ */
+const INSERT_DATA_WITH_CRDT_OPERATIONS = new WeakSet<object>();
+
 export async function insertCRDT<RxDocType>(
     this: RxCollection<RxDocType>,
     entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]
@@ -104,7 +111,7 @@ export async function insertCRDT<RxDocType>(
     const crdtOptions = ensureNotFalsy(jsonSchema.crdt);
     const storageToken = await this.database.storageToken;
     const operation: CRDTOperation<RxDocType> = {
-        body: Array.isArray(entry) ? entry : [entry],
+        body: toArray(entry).slice(0),
         creator: storageToken,
         time: now()
     };
@@ -115,6 +122,59 @@ export async function insertCRDT<RxDocType>(
         insertData as any,
         operation
     ) as any;
+
+    /**
+     * The schema default values and the composite primary key
+     * are filled by RxDB and are not part of the given entry.
+     * They are added to the operation as additional parts,
+     * so that rebuildFromCRDT() (conflict resolution) creates the same
+     * document state as the one that is stored.
+     */
+    const filledData: any = fillObjectWithDefaults(this.schema, Object.assign({}, insertData));
+    if (typeof jsonSchema.primaryKey !== 'string') {
+        fillPrimaryKey(
+            this.schema.primaryPath,
+            jsonSchema,
+            filledData
+        );
+    }
+    const filledParts: CRDTEntry<RxDocType>[] = [];
+    Object.entries(filledData).forEach(([key, value]) => {
+        if (
+            typeof value !== 'undefined' &&
+            typeof (insertData as any)[key] === 'undefined'
+        ) {
+            const filledPart = {
+                ifMatch: {
+                    $set: {
+                        [key]: value
+                    }
+                }
+            } as CRDTEntry<RxDocType>;
+            /**
+             * The primary key is the same in all states of a document.
+             * Only a default value needs a condition,
+             * so that it does not overwrite the value of another operation.
+             */
+            if (key !== this.schema.primaryPath) {
+                filledPart.selector = {
+                    [key]: {
+                        $exists: false
+                    }
+                } as any;
+            }
+            filledParts.push(filledPart);
+        }
+    });
+    if (filledParts.length > 0) {
+        insertData = runOperationOnDocument(
+            this.schema.jsonSchema,
+            insertData as any,
+            Object.assign({}, operation, { body: filledParts })
+        ) as any;
+        operation.body = operation.body.concat(filledParts);
+    }
+
     const crdtDocField: CRDTDocumentField<RxDocType> = {
         operations: [],
         hash: ''
@@ -124,6 +184,7 @@ export async function insertCRDT<RxDocType>(
     const lastAr: CRDTOperation<RxDocType>[] = [operation];
     crdtDocField.operations.push(lastAr);
     crdtDocField.hash = await hashCRDTOperations(this.database.hashFunction, crdtDocField);
+    INSERT_DATA_WITH_CRDT_OPERATIONS.add(insertData);
 
     const result = await this.insert(insertData).catch(async (err: RxError) => {
         if (err.code === 'CONFLICT') {
@@ -348,7 +409,6 @@ export function rebuildFromCRDT<RxDocType>(
     let base: WithDeleted<RxDocType> = {
         _deleted: false
     } as any;
-    setProperty(base, ensureNotFalsy(schema.crdt).field, crdts);
     crdts.operations.forEach(operations => {
         operations.forEach(op => {
             base = runOperationOnDocument(
@@ -358,6 +418,11 @@ export function rebuildFromCRDT<RxDocType>(
             );
         });
     });
+    /**
+     * Set the CRDT field after the operations have run,
+     * so that an operation cannot overwrite it.
+     */
+    setProperty(base, ensureNotFalsy(schema.crdt).field, crdts);
     return base;
 }
 
@@ -570,6 +635,9 @@ export const RxDBcrdtPlugin: RxPlugin = {
                     const storageToken = await collection.database.storageToken;
                     const useDocsData = await Promise.all(
                         docsData.map(async (docData) => {
+                            if (INSERT_DATA_WITH_CRDT_OPERATIONS.has(docData)) {
+                                return docData;
+                            }
                             if (isRxDocument(docData)) {
                                 docData = docData.toMutableJSON();
                             }
