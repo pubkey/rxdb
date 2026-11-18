@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX GraphQL replication opened one more websocket subscription for `pull.streamQueryBuilder` on each `start()` after `pause()`, so that each server change was delivered multiple times and `cancel()` did not close the websocket",
+    "links": [],
+    "priority": 5
+}
