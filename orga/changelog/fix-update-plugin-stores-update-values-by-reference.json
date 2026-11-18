@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDocument.update()`, `incrementalUpdate()`, `RxQuery.update()` and CRDT operations stored the objects of the update query (`$set`, `$push`, `$addToSet`) by reference, so that mutating such an object afterwards changed the document data (or threw in dev-mode because the object got frozen)",
+    "links": [],
+    "priority": 5
+}

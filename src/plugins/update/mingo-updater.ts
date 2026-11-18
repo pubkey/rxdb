@@ -19,7 +19,12 @@ export function mingoUpdater<T>(
         undefined,
         undefined,
         {
-            cloneMode: "none"
+            /**
+             * The values of the update query must be deep cloned
+             * so that the document data does not share
+             * object references with the object of the caller.
+             */
+            cloneMode: "deep"
         }
     );
     return cloned;
