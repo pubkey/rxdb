@@ -13,6 +13,7 @@ import {
     humansCollection,
     isNode
 } from '../../plugins/test-utils/index.mjs';
+import type { HumanDocumentType } from '../../plugins/test-utils/index.mjs';
 import {
     getRxStorageRemoteWebsocket,
     startRxStorageRemoteWebsocketServer
@@ -31,7 +32,10 @@ import type {
     MessageToRemote,
     RemoteMessageChannel
 } from '../../plugins/storage-remote/index.mjs';
-import type { RxStorage } from '../../plugins/core/index.mjs';
+import type {
+    RxStorage,
+    RxStorageInstanceCreationParams
+} from '../../plugins/core/index.mjs';
 
 describe('rx-storage-remote.test.ts', () => {
     /**
@@ -199,6 +203,55 @@ describe('rx-storage-remote.test.ts', () => {
                 'RM2'
             );
             await mustSettle(clientDb.close());
+        });
+    });
+    describe('close() in parallel to a create of another connection', () => {
+        it('should give a usable instance to a client that opens the collection while another client closes it', async () => {
+            const toRemote$ = new Subject<MessageToRemote>();
+            const fromRemote$ = new Subject<MessageFromRemote>();
+            exposeRxStorageRemote({
+                storage: config.storage.getStorage(),
+                messages$: toRemote$,
+                send(msg) {
+                    fromRemote$.next(msg);
+                }
+            });
+            const clientStorage = getRxStorageRemote({
+                identifier: 'in-process-' + randomToken(10),
+                mode: 'storage',
+                messageChannelCreator: () => Promise.resolve({
+                    messages$: fromRemote$,
+                    send(msg) {
+                        toRemote$.next(msg);
+                    },
+                    close() {
+                        return Promise.resolve();
+                    }
+                })
+            });
+            const params: RxStorageInstanceCreationParams<HumanDocumentType, any> = {
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(12),
+                collectionName: randomToken(12),
+                schema: fillWithDefaultSettings(schemas.human),
+                options: {},
+                multiInstance: false,
+                devMode: true
+            };
+            const instanceA = await clientStorage.createStorageInstance(params);
+
+            /**
+             * The create message reaches the remote
+             * while the close() of the first connection is still running there.
+             */
+            const closePromise = instanceA.close();
+            const instanceB = await clientStorage.createStorageInstance(params);
+            await closePromise;
+
+            const docs = await instanceB.findDocumentsById(['foobar'], false);
+            assert.strictEqual(docs.length, 0);
+
+            await instanceB.close();
         });
     });
     /**
