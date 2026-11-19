@@ -1,0 +1,5 @@
+{
+    "text": "FIX `useReplicationStatus()` of the React plugin never cleared the `error`. The `error` of a failed pull or push handler call is now cleared when the retried call has succeeded and the replication is idle again. Other errors, and an `RxError` that was rejected by the push handler, are cleared when a later replication cycle has completed without an error. Also the hook returned the `error` and `lastSyncedAt` of the previous replication when the `replicationState` argument changed or became `null`",
+    "links": [],
+    "priority": 5
+}

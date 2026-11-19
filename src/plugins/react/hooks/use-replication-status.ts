@@ -25,6 +25,13 @@ export type UseReplicationStatusResult = {
     canceled: boolean;
 };
 
+const EMPTY_STATUS: UseReplicationStatusResult = {
+    syncing: false,
+    error: null,
+    lastSyncedAt: null,
+    canceled: false
+};
+
 /**
  * React hook that subscribes to an RxReplicationState and exposes
  * its status as React state. Provides syncing, error, lastSyncedAt,
@@ -36,31 +43,70 @@ export type UseReplicationStatusResult = {
 export function useReplicationStatus(
     replicationState: RxReplicationState<any, any> | null | undefined
 ): UseReplicationStatusResult {
-    const [syncing, setSyncing] = useState(false);
-    const [error, setError] = useState<RxError | RxTypeError | null>(null);
-    const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
-    const [canceled, setCanceled] = useState(false);
+    /**
+     * The state remembers to which replicationState it belongs,
+     * so that the status of one replication is never returned for another one.
+     */
+    const [state, setState] = useState<{
+        replicationState: RxReplicationState<any, any>;
+        status: UseReplicationStatusResult;
+    } | null>(null);
 
     useEffect(() => {
         if (!replicationState) {
+            setState(null);
             return;
         }
+        const update = (
+            modifier: (status: UseReplicationStatusResult) => Partial<UseReplicationStatusResult>
+        ) => setState(previous => {
+            const status = previous && previous.replicationState === replicationState
+                ? previous.status
+                : EMPTY_STATUS;
+            return {
+                replicationState,
+                status: Object.assign({}, status, modifier(status))
+            };
+        });
+
+        /**
+         * An error of a failed handler call has the 'direction' parameter.
+         * The handler is called again until it succeeds, so the replication
+         * has recovered from that error when it becomes idle afterwards.
+         * Errors without that parameter are kept until a later active phase
+         * has run without such an error, because the hook cannot know
+         * whether the failed operation was retried. This includes an RxError
+         * that was rejected by the push handler, which is emitted unchanged.
+         */
+        let wasActive = false;
+        let hadErrorWithoutRetry = false;
 
         const subs = [
             replicationState.active$.subscribe((active: boolean) => {
-                setSyncing(active);
+                if (active && !wasActive) {
+                    hadErrorWithoutRetry = false;
+                }
+                const recovered = wasActive &&
+                    !active &&
+                    !hadErrorWithoutRetry &&
+                    !replicationState.isStoppedOrPaused();
+                wasActive = active;
+                update(() => recovered ? { syncing: active, error: null } : { syncing: active });
             }),
             replicationState.error$.subscribe((err: RxError | RxTypeError) => {
-                setError(err);
+                if (!err.parameters || !err.parameters.direction) {
+                    hadErrorWithoutRetry = true;
+                }
+                update(() => ({ error: err }));
             }),
             replicationState.canceled$.subscribe((isCanceled: boolean) => {
-                setCanceled(isCanceled);
+                update(() => ({ canceled: isCanceled }));
             }),
             replicationState.received$.subscribe(() => {
-                setLastSyncedAt(Date.now());
+                update(() => ({ lastSyncedAt: Date.now() }));
             }),
             replicationState.sent$.subscribe(() => {
-                setLastSyncedAt(Date.now());
+                update(() => ({ lastSyncedAt: Date.now() }));
             })
         ];
 
@@ -69,5 +115,5 @@ export function useReplicationStatus(
         };
     }, [replicationState]);
 
-    return { syncing, error, lastSyncedAt, canceled };
+    return state && state.replicationState === replicationState ? state.status : EMPTY_STATUS;
 }
