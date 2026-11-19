@@ -369,6 +369,12 @@
       "import": "./dist/esm/plugins/validate-ajv/index.js",
       "default": "./dist/esm/plugins/validate-ajv/index.js"
     },
+    "./plugins/validate-effect": {
+      "types": "./dist/types/plugins/validate-effect/index.d.ts",
+      "require": "./dist/cjs/plugins/validate-effect/index.js",
+      "import": "./dist/esm/plugins/validate-effect/index.js",
+      "default": "./dist/esm/plugins/validate-effect/index.js"
+    },
     "./plugins/validate-ajv-standalone": {
       "types": "./dist/types/plugins/validate-ajv-standalone/index.d.ts",
       "require": "./dist/cjs/plugins/validate-ajv-standalone/index.js",
@@ -593,6 +599,7 @@
     "crypto-js": "4.2.0",
     "custom-idle-queue": "5.0.2",
     "dexie": "4.4.2",
+    "effect": "^4.1.4",
     "event-reduce-js": "8.0.0",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "17.0.2",

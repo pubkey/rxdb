@@ -14,6 +14,7 @@ import {
 } from '../plugins/test-utils/index.mjs';
 import { wrappedValidateAjvStorage } from '../plugins/validate-ajv/index.mjs';
 import { wrappedValidateAjvStandaloneStorage } from '../plugins/validate-ajv-standalone/index.mjs';
+import { wrappedValidateEffectStorage } from '../plugins/validate-effect/index.mjs';
 import config from './unit/config.ts';
 import { compileAjvStandaloneValidators } from './helper/ajv-standalone.ts';
 
@@ -38,7 +39,7 @@ describe('performance-validation.test.ts', () => {
         const docsAmount = 3000;
         const warmupRuns = 2;
 
-        const implementationNames = ['no validator', 'ajv', 'ajv-standalone'];
+        const implementationNames = ['no validator', 'ajv', 'ajv-standalone', 'effect'];
         /**
          * Every implementation gets its own schemas
          * so that no implementation profits from schema related caches
@@ -71,6 +72,12 @@ describe('performance-validation.test.ts', () => {
                     getStorage: () => wrappedValidateAjvStandaloneStorage({
                         storage: config.storage.getPerformanceStorage().storage,
                         validatorBySchemaHash
+                    })
+                },
+                {
+                    name: 'effect',
+                    getStorage: () => wrappedValidateEffectStorage({
+                        storage: config.storage.getPerformanceStorage().storage
                     })
                 }
             ];
