@@ -97,6 +97,13 @@ Whenever you find an assumed bug, spawn a subagent for it right away and continu
 - Run at most three test runs at the same time. Test servers use fixed ports, so an `EADDRINUSE` error is a collision with another test run. Wait and run again.
 - Collect the results of the subagents and give the user one list with the pull requests and the dropped findings.
 
+The main session makes sure that no bug gets more than one pull request:
+
+- Keep a list of all assumed bugs that were handed to a subagent, each with the affected files and functions and the suspected cause.
+- Before you spawn a subagent, compare the assumed bug with that list and with the open pull requests of the repository. When it has the same cause as an entry, do not spawn a subagent. Two symptoms with the same cause are one bug.
+- Tell each subagent which other assumed bugs are in work, so that it stops and reports when its finding turns out to be one of them.
+- When a subagent reports its result, compare the real cause and the changed files with the other results before its pull request is counted as done. When two pull requests fix the same bug, keep the one with the better test and fix, move a test that only the other one has into it, and close the other one with a comment that links the kept one.
+
 ## How to reproduce a bug
 
 A finding only counts with a test that fails because of the bug. Write the test first, see it fail, then fix.
