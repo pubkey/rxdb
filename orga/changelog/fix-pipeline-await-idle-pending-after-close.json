@@ -1,0 +1,5 @@
+{
+    "text": "FIX a pending `awaitIdle()` of an RxPipeline and reads on the destination collection that waited for it never settled when the pipeline was closed before it had processed all documents, for example on an instance that is not the leader",
+    "links": [],
+    "priority": 5
+}

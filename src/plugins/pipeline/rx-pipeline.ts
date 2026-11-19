@@ -234,7 +234,10 @@ export class RxPipeline<RxDocType> {
             if (this.error) {
                 throw this.error;
             }
-            if (this.lastProcessedDocTime.getValue() >= this.lastSourceDocTime.getValue()) {
+            if (
+                this.stopped ||
+                this.lastProcessedDocTime.getValue() >= this.lastSourceDocTime.getValue()
+            ) {
                 done = true;
             } else {
                 await firstValueFrom(this.somethingChanged);
@@ -247,6 +250,11 @@ export class RxPipeline<RxDocType> {
         this.stopped = true;
         this.destination.awaitBeforeReads.delete(this.waitBeforeWriteFn);
         this.subs.forEach(s => s.unsubscribe());
+        /**
+         * A stopped pipeline never processes the remaining documents,
+         * so pending awaitIdle() calls must be woken up.
+         */
+        this.somethingChanged.next({});
         await this.processQueue;
     }
 
