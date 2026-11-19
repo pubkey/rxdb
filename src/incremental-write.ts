@@ -32,7 +32,11 @@ export type IncrementalWriteModifier<RxDocType> = (
 
 
 type IncrementalWriteQueueItem<RxDocType> = {
-    lastKnownDocumentState: RxDocumentData<RxDocType>;
+    /**
+     * Not set while the state of the document is not known.
+     * The writes of a document only run when at least one of them knows the state.
+     */
+    lastKnownDocumentState?: RxDocumentData<RxDocType>;
     modifier: IncrementalWriteModifier<RxDocType>;
     resolve: (d: RxDocumentData<RxDocType>) => void;
     reject: (error: RxError) => void;
@@ -42,6 +46,10 @@ type IncrementalWriteQueueItem<RxDocType> = {
      */
     runAlone?: boolean;
 };
+
+function hasKnownState(items: IncrementalWriteQueueItem<any>[]): boolean {
+    return items.some(item => item.lastKnownDocumentState);
+}
 
 /**
  * The incremental write queue
@@ -63,18 +71,25 @@ export class IncrementalWriteQueue<RxDocType> {
 
     ) { }
 
+    /**
+     * @param lastKnownDocumentState can be undefined when it is not known if the document exists.
+     * The write then keeps its position in the queue and runs when
+     * another write to the same document or setDocumentState() provides the state.
+     */
     addWrite(
-        lastKnownDocumentState: RxDocumentData<RxDocType>,
-        modifier: IncrementalWriteModifier<RxDocType>
+        lastKnownDocumentState: RxDocumentData<RxDocType> | undefined,
+        modifier: IncrementalWriteModifier<RxDocType>,
+        runAlone?: boolean,
+        docId: string = (lastKnownDocumentState as any)[this.primaryPath]
     ): Promise<RxDocumentData<RxDocType>> {
-        const docId: string = lastKnownDocumentState[this.primaryPath] as any;
         const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
         const ret = new Promise<RxDocumentData<RxDocType>>((resolve, reject) => {
             const item: IncrementalWriteQueueItem<RxDocType> = {
                 lastKnownDocumentState,
                 modifier,
                 resolve,
-                reject
+                reject,
+                runAlone
             };
             ensureNotFalsy(ar).push(item);
             this.triggerRun();
@@ -82,26 +97,61 @@ export class IncrementalWriteQueue<RxDocType> {
         return ret;
     }
 
+    /**
+     * Provides the document state to the writes of that document
+     * that have been added without it.
+     */
+    setDocumentState(docData: RxDocumentData<RxDocType>) {
+        const items = this.queueByDocId.get(docData[this.primaryPath] as any);
+        if (items && !hasKnownState(items)) {
+            items[0].lastKnownDocumentState = docData;
+            this.triggerRun();
+        }
+    }
+
+    /**
+     * Removes a write that has not started to run.
+     * @returns true if the write was removed.
+     */
+    removeWrite(docId: string, modifier: IncrementalWriteModifier<RxDocType>): boolean {
+        const items = this.queueByDocId.get(docId);
+        const index = items ? items.findIndex(item => item.modifier === modifier) : -1;
+        if (items && index >= 0) {
+            items.splice(index, 1);
+            if (items.length === 0) {
+                this.queueByDocId.delete(docId);
+            }
+            return true;
+        }
+        return false;
+    }
+
     async triggerRun(): Promise<void> {
-        if (
-            this.isRunning === true ||
-            this.queueByDocId.size === 0
-        ) {
+        if (this.isRunning === true) {
             // already running
             return;
         }
-        this.isRunning = true;
-        const writeRows: BulkWriteRow<RxDocType>[] = [];
 
         /**
          * 'take over' so that while the async functions runs,
          * new incremental updates could be added from the outside.
+         * The writes of documents with an unknown state stay in the queue.
          */
-        const itemsById = this.queueByDocId;
-        this.queueByDocId = new Map();
+        const itemsById = new Map<string, IncrementalWriteQueueItem<RxDocType>[]>();
+        this.queueByDocId.forEach((items, docId) => {
+            if (hasKnownState(items)) {
+                itemsById.set(docId, items);
+                this.queueByDocId.delete(docId);
+            }
+        });
+        if (itemsById.size === 0) {
+            return;
+        }
+        this.isRunning = true;
+        const writeRows: BulkWriteRow<RxDocType>[] = [];
         /**
          * Items that are not processed in this run because
-         * an item of the same document must be written alone first.
+         * an item of the same document must be written alone.
          */
         const deferredById = new Map<string, IncrementalWriteQueueItem<RxDocType>[]>();
         try {
@@ -109,13 +159,14 @@ export class IncrementalWriteQueue<RxDocType> {
                 Array.from(itemsById.entries())
                     .map(async ([docId, queuedItems]) => {
                         let allItems = queuedItems;
-                        if (allItems[0].runAlone && allItems.length > 1) {
-                            deferredById.set(docId, allItems.slice(1));
-                            allItems = [allItems[0]];
-                        }
                         const oldData = findNewestOfDocumentStates(
-                            allItems.map(i => i.lastKnownDocumentState)
+                            allItems.map(i => i.lastKnownDocumentState).filter(Boolean) as RxDocumentData<RxDocType>[]
                         );
+                        const cutAt = allItems[0].runAlone ? 1 : allItems.findIndex(i => i.runAlone);
+                        if (cutAt > 0 && cutAt < allItems.length) {
+                            deferredById.set(docId, allItems.slice(cutAt));
+                            allItems = allItems.slice(0, cutAt);
+                        }
                         let newData = oldData;
                         const items: IncrementalWriteQueueItem<RxDocType>[] = [];
                         for (const item of allItems) {
