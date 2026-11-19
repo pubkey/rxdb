@@ -44,4 +44,14 @@ export type WebsocketMessageResponseType = {
     id: string;
     collection: string;
     result: any;
+    /**
+     * Only set when the server could not process the request.
+     * The result is undefined in that case.
+     */
+    error?: {
+        name?: string;
+        message?: string;
+        code?: string;
+        parameters?: any;
+    };
 };
