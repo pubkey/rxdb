@@ -25,7 +25,7 @@ export const JOBS_TEXTS_DE = {
         'Ein Startup, das Drohnenabwehrsysteme baut, nutzt RxDB.',
         'MongoDB und Supabase sind offizielle Partner.'
     ],
-    summary: '17 € pro Stunde, 10 bis 20 Stunden pro Woche, vor Ort in Stuttgart 🇩🇪',
+    summary: '19 € pro Stunde, 10 bis 20 Stunden pro Woche, vor Ort in Stuttgart 🇩🇪',
     openAdvert: 'Ganze Stellenanzeige lesen',
     openAdvertAria: 'Stellenanzeige öffnen: ',
     apply: 'Jetzt bewerben',
@@ -33,7 +33,7 @@ export const JOBS_TEXTS_DE = {
     sectionRequirements: 'Das bringst du mit',
     sectionConditions: 'Das bekommst du',
     conditions: [
-        '17 € pro Stunde',
+        '19 € pro Stunde',
         '10 bis 20 Stunden pro Woche, passend zum Vorlesungsplan',
         'Regelmäßig vor Ort in Stuttgart 🇩🇪, teilweise im Homeoffice',
         'Start nach Absprache, auch mitten im Semester',
