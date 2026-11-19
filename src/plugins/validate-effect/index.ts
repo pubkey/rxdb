@@ -13,6 +13,12 @@
  * validation. It uses ajv-formats' full definitions for the standard keywords, compiles the
  * checks once per schema and reports failures with the document field path and `format` keyword.
  *
+ * This stacked change adds an optional boolean gate ahead of the base plugin's decode.
+ * The installed Effect is feature-detected at runtime: when it exposes `Schema.validate`,
+ * the gate accepts or rejects without constructing a decoded copy or issue objects, and
+ * the detailed decode runs only on rejection. Published Effect 4.1.4 has no such API, so
+ * the gate is dormant there and the base 4.1.4 decode path is the default.
+ *
  * `effect` is a regular dependency (not a peer) of this package, matching how `ajv` is declared
  * for validate-ajv: importing this plugin must be enough for a consumer to validate.
  */
@@ -239,7 +245,8 @@ export function issuesToErrors(issue: any): RxValidationError[] {
 }
 
 export function getValidator(
-    schema: RxJsonSchema<any>
+    schema: RxJsonSchema<any>,
+    options?: { readonly validate?: boolean }
 ): (docData: RxDocumentData<any>) => RxValidationError[] {
     const document = JsonSchema.fromSchemaDraft2020_12(schema as any);
     const imported = SchemaRepresentation.fromJsonSchemaDocument(document, {
@@ -248,12 +255,19 @@ export function getValidator(
     // The importer produces a codec whose decoding services are statically
     // unknown to TypeScript; at runtime all checks here are synchronous.
     const codec = Schema.make(imported.ast) as any;
+    // Detection is narrow: 4.1.4 has no `validate`. `options.validate = false`
+    // forces the base path so the test can compare both contracts.
+    const validate = options?.validate !== false && typeof (Schema as any).validate === 'function'
+        ? (Schema as any).validate(codec, { errors: 'first', onExcessProperty: 'error' }) as
+            (docData: RxDocumentData<any>) => boolean
+        : undefined;
     const decoder = Schema.decodeUnknownResult(codec, {
         errors: 'first',
         onExcessProperty: 'error'
     });
     const formatNode = compileFormatNode(schema);
     return (docData: RxDocumentData<any>) => {
+        if (validate !== undefined && validate(docData)) return formatErrors(formatNode, docData);
         const result = decoder(docData);
         if (Result.isSuccess(result)) return formatErrors(formatNode, docData);
         return issuesToErrors(result.failure.issue);

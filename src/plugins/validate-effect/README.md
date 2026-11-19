@@ -25,11 +25,17 @@ not to enforce formats is https://github.com/Effect-TS/effect/issues/10776.
 One shared-suite case is skipped for this validator: typed `additionalProperties` combined with
 explicit `properties` is rejected by the importer.
 
+## Boolean gate
+
+This change stacks on the base `validate-effect` plugin. When the installed Effect exposes
+`Schema.validate`, the plugin detects it at runtime and uses a boolean gate ahead of the detailed
+decode; rejected writes still pay only for the decode that builds the 422. The detection is narrow
+and the base decode remains available. The change is held until the Effect API is released.
+
 ## Dependency
 
-`effect` is a regular dependency of the `rxdb` package, declared as `^4.1.4`, the same way `ajv` is
-declared for `validate-ajv`. It is not a peer dependency: importing this plugin must be enough for
-a consumer to validate. The submitted plugin works with published Effect 4.1.4.
+The dependency is raised from `^4.1.4` to `^4.1.5`, the first release containing `Schema.validate`.
+`effect` remains a regular dependency, not a peer, as in the base plugin.
 
 ## Benchmark
 
@@ -43,9 +49,11 @@ NODE_ENV=fast DEFAULT_STORAGE=memory npm run test:performance:validation
 ```
 
 It compares no validator, Ajv and the Effect plugin on time-to-first-insert and bulk insert of
-3,000 documents. With the submitted dependency, published Effect 4.1.4, one fast-mode run measured
-time-to-first-insert of 0.72 ms (no validator), 4.11 ms (Ajv) and 1.41 ms (plugin), and insert of
-3,000 documents of 1.6 ms, 2.92 ms and 13.46 ms. These are one-host medians, not an SLA.
+3,000 documents. For this stacked change the benchmark used a locally built Effect carrying
+`Schema.validate` (the API intended for 4.1.5, not yet published), not the released 4.1.4 that the
+base PR uses. One fast-mode run measured time-to-first-insert of 0.72 ms (no validator), 2.62 ms
+(Ajv) and 1.48 ms (plugin), and insert of 3,000 documents of 1.13 ms, 2.74 ms and 11.58 ms. These
+are one-host medians, not an SLA, and require the unreleased Effect API.
 
 ## Alternatives considered
 

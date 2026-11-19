@@ -1169,6 +1169,23 @@ describe('validate-effect plugin', () => {
         assert.strictEqual(validationError.params.format, 'date-time');
         await instance.close();
     });
+    it('applies the same validation contract with the boolean gate and the base decode', () => {
+        const schema = fillWithDefaultSettings(clone(schemas.human));
+        const gated = getEffectValidator(schema);
+        const base = getEffectValidator(schema, { validate: false });
+        const validDoc = effectDoc(schemaObjects.humanData());
+        const invalidDoc = effectDoc(Object.assign({}, schemaObjects.humanData(), { age: 1000 }));
+        assert.deepStrictEqual(gated(validDoc), []);
+        assert.deepStrictEqual(base(validDoc), []);
+        const gatedErrors = gated(invalidDoc);
+        const baseErrors = base(invalidDoc);
+        assert.ok(gatedErrors.length > 0);
+        assert.ok(baseErrors.length > 0);
+        assert.strictEqual(gatedErrors[0].field, baseErrors[0].field);
+        assert.strictEqual(gatedErrors[0].keyword, baseErrors[0].keyword);
+        assert.strictEqual(gatedErrors[0].instancePath, baseErrors[0].instancePath);
+    });
+    });
 });
 
 
