@@ -42,6 +42,15 @@ const YOUTUBE_VIDEOS: Omit<VideoBoxProps, 'dark'>[] = [
         description: 'This video provides a technical walkthrough of building a real-time collaborative to-do list application using RxDB instead of relying on a traditional REST API.'
     },
     {
+        videoId: 'cHfJnK8-H4I',
+        title: 'Stop Building Slow React Apps: The Local-First Architecture (RxDB Tutorial)',
+        duration: '29:05',
+        startAt: 0,
+        uploadDate: '2026-11-14',
+        language: 'en',
+        description: 'A full tutorial that builds a local-first React application with RxDB and explains how local storage, reactive queries, and replication make the app fast and offline-capable.'
+    },
+    {
         videoId: 'm3T0gMuitbI',
         title: 'Build REAL TIME Applications easily 👩‍💻',
         duration: '00:52',

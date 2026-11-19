@@ -15,6 +15,12 @@ export type VideoBoxProps = {
     description?: string;
     // (optional) ISO 8601 date the video was published, for example '2024-05-01'
     uploadDate?: string;
+    /**
+     * (optional) Language code like 'en' for videos that are spoken in another language.
+     * The embedded player then uses this language for its interface and its
+     * audio track selection, and it shows the captions in this language.
+     */
+    language?: string;
 };
 
 /**
@@ -43,6 +49,7 @@ type VideoModalProps = {
     videoId: string;
     title: string;
     startAt?: number;
+    language?: string;
     onClose: (e: React.SyntheticEvent) => void;
 };
 
@@ -105,7 +112,7 @@ const styles: Record<string, CSSProperties> = {
     },
 };
 
-export function VideoBox({ videoId, title, duration, startAt, dark, description, uploadDate }: VideoBoxProps) {
+export function VideoBox({ videoId, title, duration, startAt, dark, description, uploadDate, language }: VideoBoxProps) {
     const [isHovered, setIsHovered] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -180,6 +187,7 @@ export function VideoBox({ videoId, title, duration, startAt, dark, description,
                     videoId={videoId}
                     title={title}
                     startAt={startAt}
+                    language={language}
                     onClose={(e) => {
                         e.stopPropagation();
                         setIsOpen(false);
@@ -192,7 +200,7 @@ export function VideoBox({ videoId, title, duration, startAt, dark, description,
 
 
 
-export function VideoModal({ open, videoId, title, startAt, onClose }: VideoModalProps) {
+export function VideoModal({ open, videoId, title, startAt, language, onClose }: VideoModalProps) {
     const watchTimeoutRef = useRef<number | null>(null);
     const openedTrackedRef = useRef(false);
     const watchSeconds = 25;
@@ -255,7 +263,8 @@ export function VideoModal({ open, videoId, title, startAt, onClose }: VideoModa
                         'https://www.youtube.com/embed/' +
                         videoId +
                         '?autoplay=1&modestbranding=1&rel=0&start=' +
-                        (startAt ? startAt : 0)
+                        (startAt ? startAt : 0) +
+                        (language ? '&hl=' + language + '&cc_lang_pref=' + language + '&cc_load_policy=1' : '')
                     }
                     title="YouTube video player"
                     frameBorder="0"
