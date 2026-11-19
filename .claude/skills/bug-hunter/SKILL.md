@@ -80,11 +80,13 @@ Decisions of the maintainer that often come up while judging a finding:
 
 ## How to find a bug
 
-1. Pick an area (a plugin, the replication protocol, the query planner, a storage). Read the source and the tests of that area.
-2. For each suspect, write a short script or test that reproduces it on `config.storage.getStorage()`. A suspect without a reproduction is not a finding.
-3. Check each finding against "What is a bug" and "What is not a bug". Drop it when one point fails. A dropped finding is a good result, not a failure.
-4. Check `orga/before-next-major.md`. When the bug is listed there, it waits for the next major release.
-5. Give the user a list of the valid findings before you open many pull requests, when they asked for a review first.
+1. Read `orga/before-next-major.md` completely, from the first to the last line, before you read any source. It lists the findings that wait for the next major release, each with the closed pull request that has an implementation. A suspect that is listed there is not a finding and gets no subagent.
+2. Pick an area (a plugin, the replication protocol, the query planner, a storage). Read the source and the tests of that area.
+3. For each suspect, write a short script or test that reproduces it on `config.storage.getStorage()`. A suspect without a reproduction is not a finding.
+4. Stop after five failed attempts to reproduce a suspect. List it as "not reproduced" in the result for the user, with the suspected cause and what was tried, and go on with the hunt.
+5. Check each finding against "What is a bug" and "What is not a bug". Drop it when one point fails. A dropped finding is a good result, not a failure.
+6. When neither the docs nor a test define the expected behavior, the finding is a question and not a bug. Ask the user what the behavior should be and open no pull request before the answer.
+7. Give the user a list of the valid findings before you open many pull requests, when they asked for a review first.
 
 ### One subagent per assumed bug
 
@@ -97,11 +99,20 @@ Whenever you find an assumed bug, spawn a subagent for it right away and continu
 - Run at most three test runs at the same time. Test servers use fixed ports, so an `EADDRINUSE` error is a collision with another test run. Wait and run again.
 - Collect the results of the subagents and give the user one list with the pull requests and the dropped findings.
 
+### A second subagent reviews the fix
+
+Before a pull request is opened, a second subagent reviews the test and the diff. It did not write the fix and it does not get the reasoning of the first subagent, only the branch, the description of the bug as a user sees it, this skill, and `CLAUDE.md`.
+
+- It runs the test without the fix and with the fix and checks that the test fails because of the bug and not for another reason.
+- It checks that the fix removes the cause and does not only hide the symptom, and that the finding passes "What is a bug" and "What is not a bug".
+- When it finds a problem, the first subagent fixes it and the review runs again. The pull request is only opened after the review found nothing.
+
 The main session makes sure that no bug gets more than one pull request:
 
 - Keep a list of all assumed bugs that were handed to a subagent, each with the affected files and functions and the suspected cause.
 - Before you spawn a subagent, compare the assumed bug with that list and with the open pull requests of the repository. When it has the same cause as an entry, do not spawn a subagent. Two symptoms with the same cause are one bug.
 - Tell each subagent which other assumed bugs are in work, so that it stops and reports when its finding turns out to be one of them.
+- Keep at most five pull requests of the bug hunt open at the same time. When more findings are valid, open the pull requests of the most severe ones first (lost or wrong data, then a promise that never settles or a crash, then wrong typings or docs) and list the others for the user. Open the next one when one is merged or closed.
 - When a subagent reports its result, compare the real cause and the changed files with the other results before its pull request is counted as done. When two pull requests fix the same bug, keep the one with the better test and fix, move a test that only the other one has into it, and close the other one with a comment that links the kept one.
 
 ## How to reproduce a bug
@@ -129,6 +140,9 @@ The remote storage rethrows a server error as a plain error with the serialized 
 ## How to fix a bug
 
 - Fix the real cause with the smallest change. Do not special-case the test, and do not work around the problem.
+- Find out why the wrong state was reachable before you fix it. A check that only catches the wrong state where it showed up, like a null check, is not a fix of the cause.
+- Search the sibling code for the same pattern, for example the other storages, the other replication plugins, or the same method on local documents. Fix the places that have the same cause in the same pull request and name the places that you checked.
+- When the fix changes more than 50 lines outside of the tests and the changelog entry, stop and ask the user before you go on. A fix of that size is often a rewrite or a new feature.
 - When an input or a combination can be made to work, make it work instead of throwing a new error.
 - Checks for wrong usage belong into the dev-mode plugin, not into production code.
 - Use `newRxError()` with a code from `src/plugins/dev-mode/error-messages.ts`. Check the open pull requests for codes that are reserved already.
@@ -153,6 +167,8 @@ Make sure `node_modules` matches `package.json` before you trust a local bundle 
 
 - One pull request per bug, based on `master`, independent of other open pull requests.
 - Use the sections of `.github/PULL_REQUEST_TEMPLATE.md`. Describe the problem as a user sees it, then what changed.
+- Say why the wrong state was reachable and which sibling code was checked for the same pattern.
+- When there is more than one reasonable fix, list the alternatives with their tradeoffs and say why this one was chosen. The maintainer decides.
 - Include the test output without the fix and with the fix, and name what was not run.
 - Name every change that goes beyond the fix, and every behavior that is different afterwards, in its own list. The maintainer decides on these.
 - Prefix the title with `[BREAKING]` only when the "Pull Request Title Rule" of `CLAUDE.md` applies. A fix for something that threw or was broken before is not breaking.
