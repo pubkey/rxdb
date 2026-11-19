@@ -710,7 +710,7 @@
     "vue": "3.5.45",
     "webpack": "5.111.1",
     "webpack-bundle-analyzer": "5.4.2",
-    "webpack-cli": "7.2.3",
+    "webpack-cli": "7.3.1",
     "webpack-dev-server": "6.1.0"
   },
   "overrides": {
