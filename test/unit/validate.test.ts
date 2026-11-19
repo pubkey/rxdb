@@ -1189,9 +1189,8 @@ describe('validate-effect plugin', () => {
         assert.ok(gatedErrors.length > 0, 'expected gated errors, ' + mode);
         assert.ok(baseErrors.length > 0, 'expected base errors, ' + mode);
         assert.strictEqual(gatedErrors[0].field, baseErrors[0].field);
-        assert.strictEqual(gatedErrors[0].keyword, baseErrors[0].keyword);
-        assert.strictEqual(gatedErrors[0].instancePath, baseErrors[0].instancePath);
-    });
+        assert.strictEqual((gatedErrors[0] as any).keyword, (baseErrors[0] as any).keyword);
+        assert.strictEqual((gatedErrors[0] as any).instancePath, (baseErrors[0] as any).instancePath);
     });
 });
 
