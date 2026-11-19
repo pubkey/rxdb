@@ -775,12 +775,6 @@ validationImplementations.forEach(
              * and docs, so it must be supported by default.
              */
             it('#7253 should know about the date-time format by default by all validation plugins', async () => {
-                if (validationImplementation.key === 'effect') {
-                    // Published Effect imports `format` as an annotation but does not
-                    // enforce it. Tracked upstream at
-                    // https://github.com/Effect-TS/effect/issues/10776
-                    return;
-                }
                 const db = await createRxDatabase({
                     name: randomToken(10),
                     storage
@@ -1145,6 +1139,34 @@ describe('validate-effect plugin', () => {
             document: effectDoc(schemaObjects.humanData())
         }], 'validate-effect-test');
         assert.deepStrictEqual(result.error, []);
+        await instance.close();
+    });
+    it('reports format failures with the field path and format keyword', async () => {
+        const innerStorage: RxStorage<any, any> = config.storage.getStorage();
+        const storage = wrappedValidateEffectStorage({ storage: innerStorage });
+        const schema: any = clone(schemas.human);
+        schema.properties.timestamp = { type: 'string', format: 'date-time' };
+        schema.required.push('timestamp');
+        const instance = await storage.createStorageInstance<any>({
+            collectionName: randomToken(10),
+            databaseInstanceToken: randomToken(10),
+            databaseName: randomToken(10),
+            multiInstance: false,
+            options: {},
+            schema: fillWithDefaultSettings(schema),
+            devMode: true
+        });
+        const invalid: any = schemaObjects.humanData();
+        invalid.timestamp = 'broken-timestamp';
+        const result = await instance.bulkWrite([{
+            document: effectDoc(invalid)
+        }], 'validate-effect-test');
+        assert.strictEqual(result.error.length, 1);
+        const validationError = (result.error[0] as any).validationErrors[0];
+        assert.strictEqual(validationError.field, 'timestamp');
+        assert.strictEqual(validationError.keyword, 'format');
+        assert.strictEqual(validationError.instancePath, '/timestamp');
+        assert.strictEqual(validationError.params.format, 'date-time');
         await instance.close();
     });
 });

@@ -9,10 +9,15 @@
  * configuration (allErrors is off), is enough to produce a 422, and avoids the cost of collecting
  * every issue.
  *
+ * Effect imports `format` as an annotation and does not enforce it, so this plugin owns format
+ * validation. It uses ajv-formats' full definitions for the standard keywords, compiles the
+ * checks once per schema and reports failures with the document field path and `format` keyword.
+ *
  * `effect` is a regular dependency (not a peer) of this package, matching how `ajv` is declared
  * for validate-ajv: importing this plugin must be enough for a consumer to validate.
  */
 import { JsonSchema, Result, Schema, SchemaRepresentation } from 'effect';
+import { fullFormats } from 'ajv-formats/dist/formats.js';
 import type {
     RxDocumentData,
     RxJsonSchema,
@@ -55,6 +60,128 @@ function makeError(
         params,
         dataPath: instancePath
     };
+}
+
+type FormatCheck = (value: string) => boolean;
+
+type FormatNode = {
+    format?: string;
+    check?: FormatCheck;
+    properties?: Map<string, FormatNode>;
+    items?: FormatNode;
+    additionalProperties?: FormatNode;
+};
+
+/**
+ * ajv-formats defines a format either as a RegExp, a predicate or an object with a
+ * `validate` member. Normalize all three shapes once and reuse the compiled predicate.
+ */
+const FORMAT_CHECK_CACHE = new Map<string, FormatCheck>();
+
+function getFormatCheck(format: string): FormatCheck | undefined {
+    if (!FORMAT_CHECK_CACHE.has(format)) {
+        const definition = (fullFormats as Record<string, any>)[format];
+        let check: FormatCheck | undefined;
+        if (typeof definition === 'function') {
+            check = definition as FormatCheck;
+        } else if (definition instanceof RegExp) {
+            check = (value: string) => definition.test(value);
+        } else if (definition && typeof definition === 'object') {
+            if (typeof definition.validate === 'function') {
+                check = definition.validate as FormatCheck;
+            } else if (definition.validate instanceof RegExp) {
+                const regexp: RegExp = definition.validate;
+                check = (value: string) => regexp.test(value);
+            }
+        }
+        if (check) {
+            FORMAT_CHECK_CACHE.set(format, check);
+        }
+    }
+    return FORMAT_CHECK_CACHE.get(format);
+}
+
+/** Compile the schema's `format` keywords into a tree that can be reused per document. */
+function compileFormatNode(schema: any): FormatNode | undefined {
+    if (!schema || typeof schema !== 'object' || Array.isArray(schema)) {
+        return undefined;
+    }
+    const node: FormatNode = {};
+    if (typeof schema.format === 'string') {
+        const check = getFormatCheck(schema.format);
+        if (check) {
+            node.format = schema.format;
+            node.check = check;
+        }
+    }
+    if (schema.properties && typeof schema.properties === 'object') {
+        const properties = new Map<string, FormatNode>();
+        Object.keys(schema.properties).forEach(key => {
+            const child = compileFormatNode(schema.properties[key]);
+            if (child) {
+                properties.set(key, child);
+            }
+        });
+        if (properties.size > 0) {
+            node.properties = properties;
+        }
+    }
+    if (schema.items && typeof schema.items === 'object' && !Array.isArray(schema.items)) {
+        const items = compileFormatNode(schema.items);
+        if (items) {
+            node.items = items;
+        }
+    }
+    if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
+        const additionalProperties = compileFormatNode(schema.additionalProperties);
+        if (additionalProperties) {
+            node.additionalProperties = additionalProperties;
+        }
+    }
+    return Object.keys(node).length > 0 ? node : undefined;
+}
+
+function formatErrors(
+    node: FormatNode | undefined,
+    docData: any,
+    path: (string | number)[] = []
+): RxValidationError[] {
+    if (!node) {
+        return [];
+    }
+    const out: RxValidationError[] = [];
+    if (node.check && typeof docData === 'string' && !node.check(docData)) {
+        out.push(makeError(
+            path,
+            'format',
+            'must match format "' + node.format + '"',
+            { format: node.format }
+        ) as RxValidationError);
+    }
+    if (docData === null || typeof docData !== 'object') {
+        return out;
+    }
+    if (node.properties) {
+        node.properties.forEach((child, key) => {
+            if (Object.prototype.hasOwnProperty.call(docData, key)) {
+                out.push(...formatErrors(child, docData[key], [...path, key]));
+            }
+        });
+    }
+    if (node.items && Array.isArray(docData)) {
+        docData.forEach((item, index) => {
+            out.push(...formatErrors(node.items, item, [...path, index]));
+        });
+    }
+    if (node.additionalProperties && !Array.isArray(docData)) {
+        Object.keys(docData).forEach(key => {
+            if (node.properties && node.properties.has(key)) {
+                return;
+            }
+            out.push(...formatErrors(node.additionalProperties, docData[key], [...path, key]));
+        });
+    }
+    return out;
 }
 
 /** Flatten Effect's Filter/Pointer/Composite issue tree into leaf errors. */
@@ -125,9 +252,10 @@ export function getValidator(
         errors: 'first',
         onExcessProperty: 'error'
     });
+    const formatNode = compileFormatNode(schema);
     return (docData: RxDocumentData<any>) => {
         const result = decoder(docData);
-        if (Result.isSuccess(result)) return [];
+        if (Result.isSuccess(result)) return formatErrors(formatNode, docData);
         return issuesToErrors(result.failure.issue);
     };
 }

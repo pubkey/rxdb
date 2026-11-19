@@ -16,11 +16,14 @@ It ignores the implicit `effect/schema/Json` check that the importer adds for
 `additionalProperties: true`, because that check is stricter than the authored schema and would
 reject valid RxDB internal documents. All declared type checks are still enforced.
 
-Two shared-suite cases are skipped for this validator because published Effect cannot pass them:
+Effect imports `format` as an annotation and does not enforce it. The plugin enforces the standard
+formats itself with ajv-formats' `fullFormats` definitions, which are the same ones the Ajv plugin
+uses. Checks are compiled once per schema and each failure is reported as an `RxValidationError`
+with the document field path and the `format` keyword. The upstream record for Effect's decision
+not to enforce formats is https://github.com/Effect-TS/effect/issues/10776.
 
-- typed `additionalProperties` combined with explicit `properties` is rejected by the importer;
-- `format: "date-time"` is preserved as an annotation but not enforced
-  (https://github.com/Effect-TS/effect/issues/10776).
+One shared-suite case is skipped for this validator: typed `additionalProperties` combined with
+explicit `properties` is rejected by the importer.
 
 ## Dependency
 
