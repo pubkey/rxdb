@@ -357,26 +357,26 @@ APIs and behaviors are subject to change as the official <a href="https://webmac
 <FaqItem question="How to use the WebMCP polyfill for browsers without native support?">
 
     <div>
-        Since most browsers do not yet natively implement the <code>navigator.modelContext</code> API, you can use the <a href="https://github.com/WebMCP-org" target="_blank">WebMCP-org</a> polyfill package <code>@mcp-b/global</code> to add support in any browser today.
+        Since most browsers do not yet natively implement the <code>document.modelContext</code> API, you can use the <a href="https://www.npmjs.com/package/@w3c/webmcp-polyfill" target="_blank">@w3c/webmcp-polyfill</a> package to add support in any browser today. The older <code>@mcp-b/webmcp-polyfill</code> package is deprecated in favor of it.
 
         Install the package:
 
         ```bash
-        npm install @mcp-b/global
+        npm install @w3c/webmcp-polyfill
         ```
 
         Then import it once at the entry point of your application, before any WebMCP tools are registered:
 
         ```ts
-        import '@mcp-b/global';
+        import '@w3c/webmcp-polyfill/auto';
 
-        // navigator.modelContext is now available
+        // document.modelContext is now available
         import { addRxPlugin } from 'rxdb';
         import { RxDBWebMCPPlugin } from 'rxdb/plugins/webmcp';
         addRxPlugin(RxDBWebMCPPlugin);
         ```
 
-        The polyfill sets up the <code>navigator.modelContext</code> interface so that your registered tools are accessible to AI agents running in the browser, even without native browser support.
+        The polyfill sets up the <code>document.modelContext</code> interface in secure contexts (HTTPS or localhost), so that you can register, list, and execute your tools without native browser support. It does not replace a native <code>document.modelContext</code>.
     </div>
 
 </FaqItem>
