@@ -123,6 +123,19 @@ export class RxMigrationState {
     private readonly canceledPromise: Promise<void> = new Promise<void>(res => {
         this.resolveCanceled = res;
     });
+    private resolveInterrupted: () => void = () => { };
+    /**
+     * Resolves when cancel() has stopped a migration that is not finished,
+     * so that migratePromise() can reject instead of waiting forever
+     * for a status that is never written.
+     * In contrast to canceledPromise, it resolves after the running batch
+     * has ended. The caller of migratePromise() closes the storage instance
+     * of the collection on the rejection, and the running batch
+     * still writes to that storage instance.
+     */
+    private readonly interruptedPromise: Promise<void> = new Promise<void>(res => {
+        this.resolveInterrupted = res;
+    });
     public broadcastChannel?: BroadcastChannel;
     public heartbeatInterval?: ReturnType<typeof setInterval>;
     constructor(
@@ -901,6 +914,7 @@ export class RxMigrationState {
         this.canceled = true;
         this.resolveCanceled();
         this.stopHeartbeat();
+        const interrupted = this.collection.migrationInProgress;
         this.collection.migrationInProgress = false;
         await Promise.all(
             Array.from(this.replicationStates.values())
@@ -933,6 +947,9 @@ export class RxMigrationState {
          * continue and therefore never closes them on its own.
          */
         await this.closeOpenStorageInstances();
+        if (interrupted) {
+            this.resolveInterrupted();
+        }
 
         if (this.broadcastChannel) {
             await this.broadcastChannel.close();
@@ -1052,17 +1069,24 @@ export class RxMigrationState {
          * after that error has been removed.
          */
         await this.errorStatusReset;
-        const result = await firstValueFrom(
-            observeSingle<RxMigrationStatusDocument>(
-                this.database.internalStore,
-                this.statusDocId
-            ).pipe(
-                map(d => d.data),
-                filter((d: RxMigrationStatus) => d.status === 'DONE' || d.status === 'ERROR')
-            )
-        );
+        const result = await Promise.race([
+            firstValueFrom(
+                observeSingle<RxMigrationStatusDocument>(
+                    this.database.internalStore,
+                    this.statusDocId
+                ).pipe(
+                    map(d => d.data),
+                    filter((d: RxMigrationStatus) => d.status === 'DONE' || d.status === 'ERROR')
+                )
+            ),
+            this.interruptedPromise.then(() => undefined)
+        ]);
 
-        if (result.status === 'ERROR') {
+        if (!result) {
+            throw newRxError('DM8', {
+                collection: this.collection.name
+            });
+        } else if (result.status === 'ERROR') {
             throw newRxError('DM4', {
                 collection: this.collection.name,
                 error: result.error
