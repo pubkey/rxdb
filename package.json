@@ -708,7 +708,7 @@
     "tsx": "4.23.15",
     "typescript": "6.0.3",
     "vue": "3.5.45",
-    "webpack": "5.111.1",
+    "webpack": "5.112.2",
     "webpack-bundle-analyzer": "5.4.2",
     "webpack-cli": "7.3.1",
     "webpack-dev-server": "6.1.0"
