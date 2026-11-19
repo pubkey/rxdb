@@ -431,7 +431,7 @@ export class RxStateBase<T, Reactivity = unknown> {
 
         // update whole state object
         await this._writeQueue;
-        await this.set('', () => this._state);
+        await this.set('', state => state);
 
         // delete old ones
         await this.collection.find({

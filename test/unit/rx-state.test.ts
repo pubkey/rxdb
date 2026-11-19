@@ -459,6 +459,72 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.deepStrictEqual(state.get(), stateBeforeClose);
                 await state.collection.database.remove();
             });
+            it('should not lose a set() that is called while the automatic cleanup runs', async () => {
+                type CounterState = {
+                    [key: string]: number;
+                };
+                const storage = useSchemaValidator ? wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                }) : config.storage.getStorage();
+                const database = await createRxDatabase({
+                    name: randomToken(10),
+                    storage,
+                    cleanupPolicy: {
+                        awaitReplicationsInSync: false,
+                        minimumCollectionAge: 0,
+                        minimumDeletedTime: 0,
+                        runEach: 0,
+                        waitForLeadership: false
+                    }
+                });
+                const state = await database.addState<CounterState>();
+
+                const expected: CounterState = {};
+                let counter = 0;
+                const writeNext = () => {
+                    const value = counter++;
+                    expected['k' + value] = value;
+                    return state.set('k' + value, () => value);
+                };
+
+                const rounds = 4;
+                for (let round = 0; round < rounds; round++) {
+                    // let the cleanup of the previous round finish
+                    await wait(50);
+
+                    /**
+                     * The cleanup starts when the database is idle after a write,
+                     * and it only merges the state when there are more than 5 writes.
+                     * The idle calls are resolved in the order of their requests,
+                     * so the cleanup starts right after this one.
+                     */
+                    const idlePromise = database.requestIdlePromise();
+                    for (let i = 0; i < 6; i++) {
+                        await writeNext();
+                    }
+                    await idlePromise;
+                    // the next idle call is resolved three timeouts after the previous one
+                    await wait(0);
+                    await wait(0);
+                    await wait(0);
+
+                    /**
+                     * Now the cleanup reads the state documents from the storage.
+                     * While writes arrive, that read is repeated for some time,
+                     * so the writes must go on until the cleanup has stored the merged state.
+                     * Each set() is called directly after the previous one has resolved.
+                     */
+                    const startTime = Date.now();
+                    let writes = 0;
+                    while (Date.now() - startTime < 100 || writes < 10) {
+                        await writeNext();
+                        writes++;
+                    }
+                    assert.deepStrictEqual(state.get(), expected);
+                }
+
+                await database.remove();
+            });
         });
         describe('multiInstance', () => {
             if (

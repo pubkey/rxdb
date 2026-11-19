@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a `RxState.set()` call resolved but its value was missing from the state when the cleanup plugin merged the state operations at the same time",
+    "links": [],
+    "priority": 6
+}
