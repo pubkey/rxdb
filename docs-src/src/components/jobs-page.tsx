@@ -60,7 +60,7 @@ const TEXTS = {
             'A startup that builds counter-drone systems uses RxDB.',
             'MongoDB and Supabase are official partners.'
         ],
-        summary: '17 € per hour, 10 to 20 hours per week, on site in Stuttgart, Germany 🇩🇪',
+        summary: '19 € per hour, 10 to 20 hours per week, on site in Stuttgart, Germany 🇩🇪',
         openAdvert: 'Read the full advert',
         openAdvertAria: 'Open the job advert: ',
         apply: 'Apply now',
@@ -75,7 +75,7 @@ const TEXTS = {
          * own `summary` and `conditions`.
          */
         conditions: [
-            '17 € per hour',
+            '19 € per hour',
             '10 to 20 hours per week, scheduled around the lecture timetable',
             'Regularly on site in Stuttgart, Germany 🇩🇪, part of the time from home',
             'Start date by arrangement, mid-semester is possible',
@@ -227,7 +227,7 @@ function jobConditions(lang: JobsLang, job: JobTexts): string[] {
 /**
  * Must match the hourly wage that is named in the visible texts.
  */
-const JOBS_HOURLY_WAGE_EUR = 17;
+const JOBS_HOURLY_WAGE_EUR = 19;
 
 function escapeHtml(text: string): string {
     return text
