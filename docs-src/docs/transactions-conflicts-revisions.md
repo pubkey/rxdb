@@ -81,28 +81,36 @@ Because the conflict handler also is used for conflict detection, it will run ma
 Lets have a look at the [default conflict handler](https://github.com/pubkey/rxdb/blob/master/src/replication-protocol/default-conflict-handler.ts) of RxDB to learn how to create a custom one:
 
 ```ts
-import { deepEqual } from 'rxdb/plugins/utils';
+import {
+    deepEqual,
+    flatClone
+} from '../plugins/utils/index.ts';
+import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
+import type { RxConflictHandler, RxDocumentData } from '../types';
+
 export const defaultConflictHandler: RxConflictHandler<any> = {
-    isEqual(a, b) {
+    isEqual(a, b, _ctx) {
+        a = addAttachmentsIfNotExists(a);
+        b = addAttachmentsIfNotExists(b);
+
         /**
-         * isEqual() is used to detect conflicts or to detect if a
-         * document has to be pushed to the remote.
          * If the documents are deep equal,
          * we have no conflict.
-         * Because deepEqual is CPU expensive, on your
-         * custom conflict handler you might only
-         * check some properties, like the updatedAt time or revisions
-         * for better performance.
-         */
-        return deepEqual(a, b);
+         * On your custom conflict handler you might only
+         * check some properties, like the updatedAt time,
+         * for better performance, because deepEqual is expensive.
+        */
+        const ret = deepEqual(
+            stripAttachmentsDataFromDocument(a),
+            stripAttachmentsDataFromDocument(b)
+        );
+
+        return ret;
     },
     resolve(i) {
         /**
          * The default conflict handler will always
          * drop the fork state and use the master state instead.
-         * 
-         * In your custom conflict handler you likely want to merge properties
-         * of the realMasterState and the newDocumentState instead.
          */
         return i.realMasterState;
     }
