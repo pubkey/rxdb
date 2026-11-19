@@ -27,7 +27,7 @@ import {
 
 import { wrappedValidateZSchemaStorage, ZSchemaClass } from '../../plugins/validate-z-schema/index.mjs';
 import { wrappedValidateAjvStorage, getAjv } from '../../plugins/validate-ajv/index.mjs';
-import { getValidator as getEffectValidator, wrappedValidateEffectStorage } from '../../plugins/validate-effect/index.mjs';
+import { wrappedValidateEffectStorage } from '../../plugins/validate-effect/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 /**
