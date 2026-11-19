@@ -2583,68 +2583,119 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
         });
-        it('should emit the error without a retry when the pull modifier throws', async () => {
+        it('should stop the replication when the pull modifier throws on a pull handler result', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 2 });
 
             let modifierThrows = true;
+            const pull = {
+                handler: getPullHandler(remoteCollection),
+                stream$: getPullStream(remoteCollection),
+                modifier: (doc: any) => {
+                    if (modifierThrows) {
+                        throw new Error('pull modifier error');
+                    }
+                    return doc;
+                }
+            };
             const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: true,
                 retryTime: 50,
-                pull: {
-                    handler: getPullHandler(remoteCollection),
-                    stream$: getPullStream(remoteCollection),
-                    modifier: (doc) => {
-                        if (modifierThrows) {
-                            throw new Error('pull modifier error');
-                        }
-                        return doc;
-                    }
-                }
+                pull
             });
             const errors: (RxError | RxTypeError)[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
 
-            // the modifier throws on the initial pull
-            const initialReplicationResult = await Promise.race([
-                replicationState.awaitInitialReplication().then(() => 'resolved'),
-                wait(2000).then(() => 'timeout')
-            ]);
-            assert.strictEqual(initialReplicationResult, 'resolved');
+            await waitUntil(() => replicationState.isStopped(), 2000);
             assert.strictEqual(errors.length, 1);
             assert.strictEqual(errors[0].code, 'RC_PULL');
             assert.ok(JSON.stringify(errors[0].parameters).includes('pull modifier error'));
+            await replicationState.cancel();
 
-            // the batch is not written and not pulled again by a retry
+            // nothing is written, also not for later changes on the remote
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-after-stop' }));
             await wait(300);
             assert.strictEqual(errors.length, 1);
             assert.strictEqual((await localCollection.find().exec()).length, 0);
-            assert.strictEqual(replicationState.isStopped(), false);
+            await assert.rejects(
+                () => replicationState.start(),
+                (err: RxError) => err.code === 'RC_START_CANCELED'
+            );
 
-            // the checkpoint was not moved, so the next pull run fetches the documents
+            // a new replication with a working modifier pulls everything
             modifierThrows = false;
-            replicationState.reSync();
+            const replicationState2 = replicateRxCollection<TestDocType, CheckpointType>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull
+            });
+            ensureReplicationHasNoErrors(replicationState2);
+            await replicationState2.awaitInSync();
+            assert.strictEqual((await localCollection.find().exec()).length, 3);
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+        it('should stop the replication when the pull modifier throws on a pull.stream$ event', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 2 });
+
+            let modifierThrows = false;
+            const pull = {
+                handler: getPullHandler(remoteCollection),
+                stream$: getPullStream(remoteCollection),
+                modifier: (doc: any) => {
+                    if (modifierThrows) {
+                        throw new Error('pull modifier error');
+                    }
+                    return doc;
+                }
+            };
+            const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                retryTime: 50,
+                pull
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
             await replicationState.awaitInSync();
             assert.strictEqual((await localCollection.find().exec()).length, 2);
 
-            // the modifier throws on an event of the pull.stream$
+            // two stream events, the modifier throws on both
             modifierThrows = true;
-            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-with-error' }));
-            await waitUntil(() => errors.length === 2, 2000);
-            assert.strictEqual(errors[1].code, 'RC_PULL');
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'stream-event-1' }));
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'stream-event-2' }));
+            await waitUntil(() => replicationState.isStopped(), 2000);
+            assert.strictEqual(errors.length, 1);
+            assert.strictEqual(errors[0].code, 'RC_PULL');
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+            await replicationState.cancel();
+
+            // a later stream event is not written, even when the modifier works again
+            modifierThrows = false;
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'stream-event-3' }));
             await wait(300);
-            assert.strictEqual(errors.length, 2);
+            assert.strictEqual(errors.length, 1);
             assert.strictEqual((await localCollection.find().exec()).length, 2);
 
-            // later events must still be replicated
-            modifierThrows = false;
-            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-after-error' }));
-            await waitUntil(async () => {
-                const doc = await localCollection.findOne('insert-after-error').exec();
-                return !!doc;
-            }, 2000);
-            assert.strictEqual(errors.length, 2);
+            // a new replication pulls the documents of all events
+            const replicationState2 = replicateRxCollection<TestDocType, CheckpointType>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull
+            });
+            ensureReplicationHasNoErrors(replicationState2);
+            await replicationState2.awaitInSync();
+            const localDocs = await localCollection.find().exec();
+            assert.strictEqual(localDocs.length, 5);
+            ['stream-event-1', 'stream-event-2', 'stream-event-3'].forEach(id => {
+                assert.ok(localDocs.find(d => d.primary === id), 'must have pulled ' + id);
+            });
 
             await localCollection.database.close();
             await remoteCollection.database.close();
@@ -3797,46 +3848,97 @@ describe('replication.test.ts', () => {
         });
     });
     describe('push-only', () => {
-        it('should emit the error without a retry when the push modifier throws', async () => {
+        it('should stop the replication when the push modifier throws', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 2, remote: 0 });
 
-            let throwOnNextCall = true;
+            let modifierThrows = true;
+            const push = {
+                handler: getPushHandler(remoteCollection),
+                modifier: (doc: any) => {
+                    if (modifierThrows) {
+                        throw new Error('push modifier error');
+                    }
+                    return doc;
+                }
+            };
             const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: true,
                 retryTime: 50,
-                push: {
-                    handler: getPushHandler(remoteCollection),
-                    modifier: (doc) => {
-                        if (throwOnNextCall) {
-                            throwOnNextCall = false;
-                            throw new Error('push modifier error');
-                        }
-                        return doc;
-                    }
-                }
+                push
             });
             const errors: (RxError | RxTypeError)[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
 
-            await waitUntil(() => errors.length === 1, 2000);
+            await waitUntil(() => replicationState.isStopped(), 2000);
+            assert.strictEqual(errors.length, 1);
             assert.strictEqual(errors[0].code, 'RC_PUSH');
             assert.ok(JSON.stringify(errors[0].parameters).includes('push modifier error'));
+            await replicationState.cancel();
 
-            // the batch is not pushed again by a retry
+            // later local writes are not pushed by the stopped replication
+            modifierThrows = false;
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-after-stop' }));
             await wait(300);
             assert.strictEqual(errors.length, 1);
             assert.strictEqual((await remoteCollection.find().exec()).length, 0);
-            assert.strictEqual(replicationState.isStopped(), false);
 
-            // the next push cycle sends the documents of the failed batch too
-            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-after-error' }));
-            await waitUntil(async () => {
-                const docs = await remoteCollection.find().exec();
-                return docs.length === 3;
-            }, 2000);
+            // a new replication pushes all documents including the failed batch
+            const replicationState2 = replicateRxCollection<TestDocType, CheckpointType>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                push
+            });
+            ensureReplicationHasNoErrors(replicationState2);
+            await replicationState2.awaitInSync();
+            assert.strictEqual((await remoteCollection.find().exec()).length, 3);
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+        it('should stop the replication when the pull modifier throws on a conflict of the push handler', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const docData = schemaObjects.humanWithTimestampData({ id: 'conflict-doc' });
+            await remoteCollection.insert(Object.assign({}, docData, { name: 'remote' }));
+            await localCollection.insert(Object.assign({}, docData, { name: 'local' }));
+
+            let modifierThrows = true;
+            const options = {
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                },
+                pull: {
+                    handler: () => Promise.resolve({ documents: [], checkpoint: null as any }),
+                    modifier: (doc: any) => {
+                        if (modifierThrows) {
+                            throw new Error('pull modifier error');
+                        }
+                        return doc;
+                    }
+                }
+            };
+            const replicationState = replicateRxCollection<TestDocType, CheckpointType>(options);
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+
+            await waitUntil(() => replicationState.isStopped(), 2000);
             assert.strictEqual(errors.length, 1);
+            assert.strictEqual(errors[0].code, 'RC_PULL');
+            await replicationState.cancel();
+            assert.strictEqual((await localCollection.findOne('conflict-doc').exec(true)).name, 'local');
+
+            // a new replication pushes the document again and resolves the conflict
+            modifierThrows = false;
+            const replicationState2 = replicateRxCollection<TestDocType, CheckpointType>(options);
+            ensureReplicationHasNoErrors(replicationState2);
+            await replicationState2.awaitInSync();
+            assert.strictEqual((await localCollection.findOne('conflict-doc').exec(true)).name, 'remote');
+            assert.strictEqual((await remoteCollection.findOne('conflict-doc').exec(true)).name, 'remote');
 
             await localCollection.database.close();
             await remoteCollection.database.close();

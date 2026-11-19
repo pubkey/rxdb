@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX a replication `pull.modifier` or `push.modifier` that throws now cancels the replication instead of going on without the failed batch, so that no document is skipped. The error is emitted once on `error$` as `RC_PULL` or `RC_PUSH`, nothing of the failed batch is written or sent and no checkpoint is stored for it. Calling `replicateRxCollection()` again with the same `replicationIdentifier` and a fixed modifier continues from the last checkpoint and replicates the documents of the failed batch. This follows the previous change of the modifier error handling",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9480",
+            "linkText": "#9480"
+        }
+    ],
+    "priority": 6
+}

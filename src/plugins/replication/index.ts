@@ -279,14 +279,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = userPushModifier ? (d: WithDeleted<RxDocType>) => userPushModifier(clone(d)) : DEFAULT_MODIFIER;
 
         /**
-         * A throwing pull modifier is not retried.
-         * The error is emitted and the documents of that batch are not written.
+         * A throwing pull modifier stops the replication.
+         * The returned empty list is never written
+         * because the replication is already canceled at that point.
          */
         const runPullModifier = async (docs: WithDeleted<RxDocType>[]): Promise<WithDeleted<RxDocType>[]> => {
             try {
                 return await Promise.all(docs.map(d => pullModifier(d)));
             } catch (err: any | Error | Error[]) {
-                this.subjects.error.next(newRxError('RC_PULL', {
+                this.cancelOnModifierError(newRxError('RC_PULL', {
                     errors: toArray(err).map(er => errorToPlainJson(er)),
                     direction: 'pull'
                 }));
@@ -419,9 +420,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     });
 
                     /**
-                     * A throwing push modifier is not retried.
-                     * The rejection is handled by the replication protocol
-                     * which emits the error.
+                     * A throwing push modifier stops the replication,
+                     * the rows are not sent.
                      */
                     const useRowsOrNull = await Promise.all(
                         rows.map(async (row) => {
@@ -452,12 +452,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             return row;
                         })
                     ).catch((err: any | Error | Error[]) => {
-                        throw newRxError('RC_PUSH', {
+                        this.cancelOnModifierError(newRxError('RC_PUSH', {
                             pushRows: rows,
                             errors: toArray(err).map(er => errorToPlainJson(er)),
                             direction: 'push'
-                        });
+                        }));
                     });
+                    if (!useRowsOrNull) {
+                        return MASTER_WRITE_NOT_SENT;
+                    }
                     const useRows: RxReplicationWriteToMasterRow<RxDocType>[] = useRowsOrNull.filter(arrayFilterNotEmpty);
 
                     let result: WithDeleted<RxDocType>[] = null as any;
@@ -513,9 +516,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                      * like the documents from the pull handler and the pull stream.
                      */
                     const conflicts = handlePulledDocuments(this.collection, this.deletedField, ensureNotFalsy(result));
-                    return Promise.all(
-                        conflicts.map(d => pullModifier(d))
-                    );
+                    return runPullModifier(conflicts);
                 }
             }
         });
@@ -602,6 +603,26 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             await this._cancel();
         }
         this.callOnStart();
+    }
+
+    /**
+     * Pull and push modifiers must not throw.
+     * When one throws, the error is emitted once and the replication is canceled,
+     * so that no document is skipped and no checkpoint is stored
+     * behind the documents of the failed batch.
+     * A new replication state with the same replicationIdentifier
+     * continues from the last stored checkpoints.
+     * cancel() runs in the startQueue, so the internal state is canceled
+     * directly to ensure that nothing is written or sent in between.
+     */
+    private cancelOnModifierError(error: RxError | RxTypeError) {
+        const internalState = ensureNotFalsy(this.internalReplicationState);
+        if (internalState.events.canceled.getValue()) {
+            return;
+        }
+        this.subjects.error.next(error);
+        cancelRxStorageReplication(internalState);
+        this.cancel();
     }
 
     pause() {

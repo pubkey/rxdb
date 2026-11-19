@@ -878,8 +878,8 @@ export const ERROR_MESSAGES = {
     },
     RC_PULL: {
         message: 'RxReplication pull handler threw an error - see .errors for more details',
-        cause: 'The pull handler of the replication threw an error.',
-        fix: 'Check the error details in the .errors observable.',
+        cause: 'The pull handler or the pull modifier of the replication threw an error.',
+        fix: 'Check the error details in the .errors observable. A failed pull handler is retried. A throwing pull modifier cancels the replication, fix the modifier and create the replication again.',
         docs: 'https://rxdb.info/replication.html?console=errors&code=RC_PULL'
     },
     RC_START: {
@@ -902,8 +902,8 @@ export const ERROR_MESSAGES = {
     },
     RC_PUSH: {
         message: 'RxReplication push handler threw an error - see .errors for more details',
-        cause: 'The push handler of the replication threw an error.',
-        fix: 'Check the error details in the .errors observable.',
+        cause: 'The push handler or the push modifier of the replication threw an error.',
+        fix: 'Check the error details in the .errors observable. A failed push handler is retried. A throwing push modifier cancels the replication, fix the modifier and create the replication again.',
         docs: 'https://rxdb.info/replication.html?console=errors&code=RC_PUSH'
     },
     RC_PUSH_NO_AR: {

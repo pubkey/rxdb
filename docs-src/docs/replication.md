@@ -275,6 +275,8 @@ const replicationState = await replicateRxCollection({
          * Notice that the modifier can be called
          * multiple times and should not contain
          * any side effects.
+         * The modifier must not throw, a throwing
+         * modifier cancels the replication.
          * (optional)
          */
         modifier: d => d,
@@ -344,6 +346,8 @@ const replicationState = await replicateRxCollection({
          * Notice that the modifier can be called
          * multiple times and should not contain
          * any side effects.
+         * The modifier must not throw, a throwing
+         * modifier cancels the replication.
          * (optional)
          */
         modifier: d => d,
@@ -443,6 +447,12 @@ replicationState.error$.subscribe((error) => {
     }
 });
 ```
+
+### Errors in the modifiers
+
+The `pull.modifier` and the `push.modifier` must not throw. Errors of the handlers are retried, but a modifier that throws on a document will throw on the same document again, and skipping the document would lose data.
+
+When a modifier throws, the error is emitted once on `error$` and the replication stops. This ensures that the replication does not end up in a broken state.
 
 ## Security
 
