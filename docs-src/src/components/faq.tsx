@@ -53,7 +53,7 @@ export function Faq(props: {
     };
 
     return (
-        <div>
+        <div className="faq">
             {entities.length > 0 && <JsonLd data={jsonLd} />}
             {props.children}
         </div>

@@ -1301,6 +1301,10 @@ details[open] {
     padding-bottom: 25px !important;
 }
 
+.faq {
+    width: 100%;
+}
+
 .premium-faq details {
     width: 100%;
     max-width: 860px;
