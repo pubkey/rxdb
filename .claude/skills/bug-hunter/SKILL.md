@@ -86,7 +86,23 @@ Decisions of the maintainer that often come up while judging a finding:
 4. Check `orga/before-next-major.md`. When the bug is listed there, it waits for the next major release.
 5. Give the user a list of the valid findings before you open many pull requests, when they asked for a review first.
 
-When you use subagents, give each one exactly one bug and its own git worktree, and run at most three test runs at the same time. Test servers use fixed ports, so an `EADDRINUSE` error is a collision with another test run. Wait and run again.
+### One subagent per assumed bug
+
+Whenever you find an assumed bug, spawn a subagent for it right away and continue the hunt in the main session. Do not analyze, reproduce, or fix the bug in the main session.
+
+- Give each subagent exactly one assumed bug and its own git worktree with its own branch based on `master`.
+- The prompt for the subagent must contain the suspected behavior, the affected files and functions, the short script or the steps that made you suspect it, and the instruction to read this skill and `CLAUDE.md` first.
+- The subagent analyzes the assumed bug: it checks it against "What is a bug" and "What is not a bug", writes the failing test, and finds the real cause.
+- When the bug is valid, the subagent fixes it and opens the pull request as described in this skill. When it is not valid, the subagent opens no pull request and reports which rule made it drop the finding.
+- Run at most three test runs at the same time. Test servers use fixed ports, so an `EADDRINUSE` error is a collision with another test run. Wait and run again.
+- Collect the results of the subagents and give the user one list with the pull requests and the dropped findings.
+
+The main session makes sure that no bug gets more than one pull request:
+
+- Keep a list of all assumed bugs that were handed to a subagent, each with the affected files and functions and the suspected cause.
+- Before you spawn a subagent, compare the assumed bug with that list and with the open pull requests of the repository. When it has the same cause as an entry, do not spawn a subagent. Two symptoms with the same cause are one bug.
+- Tell each subagent which other assumed bugs are in work, so that it stops and reports when its finding turns out to be one of them.
+- When a subagent reports its result, compare the real cause and the changed files with the other results before its pull request is counted as done. When two pull requests fix the same bug, keep the one with the better test and fix, move a test that only the other one has into it, and close the other one with a comment that links the kept one.
 
 ## How to reproduce a bug
 
