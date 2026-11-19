@@ -163,6 +163,7 @@ export type RxStorageWriteErrorBase<RxDocType> = {
     status: number
     | 409 // conflict
     | 422 // schema validation error
+    | 510 // no longer used, see RxStorageWriteErrorAttachment
     ;
 
     /**
@@ -213,7 +214,19 @@ export type RxStorageWriteErrorValidation<RxDocType> = RxStorageWriteErrorBase<R
     schema: RxJsonSchema<RxDocumentData<RxDocType>>;
 };
 
+/**
+ * @deprecated A write with a new attachment that has no data
+ * rejects the whole bulkWrite() call with the RxError AT5.
+ * No storage returns this write error.
+ */
+export type RxStorageWriteErrorAttachment<RxDocType> = RxStorageWriteErrorBase<RxDocType> & {
+    status: 510;
+    attachmentId: string;
+    documentInDb?: RxDocumentData<RxDocType>;
+};
+
 
 export type RxStorageWriteError<RxDocType> =
     RxStorageWriteErrorConflict<RxDocType> |
-    RxStorageWriteErrorValidation<RxDocType>;
+    RxStorageWriteErrorValidation<RxDocType> |
+    RxStorageWriteErrorAttachment<RxDocType>;

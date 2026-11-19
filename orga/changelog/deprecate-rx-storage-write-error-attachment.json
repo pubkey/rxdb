@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE The type `RxStorageWriteErrorAttachment` (write error with status `510`) is deprecated, because a `bulkWrite()` with a new attachment without data now rejects with the error `AT5`. The type will be removed in the next major version",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9470",
+            "linkText": "#9470"
+        }
+    ],
+    "priority": 2
+}
