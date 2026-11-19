@@ -3,6 +3,7 @@
 > Discover how to create, manage, and migrate documents in RxCollections. Harness real-time data flows, secure encryption, and powerful performance in RxDB.
 
 import { NON_PREMIUM_COLLECTION_LIMIT } from '../src/constants';
+import { DATABASE_AND_COLLECTION_NAME_REGEX_STRING } from '../../src/plugins/dev-mode/unallowed-properties';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
 # RxCollection
@@ -42,7 +43,7 @@ Without the Premium Plugins, RxDB allows up to {NON_PREMIUM_COLLECTION_LIMIT} op
 
 ### name
 
-The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: `^[a-z][a-z0-9]*$`.
+The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: <code>{DATABASE_AND_COLLECTION_NAME_REGEX_STRING}</code>.
 
 ### schema
 
@@ -231,9 +232,8 @@ const docs = await myDatabase.todos.bulkUpsert([
 
 ### incrementalUpsert()
 
-When you run many upsert operations on the same RxDocument in a very short timespan, you might get a `409 Conflict` error.
-This means that you tried to run a `.upsert()` on the document, while the previous upsert operation was still running.
-To prevent these types of errors, you can run incremental upsert operations.
+When you run many `.upsert()` operations on the same RxDocument in parallel, they do not throw a [`409 CONFLICT`](./errors.md#CONFLICT) error. When the document already exists, the `.upsert()` writes on top of the current document state.
+`incrementalUpsert()` runs the operations for the same primary key one after another, in the order in which they were called.
 The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incrementalModify).
 
 ```js
@@ -246,7 +246,7 @@ const docData = {
 
 myDatabase.todos.upsert(docData);
 myDatabase.todos.upsert(docData);
-// -> throws because of parallel update to the same document
+// -> both calls resolve
 
 myDatabase.todos.incrementalUpsert(docData);
 myDatabase.todos.incrementalUpsert(docData);
@@ -254,7 +254,7 @@ myDatabase.todos.incrementalUpsert(docData);
 
 // wait until last upsert finished
 await myDatabase.todos.incrementalUpsert(docData);
-// -> works
+// -> the document has the data of the last call
 ```
 
 ### find()

@@ -726,7 +726,7 @@ const attachments = myDocument.allAttachments();
 
 ### allAttachments$
 
-Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added or removed from the [RxDocument](./rx-document.md).
+Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added, replaced, or removed from the [RxDocument](./rx-document.md). Writes that only change other fields of the document do not emit.
 
 ```javascript
 const all = [];
@@ -911,6 +911,7 @@ The default compressible types include the following MIME type patterns. Binary 
 ## Master Data - Create and Manage RxCollections
 
 import { NON_PREMIUM_COLLECTION_LIMIT } from '../src/constants';
+import { DATABASE_AND_COLLECTION_NAME_REGEX_STRING } from '../../src/plugins/dev-mode/unallowed-properties';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
 ## RxCollection
@@ -950,7 +951,7 @@ Without the Premium Plugins, RxDB allows up to {NON_PREMIUM_COLLECTION_LIMIT} op
 
 #### name
 
-The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: `^[a-z][a-z0-9]*$`.
+The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: <code>{DATABASE_AND_COLLECTION_NAME_REGEX_STRING}</code>.
 
 #### schema
 
@@ -1139,9 +1140,8 @@ const docs = await myDatabase.todos.bulkUpsert([
 
 #### incrementalUpsert()
 
-When you run many upsert operations on the same RxDocument in a very short timespan, you might get a `409 Conflict` error.
-This means that you tried to run a `.upsert()` on the document, while the previous upsert operation was still running.
-To prevent these types of errors, you can run incremental upsert operations.
+When you run many `.upsert()` operations on the same RxDocument in parallel, they do not throw a [`409 CONFLICT`](./errors.md#CONFLICT) error. When the document already exists, the `.upsert()` writes on top of the current document state.
+`incrementalUpsert()` runs the operations for the same primary key one after another, in the order in which they were called.
 The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incrementalModify).
 
 ```js
@@ -1154,7 +1154,7 @@ const docData = {
 
 myDatabase.todos.upsert(docData);
 myDatabase.todos.upsert(docData);
-// -> throws because of parallel update to the same document
+// -> both calls resolve
 
 myDatabase.todos.incrementalUpsert(docData);
 myDatabase.todos.incrementalUpsert(docData);
@@ -1162,7 +1162,7 @@ myDatabase.todos.incrementalUpsert(docData);
 
 // wait until last upsert finished
 await myDatabase.todos.incrementalUpsert(docData);
-// -> works
+// -> the document has the data of the last call
 ```
 
 #### find()
@@ -1797,7 +1797,7 @@ To do this the modifying operations of a document accept setting the `_deleted` 
 // update() and remove()
 await doc.update({
   $set: {
-    deletedAt: new Date().getTime(),
+    done: true,
     _deleted: true
   }
 });
@@ -2056,7 +2056,8 @@ const subscription = myCollection.getLocal$('foobar').subscribe(documentOrNull =
 
 ### RxLocalDocument
 
-A `RxLocalDocument` behaves like a normal `RxDocument`.
+A `RxLocalDocument` behaves like a normal [RxDocument](./rx-document.md).
+To change the data, you have to use `incrementalPatch()` or `incrementalModify()`. Both only work on the data of the local document and they return the updated `RxLocalDocument`.
 
 ```javascript
 const localDoc = await myCollection.getLocal('foobar');
@@ -2065,8 +2066,14 @@ const localDoc = await myCollection.getLocal('foobar');
 const foo = localDoc.get('foo');
 
 // change data
-localDoc.set('foo', 'bar2');
-await localDoc.save();
+await localDoc.incrementalPatch({ foo: 'bar2' });
+await localDoc.incrementalModify(data => {
+    data.foo = 'bar3';
+    return data;
+});
+
+// the isLocal property is true on every RxLocalDocument
+console.log(localDoc.isLocal); // > true
 
 // observe data
 localDoc.get$('foo').subscribe(value => { /* .. */ });
@@ -2084,7 +2091,7 @@ const foo = localDoc.foo; // undefined
 const foo = localDoc.get('foo'); // works!
 
 localDoc.foo = 'bar'; // does not work!
-localDoc.set('foo', 'bar'); // works
+await localDoc.incrementalPatch({ foo: 'bar' }); // works
 ```
 
 For the usage with typescript, you can have access to the typed data of the document over `toJSON()`
@@ -2327,6 +2334,14 @@ To prevent deadlocks, consider:
 - Avoid circular dependencies between pipelines.
 - Prefer one-directional data flow.
 
+#### Reads from inside the handler are detected by the stack trace
+
+The handler itself must be able to read from the destination collection while all other reads are blocked. RxDB detects these reads by looking at the JavaScript stack trace of the query.
+
+Some JavaScript engines do not keep the calling async functions in the stack trace after an awaited timer or network request. In such an environment RxDB cannot tell a read of the handler apart from an external read. To not block the handler forever, reads on the destination collection then pass while the handler is running in the same JavaScript process. This means a query that starts in the middle of a handler run can return partially processed data. Queries that start before the handler runs and queries from other browser tabs still wait for the pipeline.
+
+In engines that keep async stack traces, a read that the handler starts inside of a detached callback, like a `setTimeout()` callback, is still treated as an external read and blocks the handler forever. Always `await` the reads in the `async` handler function or in `async` functions that are awaited by it.
+
 ---
 
 ## RxQuery
@@ -2438,7 +2453,7 @@ addRxPlugin(RxDBUpdatePlugin);
 const query = myDatabase.todos.find({
   selector: {
     priority: {
-      $gt: 5
+      $lt: 5
     }
   }
 });
@@ -2631,6 +2646,8 @@ query.$.subscribe(amount => {
   console.log('Currently has ' + amount + ' documents');
 });
 ```
+
+The result of a count query is a number, so there are no documents that can be changed or removed. In [dev-mode](./dev-mode.md), calling `remove()`, `patch()`, `modify()`, `update()`, or one of their incremental variants on a count query throws [`QU21`](./errors.md#QU21). Use `find()` with the same selector instead.
 
 :::note
 Count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is **not** possible to run a `count()` query with a selector that requires fetching and comparing the document data. So if your query selector **does not** fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff of not using the fetched document data for caching.
@@ -2858,6 +2875,7 @@ However, this method has a significant downside: regex queries often cannot leve
 ## Design Perfect Schemas in RxDB
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import { FIELD_NAME_REGEX_STRING } from '../../src/plugins/dev-mode/check-schema';
 
 ## RxSchema
 
@@ -3188,7 +3206,7 @@ const todoSchemaWithFinalName = {
 ### Non allowed properties
 
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, key compression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
-For example, fieldnames must match the regex `^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
+For example, fieldnames must match the regex <code>{FIELD_NAME_REGEX_STRING}</code> and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
 
 Also the following class properties of `RxDocument` cannot be used as top level fields because they would clash when the RxDocument property is accessed:
 ```json
@@ -3216,6 +3234,7 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     "incrementalUpdate",
     "updateCRDT",
     "putAttachment",
+    "putAttachments",
     "putAttachmentBase64",
     "getAttachment",
     "allAttachments",

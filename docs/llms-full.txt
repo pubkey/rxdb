@@ -1309,6 +1309,7 @@ sub.unsubscribe();
 ## Design Perfect Schemas in RxDB
 
 import {Faq, FaqItem} from '@site/src/components/faq';
+import { FIELD_NAME_REGEX_STRING } from '../../src/plugins/dev-mode/check-schema';
 
 ## RxSchema
 
@@ -1639,7 +1640,7 @@ const todoSchemaWithFinalName = {
 ### Non allowed properties
 
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, key compression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
-For example, fieldnames must match the regex `^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
+For example, fieldnames must match the regex <code>{FIELD_NAME_REGEX_STRING}</code> and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
 
 Also the following class properties of `RxDocument` cannot be used as top level fields because they would clash when the RxDocument property is accessed:
 ```json
@@ -1667,6 +1668,7 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     "incrementalUpdate",
     "updateCRDT",
     "putAttachment",
+    "putAttachments",
     "putAttachmentBase64",
     "getAttachment",
     "allAttachments",
@@ -1791,6 +1793,7 @@ In **development**-mode, the schema-change can be simplified by **one of these**
 ## Master Data - Create and Manage RxCollections
 
 import { NON_PREMIUM_COLLECTION_LIMIT } from '../src/constants';
+import { DATABASE_AND_COLLECTION_NAME_REGEX_STRING } from '../../src/plugins/dev-mode/unallowed-properties';
 import {Faq, FaqItem} from '@site/src/components/faq';
 
 ## RxCollection
@@ -1830,7 +1833,7 @@ Without the Premium Plugins, RxDB allows up to {NON_PREMIUM_COLLECTION_LIMIT} op
 
 #### name
 
-The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: `^[a-z][a-z0-9]*$`.
+The name uniquely identifies the collection and should be used to refine the collection in the database. Two different collections in the same database can never have the same name. Collection names must match the following regex: <code>{DATABASE_AND_COLLECTION_NAME_REGEX_STRING}</code>.
 
 #### schema
 
@@ -2019,9 +2022,8 @@ const docs = await myDatabase.todos.bulkUpsert([
 
 #### incrementalUpsert()
 
-When you run many upsert operations on the same RxDocument in a very short timespan, you might get a `409 Conflict` error.
-This means that you tried to run a `.upsert()` on the document, while the previous upsert operation was still running.
-To prevent these types of errors, you can run incremental upsert operations.
+When you run many `.upsert()` operations on the same RxDocument in parallel, they do not throw a [`409 CONFLICT`](./errors.md#CONFLICT) error. When the document already exists, the `.upsert()` writes on top of the current document state.
+`incrementalUpsert()` runs the operations for the same primary key one after another, in the order in which they were called.
 The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incrementalModify).
 
 ```js
@@ -2034,7 +2036,7 @@ const docData = {
 
 myDatabase.todos.upsert(docData);
 myDatabase.todos.upsert(docData);
-// -> throws because of parallel update to the same document
+// -> both calls resolve
 
 myDatabase.todos.incrementalUpsert(docData);
 myDatabase.todos.incrementalUpsert(docData);
@@ -2042,7 +2044,7 @@ myDatabase.todos.incrementalUpsert(docData);
 
 // wait until last upsert finished
 await myDatabase.todos.incrementalUpsert(docData);
-// -> works
+// -> the document has the data of the last call
 ```
 
 #### find()
@@ -2365,7 +2367,7 @@ To do this the modifying operations of a document accept setting the `_deleted` 
 // update() and remove()
 await doc.update({
   $set: {
-    deletedAt: new Date().getTime(),
+    done: true,
     _deleted: true
   }
 });
@@ -2623,7 +2625,7 @@ addRxPlugin(RxDBUpdatePlugin);
 const query = myDatabase.todos.find({
   selector: {
     priority: {
-      $gt: 5
+      $lt: 5
     }
   }
 });
@@ -2816,6 +2818,8 @@ query.$.subscribe(amount => {
   console.log('Currently has ' + amount + ' documents');
 });
 ```
+
+The result of a count query is a number, so there are no documents that can be changed or removed. In [dev-mode](./dev-mode.md), calling `remove()`, `patch()`, `modify()`, `update()`, or one of their incremental variants on a count query throws [`QU21`](./errors.md#QU21). Use `find()` with the same selector instead.
 
 :::note
 Count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is **not** possible to run a `count()` query with a selector that requires fetching and comparing the document data. So if your query selector **does not** fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff of not using the fetched document data for caching.
@@ -4342,14 +4346,13 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 //> npm install fake-indexeddb --save
-const fakeIndexedDB = require('fake-indexeddb');
-const fakeIDBKeyRange = require('fake-indexeddb/lib/FDBKeyRange');
+import { indexedDB, IDBKeyRange } from 'fake-indexeddb';
 
 const myDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageDexie({
-        indexedDB: fakeIndexedDB,
-        IDBKeyRange: fakeIDBKeyRange
+        indexedDB,
+        IDBKeyRange
     })
 });
 
@@ -4787,6 +4790,7 @@ RxDB has different implementations to validate data, each of them is based on a 
 A validation-module that does the schema-validation. This one is using [ajv](https://github.com/epoberezkin/ajv) as validator which is a bit faster. Better compliant to the jsonschema-standard but also has a bigger build-size.
 
 ```javascript
+import { createRxDatabase, randomToken } from 'rxdb/plugins/core';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
@@ -4796,7 +4800,7 @@ const storage = wrappedValidateAjvStorage({
 });
 
 const db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage
 });
 ```
@@ -4866,6 +4870,7 @@ The validation itself runs at the same speed as with `validate-ajv`, because ajv
 Both `is-my-json-valid` and `validate-ajv` use `eval()` to perform validation which might not be wanted when `'unsafe-eval'` is not allowed in Content Security Policies. This one is using [z-schema](https://github.com/zaggino/z-schema) as validator which doesn't use `eval`.
 
 ```javascript
+import { createRxDatabase, randomToken } from 'rxdb/plugins/core';
 import { wrappedValidateZSchemaStorage } from 'rxdb/plugins/validate-z-schema';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
@@ -4875,7 +4880,7 @@ const storage = wrappedValidateZSchemaStorage({
 });
 
 const db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage
 });
 ```
@@ -4887,6 +4892,7 @@ const db = await createRxDatabase({
 The `validate-is-my-json-valid` plugin uses [is-my-json-valid](https://www.npmjs.com/package/is-my-json-valid) for schema validation.
 
 ```javascript
+import { createRxDatabase, randomToken } from 'rxdb/plugins/core';
 import {
     wrappedValidateIsMyJsonValidStorage
 } from 'rxdb/plugins/validate-is-my-json-valid';
@@ -4898,7 +4904,7 @@ const storage = wrappedValidateIsMyJsonValidStorage({
 });
 
 const db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage
 });
 ```
@@ -5266,6 +5272,10 @@ const doc = await myDatabase.todos.findOne('todo1').exec();
 console.log(doc.name);
 // > 'Learn RxDB'
 ```
+
+### Limitations
+
+- **Keys must not start with `|`**: Compressed keys are marked with the compression flag `|` as their first character. This means a key that starts with `|` cannot be distinguished from a compressed key, so it cannot be stored in a collection with `keyCompression: true`. This only affects fields where the keys are not defined in the schema, like an object with `additionalProperties` or `patternProperties`. A write with such a key is a developer error and throws. When one document of a bulk write has such a key, the whole write fails and no document of it is stored. A `|` at any other position of the key (`a|b`) works.
 
 ---
 
@@ -7263,7 +7273,7 @@ app.get('/pull', async (req, res) => {
             ]
         })
         .sort({updatedAt: 1, id: 1})
-        .limit(parseInt(req.query.batchSize, 10)).toArray();
+        .limit(parseInt(req.query.limit, 10)).toArray();
     const newCheckpoint = documents.length === 0 ? { id, updatedAt } : {
         id: lastOfArray(documents).id,
         updatedAt: lastOfArray(documents).updatedAt
@@ -7285,7 +7295,7 @@ const replicationState = await replicateRxCollection({
         async handler(checkpointOrNull, batchSize){
             const updatedAt = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
             const id = checkpointOrNull ? checkpointOrNull.id : '';
-            const url = 'https://localhost/pull'
+            const url = 'http://localhost/pull'
                 + `?updatedAt=${updatedAt}`
                 + `&id=${id}`
                 + `&limit=${batchSize}`;
@@ -7319,7 +7329,7 @@ import { Subject } from 'rxjs';
 let lastEventId = 0;
 const pullStream$ = new Subject();
 
-app.get('/push', async (req, res) => {
+app.post('/push', async (req, res) => {
     const changeRows = req.body;
     const conflicts = [];
     const event = {
@@ -7351,9 +7361,10 @@ app.get('/push', async (req, res) => {
             conflicts.push(realMasterState);
         } else {
             // no conflict -> write the document
-            await mongoCollection.updateOne(
+            await mongoCollection.replaceOne(
                 {id: changeRow.newDocumentState.id},
-                changeRow.newDocumentState
+                changeRow.newDocumentState,
+                {upsert: true}
             );
             event.documents.push(changeRow.newDocumentState);
             event.checkpoint = {
@@ -7364,7 +7375,7 @@ app.get('/push', async (req, res) => {
         }
     }
     if(event.documents.length > 0){
-        myPullStream$.next(event);
+        pullStream$.next(event);
     }
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(conflicts));
@@ -7385,7 +7396,7 @@ const replicationState = await replicateRxCollection({
     /* ... */
     push: {
         async handler(changeRows){
-            const rawResponse = await fetch('https://localhost/push', {
+            const rawResponse = await fetch('http://localhost/push', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -7481,9 +7492,12 @@ const eventSource = new EventSource(
 );
 eventSource.onmessage = () => myPullStream$.next('RESYNC');
 const replicationState = await replicateRxCollection({
+    /* ... */
     pull: {
+        /* ... */
         stream$: myPullStream$.asObservable()
     }
+    /* ... */
 });
 ```
 
@@ -8069,6 +8083,8 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
 ##### Helper Functions
 
 RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuilderFromRxSchema()`, `pullStreamBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` that can be used to generate handlers and schemas from the [RxJsonSchema](./rx-schema.md). To learn how to use them, please inspect the [GraphQL Example](https://github.com/pubkey/rxdb/tree/master/examples/graphql).
+
+`graphQLSchemaFromRxSchema()` can only generate GraphQL types for fields with a fully described structure. When a field is an object without `properties` or an array without `items`, the [dev-mode plugin](./dev-mode.md) makes it throw a [`GQL5`](./errors.md#GQL5) error that contains the `collection` and the `field` path. Without dev-mode this check does not run and the error of the `get-graphql-from-jsonschema` dependency is thrown instead. The `GQL5` error is also thrown for a field without `type` (for example a field that only has `enum`), a field with `type: 'null'`, and a `type` list that combines `object` or `array` with another type. To fix this, define the `properties`, `items`, or `type` of that field, or add the top-level field to `ignoreInputKeys` and `ignoreOutputKeys`. A `type` list with `null` like `['string', 'null']` is supported and becomes a nullable GraphQL field, which means the field is not marked as required with `!`.
 
 #### RxGraphQLReplicationState
 
@@ -10780,9 +10796,9 @@ const myPlugin = {
          * some methods are static and can be overwritten in the overwritable-object
          */
         overwritable: {
-            validatePassword: function(password) {
-                if (password && typeof password !== 'string' || password.length < 10)
-                    throw new TypeError('password is not valid');
+            // changes the message of the errors that RxDB throws
+            tunnelErrorMessage: function(code) {
+                return 'RxDB error with the code ' + code;
             }
         },
         /**
@@ -11100,8 +11116,7 @@ const migrationState = todosCollection.getMigrationState();
 // 'start' the observable
 migrationState.$.subscribe({
     next: state => console.dir(state),
-    error: error => console.error(error),
-    complete: () => console.log('done')
+    error: error => console.error(error)
 });
 
 // the emitted states look like this:
@@ -11197,7 +11212,7 @@ const migrationStrategies = {
         // update the data field of a single attachment to change its data. 
         oldDoc._attachments.myFile.data = await createBlob(
           'my new text',
-          oldDoc._attachments.myFile.content_type
+          oldDoc._attachments.myFile.type
         );
         return oldDoc;
       }
@@ -11284,6 +11299,24 @@ Only collections that exist in the new database at the time you call migrateStor
 
 This allows you to selectively migrate only certain collections if desired, by choosing which collections to define before invoking `migrateStorage()`.
 :::
+
+### Migrate Encrypted Collections
+
+When a collection has `encrypted` fields, you have to wrap the `oldStorage` with the same [encryption](./encryption.md) plugin that the old database used. The old storage is opened with the `password` of the new database, so the new database must be created with the same password as the old one.
+
+```ts
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
+
+await migrateStorage({
+    database: db as any,
+    oldDatabaseName: 'myOldDatabaseName',
+    oldStorage: wrappedKeyEncryptionCryptoJsStorage({
+        storage: getRxStorageLocalstorage()
+    })
+});
+```
 
 ### Migrate from a previous RxDB major version
 
@@ -11490,7 +11523,7 @@ const attachments = myDocument.allAttachments();
 
 ### allAttachments$
 
-Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added or removed from the [RxDocument](./rx-document.md).
+Gets an Observable which emits a stream of all attachments from the document. Re-emits each time an attachment gets added, replaced, or removed from the [RxDocument](./rx-document.md). Writes that only change other fields of the document do not emit.
 
 ```javascript
 const all = [];
@@ -11893,6 +11926,14 @@ To prevent deadlocks, consider:
 - Avoid circular dependencies between pipelines.
 - Prefer one-directional data flow.
 
+#### Reads from inside the handler are detected by the stack trace
+
+The handler itself must be able to read from the destination collection while all other reads are blocked. RxDB detects these reads by looking at the JavaScript stack trace of the query.
+
+Some JavaScript engines do not keep the calling async functions in the stack trace after an awaited timer or network request. In such an environment RxDB cannot tell a read of the handler apart from an external read. To not block the handler forever, reads on the destination collection then pass while the handler is running in the same JavaScript process. This means a query that starts in the middle of a handler run can return partially processed data. Queries that start before the handler runs and queries from other browser tabs still wait for the pipeline.
+
+In engines that keep async stack traces, a read that the handler starts inside of a detached callback, like a `setTimeout()` callback, is still treated as an external read and blocks the handler forever. Always `await` the reads in the `async` handler function or in `async` functions that are awaited by it.
+
 ---
 
 ## Signals & Custom Reactivity with RxDB
@@ -12015,9 +12056,12 @@ export function TodosList() {
   // RxQuery -> Preact Signal
   const todosSignal = db.todos.find().$$;
 
+  // the value is undefined until the query has emitted its first result
+  const todos = todosSignal.value || [];
+
   return (
     <ul>
-      {todosSignal.value.map((doc: any) => (
+      {todos.map((doc: any) => (
         <li key={doc.primary}>
             {doc.title}
         </li>
@@ -12414,7 +12458,8 @@ const subscription = myCollection.getLocal$('foobar').subscribe(documentOrNull =
 
 ### RxLocalDocument
 
-A `RxLocalDocument` behaves like a normal `RxDocument`.
+A `RxLocalDocument` behaves like a normal [RxDocument](./rx-document.md).
+To change the data, you have to use `incrementalPatch()` or `incrementalModify()`. Both only work on the data of the local document and they return the updated `RxLocalDocument`.
 
 ```javascript
 const localDoc = await myCollection.getLocal('foobar');
@@ -12423,8 +12468,14 @@ const localDoc = await myCollection.getLocal('foobar');
 const foo = localDoc.get('foo');
 
 // change data
-localDoc.set('foo', 'bar2');
-await localDoc.save();
+await localDoc.incrementalPatch({ foo: 'bar2' });
+await localDoc.incrementalModify(data => {
+    data.foo = 'bar3';
+    return data;
+});
+
+// the isLocal property is true on every RxLocalDocument
+console.log(localDoc.isLocal); // > true
 
 // observe data
 localDoc.get$('foo').subscribe(value => { /* .. */ });
@@ -12442,7 +12493,7 @@ const foo = localDoc.foo; // undefined
 const foo = localDoc.get('foo'); // works!
 
 localDoc.foo = 'bar'; // does not work!
-localDoc.set('foo', 'bar'); // works
+await localDoc.incrementalPatch({ foo: 'bar' }); // works
 ```
 
 For the usage with typescript, you can have access to the typed data of the document over `toJSON()`
@@ -12673,6 +12724,17 @@ const subscription = backupState.writeEvents$
     deleted: false
 }
 */
+```
+
+### error$
+
+When a backup run fails, for example because the backup directory is not accessible, the error is emitted on the `error$` Observable. A failed run does not stop the backup. The next run starts again from the last stored checkpoint, so the documents of the failed run are written again. When the initial backup run fails, `awaitInitialBackup()` rejects with the same error.
+
+```ts
+const subscription = backupState.error$
+    .subscribe(error =>
+        console.dir(error)
+    );
 ```
 
 ### Folder Names
@@ -13964,7 +14026,7 @@ The plugin dynamically reads your RxDB schema to assemble a prompt description a
 **Read Operations**:
 - `rxdb_query`: Run complex NoSQL queries against the local database.
 - `rxdb_count`: Count the number of documents matching a specific query.
-- `rxdb_changes`: Fetch the replication changestream since a given checkpoint.
+- `rxdb_changes`: Fetch the replication changestream since a given checkpoint. Deleted documents are returned with `_deleted: true`.
 - `rxdb_wait_changes`: Listen to live UI updates by pausing until a matching document changes occurs.
 
 **Write Operations**:
@@ -40886,7 +40948,7 @@ All three show the same UI.
 #### Browse and Query
 
 - **Data grid and JSON view**: Lists the documents of a collection with `limit` (default: 20) and `skip` inputs and a sort dropdown. The sort is part of the query, so clicking a column header sorts the whole collection and not only the current page. The grid only renders the visible rows, so a limit of `10k` does not slow down the page. Live mode is on by default and updates the result whenever a matching document changes.
-- **Mango query bar**: Runs MongoDB-style (Mango) selectors with a history and favorites. You do not have to write strict JSON, `{ done: false }` with unquoted keys and single quotes works too. When the selector has a syntax error, the viewer shows the character position and keeps the previous results visible.
+- **Mango query bar**: Runs MongoDB-style (Mango) selectors with a history and favorites. You do not have to write strict JSON, `{ done: false }` with unquoted keys and single quotes works too. Inside single quotes only `\\`, `\'` and `\"` are escapes and every other backslash is kept, so a regex like `{ name: { $regex: '\bLearn\b' } }` works as typed, while double-quoted strings follow the JSON rules. When the selector has a syntax error, the viewer shows the character position and keeps the previous results visible.
 - **Document drawer**: Shows the fields, the internals (`_rev`, `_meta.lwt`) and the [attachments](./rx-attachment.md) of a document, with inline previews for images. A JSON tab lets you edit the whole document as raw JSON. The primary key is protected against accidental changes.
 - **System collections**: The internal store, the [local documents](./rx-local-document.md) and the collections behind [RxState](./rx-state.md) are listed in a SYSTEM group. You can browse, query and export them, but editing is disabled.
 
@@ -42382,7 +42444,7 @@ Each operator method maps to the mango operator with the same name:
 | `nin(array)` | `$nin` | `.where('tags').nin(['rxdb'])` | `todo2`, `todo4` |
 | `exists(boolean)` | `$exists` | `.where('note').exists(true)` | `todo2` |
 | `regex(value)` | `$regex` | `.where('name').regex('.*RxDB.*')` | `todo1` |
-| `mod([divisor, remainder])` | `$mod` | `.where('priority').mod([2, 0])` | `todo1`, `todo3` |
+| `mod([divisor, remainder])` / `mod(divisor, remainder)` | `$mod` | `.where('priority').mod(2, 0)` | `todo1`, `todo3` |
 
 On an array field like `tags`, `in()` matches when at least one element of the array is in the given list, and `nin()` matches when no element is in the list.
 
@@ -42396,7 +42458,7 @@ const results = await myDatabase.todos.find()
 // > [RxDocument[todo3], RxDocument[todo4]]
 ```
 
-Notice that on an `RxQuery`, each chained method takes exactly one argument and applies to the field that was selected with `where()` before. The two-argument forms like `.gt('priority', 5)` or `.exists('note')` are not supported. Always select the field with `where()` first.
+Notice that on an `RxQuery`, each chained method takes exactly one argument and applies to the field that was selected with `where()` before. The two-argument forms like `.gt('priority', 5)` or `.exists('note')` are not supported. Always select the field with `where()` first. The only exception is `mod()`, which also accepts the divisor and the remainder as two arguments and the form `.mod('priority', 2, 0)` with the field as first argument.
 
 ### Regex Queries
 
@@ -42931,7 +42993,7 @@ import { useRxCollection } from 'rxdb/plugins/react';
 const collection = useRxCollection('heroes');
 ```
 
-The hook returns the collection once it becomes available. During the initial render, the value may be `undefined`, so components must handle this case.
+The hook returns the collection once it becomes available. During the initial render, the value is `null`, so components must handle this case.
 
 This hook does not subscribe to any data. It only provides access to the collection instance.
 

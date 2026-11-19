@@ -1320,6 +1320,8 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
 
 RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuilderFromRxSchema()`, `pullStreamBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` that can be used to generate handlers and schemas from the [RxJsonSchema](./rx-schema.md). To learn how to use them, please inspect the [GraphQL Example](https://github.com/pubkey/rxdb/tree/master/examples/graphql).
 
+`graphQLSchemaFromRxSchema()` can only generate GraphQL types for fields with a fully described structure. When a field is an object without `properties` or an array without `items`, the [dev-mode plugin](./dev-mode.md) makes it throw a [`GQL5`](./errors.md#GQL5) error that contains the `collection` and the `field` path. Without dev-mode this check does not run and the error of the `get-graphql-from-jsonschema` dependency is thrown instead. The `GQL5` error is also thrown for a field without `type` (for example a field that only has `enum`), a field with `type: 'null'`, and a `type` list that combines `object` or `array` with another type. To fix this, define the `properties`, `items`, or `type` of that field, or add the top-level field to `ignoreInputKeys` and `ignoreOutputKeys`. A `type` list with `null` like `['string', 'null']` is supported and becomes a nullable GraphQL field, which means the field is not marked as required with `!`.
+
 #### RxGraphQLReplicationState
 
 When you call `myCollection.syncGraphQL()` it returns a `RxGraphQLReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) with some GraphQL specific methods.
@@ -1455,7 +1457,7 @@ app.get('/pull', async (req, res) => {
             ]
         })
         .sort({updatedAt: 1, id: 1})
-        .limit(parseInt(req.query.batchSize, 10)).toArray();
+        .limit(parseInt(req.query.limit, 10)).toArray();
     const newCheckpoint = documents.length === 0 ? { id, updatedAt } : {
         id: lastOfArray(documents).id,
         updatedAt: lastOfArray(documents).updatedAt
@@ -1477,7 +1479,7 @@ const replicationState = await replicateRxCollection({
         async handler(checkpointOrNull, batchSize){
             const updatedAt = checkpointOrNull ? checkpointOrNull.updatedAt : 0;
             const id = checkpointOrNull ? checkpointOrNull.id : '';
-            const url = 'https://localhost/pull'
+            const url = 'http://localhost/pull'
                 + `?updatedAt=${updatedAt}`
                 + `&id=${id}`
                 + `&limit=${batchSize}`;
@@ -1511,7 +1513,7 @@ import { Subject } from 'rxjs';
 let lastEventId = 0;
 const pullStream$ = new Subject();
 
-app.get('/push', async (req, res) => {
+app.post('/push', async (req, res) => {
     const changeRows = req.body;
     const conflicts = [];
     const event = {
@@ -1543,9 +1545,10 @@ app.get('/push', async (req, res) => {
             conflicts.push(realMasterState);
         } else {
             // no conflict -> write the document
-            await mongoCollection.updateOne(
+            await mongoCollection.replaceOne(
                 {id: changeRow.newDocumentState.id},
-                changeRow.newDocumentState
+                changeRow.newDocumentState,
+                {upsert: true}
             );
             event.documents.push(changeRow.newDocumentState);
             event.checkpoint = {
@@ -1556,7 +1559,7 @@ app.get('/push', async (req, res) => {
         }
     }
     if(event.documents.length > 0){
-        myPullStream$.next(event);
+        pullStream$.next(event);
     }
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(conflicts));
@@ -1577,7 +1580,7 @@ const replicationState = await replicateRxCollection({
     /* ... */
     push: {
         async handler(changeRows){
-            const rawResponse = await fetch('https://localhost/push', {
+            const rawResponse = await fetch('http://localhost/push', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -1673,9 +1676,12 @@ const eventSource = new EventSource(
 );
 eventSource.onmessage = () => myPullStream$.next('RESYNC');
 const replicationState = await replicateRxCollection({
+    /* ... */
     pull: {
+        /* ... */
         stream$: myPullStream$.asObservable()
     }
+    /* ... */
 });
 ```
 

@@ -75,3 +75,7 @@ const doc = await myDatabase.todos.findOne('todo1').exec();
 console.log(doc.name);
 // > 'Learn RxDB'
 ```
+
+## Limitations
+
+- **Keys must not start with `|`**: Compressed keys are marked with the compression flag `|` as their first character. This means a key that starts with `|` cannot be distinguished from a compressed key, so it cannot be stored in a collection with `keyCompression: true`. This only affects fields where the keys are not defined in the schema, like an object with `additionalProperties` or `patternProperties`. A write with such a key is a developer error and throws. When one document of a bulk write has such a key, the whole write fails and no document of it is stored. A `|` at any other position of the key (`a|b`) works.
