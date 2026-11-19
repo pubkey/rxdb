@@ -21,6 +21,7 @@ import type {
 import {
     flatClone,
     getFromMapOrCreate,
+    hasOwnProperty,
     requestIdleCallbackIfAvailable
 } from './plugins/utils/index.ts';
 import { newRxError } from './rx-error.ts';
@@ -201,18 +202,43 @@ export function wrapRxStorageInstance<RxDocType>(
             documentWrites: BulkWriteRow<RxDocType>[],
             context: string
         ) => {
-            const useRows: BulkWriteRow<any>[] = [];
+            const useRows: BulkWriteRow<any>[] = new Array(documentWrites.length);
             await Promise.all(
-                documentWrites.map(async (row) => {
+                documentWrites.map(async (row, index) => {
                     const [previous, document] = await Promise.all([
                         row.previous ? toStorage(row.previous) : undefined,
                         toStorage(row.document)
                     ]);
-                    useRows.push({ previous, document });
+                    useRows[index] = { previous, document };
                 })
             );
 
             const writeResult = await instance.bulkWrite(useRows, context);
+
+            /**
+             * A storage below this wrapper can change the digest of a written attachment,
+             * like the attachments-compression plugin does to mark compressed data.
+             * The caller builds the state of the written documents from its own rows,
+             * so when the modifier has cloned the attachments, the stored digest
+             * must be set on the attachments of the caller.
+             */
+            for (let i = 0; i < documentWrites.length; i++) {
+                const attachments = documentWrites[i].document._attachments;
+                const storedAttachments = useRows[i].document._attachments;
+                if (!attachments || !storedAttachments || attachments === storedAttachments) {
+                    continue;
+                }
+                for (const attachmentId of Object.keys(storedAttachments)) {
+                    const attachment = attachments[attachmentId];
+                    const storedDigest = storedAttachments[attachmentId].digest;
+                    if (
+                        hasOwnProperty(attachments, attachmentId) &&
+                        attachment.digest !== storedDigest
+                    ) {
+                        attachment.digest = storedDigest;
+                    }
+                }
+            }
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
                 error: []
             };

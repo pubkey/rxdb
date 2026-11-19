@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX attachments could not be read (`attachment does not exist`) when the encryption storage wrapper was wrapped around the attachments-compression storage wrapper",
+    "links": [],
+    "priority": 5
+}

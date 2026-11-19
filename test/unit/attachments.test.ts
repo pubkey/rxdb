@@ -1477,6 +1477,68 @@ describe('attachments.test.ts', () => {
 
             db.close();
         });
+        it('should read the attachment when the encryption is wrapped around the compression', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                password: await getPassword(),
+                storage: getEncryptedStorage(
+                    wrappedAttachmentsCompressionStorage({
+                        storage: config.storage.getStorage()
+                    })
+                ),
+                multiInstance: false,
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {
+                encrypted: true,
+                compression: 'gzip'
+            };
+
+            const collections = await db.addCollections({
+                human: { schema: schemaJson }
+            });
+            const c = collections.human;
+
+            await c.bulkInsert([schemaObjects.humanData()]);
+            const doc = await c.findOne().exec(true);
+
+            const textData = 'encrypted and compressed data '.repeat(20);
+            const attachment = await doc.putAttachment({
+                id: 'secret.txt',
+                data: createBlob(textData, 'text/plain'),
+                type: 'text/plain'
+            });
+            assert.strictEqual(await attachment.getStringData(), textData);
+
+            // a write to the document must not break the attachment
+            const patchedDoc = await doc.getLatest().incrementalPatch({ firstName: 'foobar' });
+            assert.strictEqual(
+                await ensureNotFalsy(patchedDoc.getAttachment('secret.txt')).getStringData(),
+                textData
+            );
+
+            // read the document from the storage
+            const queriedDoc = await c.findOne().exec(true);
+            assert.strictEqual(
+                await ensureNotFalsy(queriedDoc.getAttachment('secret.txt')).getStringData(),
+                textData
+            );
+
+            // non-compressible types must work too
+            const binaryData = new Uint8Array([1, 2, 3, 255, 254]);
+            const binaryAttachment = await queriedDoc.putAttachment({
+                id: 'photo.jpg',
+                data: new Blob([binaryData], { type: 'image/jpeg' }),
+                type: 'image/jpeg'
+            });
+            const retrievedBytes = new Uint8Array(await (await binaryAttachment.getData()).arrayBuffer());
+            assert.deepStrictEqual(Array.from(retrievedBytes), Array.from(binaryData));
+
+            db.close();
+        });
     });
     describe('inline attachments on insert/upsert', () => {
         it('insert with inline attachments computes digest and length', async () => {
