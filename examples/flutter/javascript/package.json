@@ -17,6 +17,6 @@
   },
   "devDependencies": {
     "webpack": "5.111.1",
-    "webpack-cli": "7.2.3"
+    "webpack-cli": "7.3.1"
   }
 }
