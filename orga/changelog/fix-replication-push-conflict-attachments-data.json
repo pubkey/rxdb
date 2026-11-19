@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `rxStorageInstanceToReplicationHandler().masterWrite()` returned conflicting master documents without the attachments data, so a push conflict on a document with attachments emitted a non-RxError on `error$` and the client never got the master state",
+    "links": [],
+    "priority": 5
+}
