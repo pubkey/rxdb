@@ -33,6 +33,7 @@ import {
     PreparedQuery,
     RxDocumentData,
     RxDocumentWriteData,
+    BulkWriteRow,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
@@ -45,7 +46,7 @@ import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression/index.mjs';
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
-import { defaultHashSha256 } from '../../plugins/utils/index.mjs';
+import { defaultHashSha256, errorToPlainJson } from '../../plugins/utils/index.mjs';
 import {
     clone,
     randomString,
@@ -3102,6 +3103,171 @@ describe('rx-storage-implementations.test.ts (implementation: ' + config.storage
                     throw new Error('first change missing');
                 }
                 assert.strictEqual(firstChange.key, 'foobar');
+
+                sub.unsubscribe();
+                storageInstance.remove();
+            });
+            it('should reject the whole bulkWrite() when a new attachment has no data', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
+                    schema: Object.assign(
+                        getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                        {
+                            attachments: {}
+                        }
+                    ),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+                const emitted: EventBulk<RxStorageChangeEvent<any>, any>[] = [];
+                const sub = storageInstance.changeStream().subscribe(x => {
+                    emitted.push(x);
+                });
+
+                const dataBlob = createBlob('aaaaaaaaaa', 'text/plain');
+                const digest = await defaultHashSha256(dataBlob);
+                const getStubWriteData = (key: string): RxDocumentWriteData<TestDocType> => ({
+                    key,
+                    value: 'one',
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _attachments: {
+                        withData: {
+                            length: dataBlob.size,
+                            data: dataBlob,
+                            type: 'text/plain',
+                            digest
+                        },
+                        stubOne: {
+                            length: dataBlob.size,
+                            type: 'text/plain',
+                            digest
+                        },
+                        stubTwo: {
+                            length: dataBlob.size,
+                            type: 'text/plain',
+                            digest
+                        }
+                    }
+                });
+
+                const validDocument = (key: string): RxDocumentWriteData<TestDocType> => ({
+                    key,
+                    value: 'one',
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _attachments: {}
+                });
+                const assertRejectsWithAT5 = async (
+                    rows: BulkWriteRow<TestDocType>[],
+                    documentId: string
+                ) => {
+                    let thrown: any;
+                    try {
+                        await storageInstance.bulkWrite(rows, testContext);
+                    } catch (err) {
+                        thrown = err;
+                    }
+                    assert.ok(thrown, 'bulkWrite() must reject');
+                    /**
+                     * Storages that run in another process, like the remote storage,
+                     * rethrow the error with the serialized RxError in the message.
+                     */
+                    const errorText = JSON.stringify(errorToPlainJson(thrown));
+                    ['AT5', documentId, 'stubOne'].forEach(part => {
+                        assert.ok(errorText.includes(part), 'error must contain ' + part + ': ' + errorText);
+                    });
+                };
+
+                // insert where the wrong row is the only row of the write
+                await assertRejectsWithAT5(
+                    [{ document: getStubWriteData('insert-only') }],
+                    'insert-only'
+                );
+
+                // insert together with valid rows before and after the wrong row
+                await assertRejectsWithAT5(
+                    [
+                        { document: validDocument('valid-before') },
+                        { document: getStubWriteData('insert-mixed') },
+                        { document: validDocument('valid-after') }
+                    ],
+                    'insert-mixed'
+                );
+
+                // nothing was written and no event was emitted
+                const docsAfterInserts = await storageInstance.findDocumentsById(
+                    ['insert-only', 'insert-mixed', 'valid-before', 'valid-after'],
+                    true
+                );
+                assert.deepStrictEqual(docsAfterInserts, []);
+                await wait(isFastMode() ? 50 : 200);
+                assert.deepStrictEqual(flattenEvents(emitted), []);
+
+                // update that adds an attachment without data, together with a valid insert
+                const insertResult = await storageInstance.bulkWrite(
+                    [{ document: validDocument('existing') }],
+                    testContext
+                );
+                assert.deepStrictEqual(insertResult.error, []);
+                const previous = ensureNotFalsy(await getSingleDocument(storageInstance, 'existing'));
+                await assertRejectsWithAT5(
+                    [
+                        { document: validDocument('valid-with-update') },
+                        {
+                            previous,
+                            document: {
+                                key: 'existing',
+                                value: 'two',
+                                _rev: EXAMPLE_REVISION_2,
+                                _deleted: false,
+                                _meta: {
+                                    lwt: now()
+                                },
+                                _attachments: {
+                                    stubOne: {
+                                        length: dataBlob.size,
+                                        type: 'text/plain',
+                                        digest
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    'existing'
+                );
+
+                // the storage must only contain the unchanged valid insert
+                const docsInStorage = await storageInstance.findDocumentsById(
+                    ['insert-only', 'insert-mixed', 'valid-before', 'valid-after', 'valid-with-update', 'existing'],
+                    true
+                );
+                assert.deepStrictEqual(docsInStorage.map(d => d.key), ['existing']);
+                assert.strictEqual(docsInStorage[0].value, 'one');
+                assert.deepStrictEqual(docsInStorage[0]._attachments, {});
+
+                await waitUntil(() => flattenEvents(emitted).length >= 1);
+                await wait(isFastMode() ? 50 : 200);
+                assert.deepStrictEqual(
+                    flattenEvents(emitted).map(event => event.operation + ':' + event.documentId),
+                    ['INSERT:existing']
+                );
+
+                // the storage instance must still accept writes
+                const writeAfter = await storageInstance.bulkWrite(
+                    [{ document: validDocument('after-errors') }],
+                    testContext
+                );
+                assert.deepStrictEqual(writeAfter.error, []);
 
                 sub.unsubscribe();
                 storageInstance.remove();

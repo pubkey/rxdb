@@ -762,3 +762,11 @@ Todo:
 - Breaking: `addCollections()` in the same tick as a `remove()` or `close()` that is not awaited resolves after the pending call, where it rejected with `DB3` before.
 
 An implementation with tests is in the closed pull request [#9651](https://github.com/pubkey/rxdb/pull/9651).
+
+## Remove the deprecated type `RxStorageWriteErrorAttachment`
+
+A `bulkWrite()` with a new attachment that has no data rejects the whole write with the error `AT5` since [#9470](https://github.com/pubkey/rxdb/pull/9470). No storage returns a write error with the status `510` any longer, the type `RxStorageWriteErrorAttachment` is only kept so that the change was not breaking.
+
+Todo:
+- Remove `RxStorageWriteErrorAttachment` from `src/types/rx-error.d.ts`, from the `RxStorageWriteError` union, and the `510` from `RxStorageWriteErrorBase.status`.
+- Breaking: TypeScript code that imports the type or narrows a write error on `status === 510` no longer compiles.

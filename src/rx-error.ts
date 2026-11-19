@@ -163,8 +163,7 @@ export function isBulkWriteConflictError<RxDocType>(
 
 const STORAGE_WRITE_ERROR_CODE_TO_MESSAGE: { [k: number]: string; } = {
     409: 'document write conflict',
-    422: 'schema validation error',
-    510: 'attachment data missing'
+    422: 'schema validation error'
 };
 
 export function rxStorageWriteErrorToRxError(err: RxStorageWriteError<any>): RxError {

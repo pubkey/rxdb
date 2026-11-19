@@ -715,6 +715,12 @@ export const ERROR_MESSAGES = {
         fix: 'Ensure documents have the _attachments property set.',
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT4'
     },
+    AT5: {
+        message: 'RxStorageInstance.bulkWrite(): a new attachment has no data',
+        cause: 'A write row adds an attachment that is not in the previous document state and that has no data property. The whole bulkWrite() call fails and none of its documents is written.',
+        fix: 'Send the attachment data as a Blob in the data property when you add a new attachment. Only attachments that are already stored can be passed without data.',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT5'
+    },
 
     // plugins/encryption-crypto-js.js
     EN1: {
