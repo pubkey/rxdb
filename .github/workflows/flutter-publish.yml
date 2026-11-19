@@ -1,0 +1,71 @@
+# Publishes the rxdb Dart/Flutter package to pub.dev
+# @link https://pub.dev/packages/rxdb
+#
+# Authentication is done via GitHub OIDC, no secret is needed.
+# One-time setup on https://pub.dev/packages/rxdb/admin:
+# - Enable "Automated publishing from GitHub Actions"
+# - Repository: pubkey/rxdb
+# - Tag pattern: {{version}}
+# - Enable "publishing from workflow_dispatch events"
+# @link https://dart.dev/tools/pub/automated-publishing
+#
+# The release workflow (release.yml) triggers this workflow
+# on the git tag of each new RxDB version.
+name: Publish Flutter Package
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+*"
+  workflow_dispatch:
+
+env:
+  NPM_CONFIG_FETCH_RETRIES: 3
+  NPM_CONFIG_FETCH_RETRY_FACTOR: 2
+  NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
+  NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    # pub.dev only accepts versions that are published from a tag
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: read
+      # required for the OIDC authentication at pub.dev
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: ".nvmrc"
+      - run: npm install
+      - name: build the RxDB JavaScript bundle for Flutter
+        run: npm run build:flutter
+
+      # setup-dart configures the pub.dev token from the GitHub OIDC token
+      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.47.6"
+
+      - name: set package version from the git tag
+        working-directory: ./src/plugins/flutter/dart
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          sed -i "s/^version: .*/version: ${VERSION}/" pubspec.yaml
+          grep "^version:" pubspec.yaml
+
+      - name: test
+        working-directory: ./src/plugins/flutter/dart
+        run: |
+          flutter pub get
+          flutter test
+
+      - name: publish to pub.dev
+        working-directory: ./src/plugins/flutter/dart
+        run: flutter pub publish --force

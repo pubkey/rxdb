@@ -69,5 +69,10 @@ if (isEs5) {
 
 module.exports = {
     presets,
-    plugins
+    plugins,
+    /**
+     * The Dart package of the flutter plugin contains a generated
+     * JavaScript bundle and Flutter build output that must not be transpiled.
+     */
+    ignore: ['./src/plugins/flutter/dart/**']
 };

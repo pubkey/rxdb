@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "CHANGE rewrite the Flutter plugin: RxDB runs in QuickJS via `fjs` and stores data with the SQLite trial storage via the Dart `sqlite3` package. Queries, observables, documents, local documents, schema migrations and replication handlers (pull, push, pull stream) are usable directly from Dart. A custom JavaScript bundle can switch the storage to the RxDB Premium SQLite storage with `startRxDBFlutterBridge({ storage })` and `createRxDatabase(jsBundleAsset: ...)`, and the `rxdb` Dart package is published to pub.dev on each release",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9209",
+            "linkText": "#9209"
+        }
+    ],
+    "priority": 9
+}
