@@ -27,15 +27,19 @@ explicit `properties` is rejected by the importer.
 
 ## Boolean gate
 
-This change stacks on the base `validate-effect` plugin. When the installed Effect exposes
-`Schema.validate`, the plugin detects it at runtime and uses a boolean gate ahead of the detailed
-decode; rejected writes still pay only for the decode that builds the 422. The detection is narrow
-and the base decode remains available. The change is held until the Effect API is released.
+This change stacks on the base `validate-effect` plugin. `getValidator` feature-detects the
+installed Effect at runtime: when it exposes `Schema.validate`, a boolean gate runs ahead of the
+detailed decode; rejected writes still pay only for the decode that builds the 422. Published
+Effect 4.1.4 has no `Schema.validate`, so the gate is dormant on 4.1.4 and the base decode path is
+the default. `getValidator(schema, { validate: false })` forces the base path even when the API is
+present, so both contracts can be compared in the test.
 
 ## Dependency
 
-The dependency is raised from `^4.1.4` to `^4.1.5`, the first release containing `Schema.validate`.
-`effect` remains a regular dependency, not a peer, as in the base plugin.
+`effect` is a regular dependency of the `rxdb` package, declared as `^4.1.4`, the same way `ajv` is
+declared for `validate-ajv`. It is not a peer dependency: importing this plugin must be enough for
+a consumer to validate. The submitted plugin works with published Effect 4.1.4; the gate activates
+only when a future installed Effect provides `Schema.validate`.
 
 ## Benchmark
 
@@ -49,11 +53,12 @@ NODE_ENV=fast DEFAULT_STORAGE=memory npm run test:performance:validation
 ```
 
 It compares no validator, Ajv and the Effect plugin on time-to-first-insert and bulk insert of
-3,000 documents. For this stacked change the benchmark used a locally built Effect carrying
-`Schema.validate` (the API intended for 4.1.5, not yet published), not the released 4.1.4 that the
-base PR uses. One fast-mode run measured time-to-first-insert of 0.72 ms (no validator), 2.62 ms
+3,000 documents. The gate numbers below used a locally built Effect carrying
+`Schema.validate` (an API absent from published 4.1.4), not the released 4.1.4 that the base PR
+uses and this PR declares. One fast-mode run measured time-to-first-insert of 0.72 ms (no validator), 2.62 ms
 (Ajv) and 1.48 ms (plugin), and insert of 3,000 documents of 1.13 ms, 2.74 ms and 11.58 ms. These
-are one-host medians, not an SLA, and require the unreleased Effect API.
+are one-host medians, not an SLA, and the gated-plugin figures require a local Effect build with
+the API; on published 4.1.4 the gate is dormant and the plugin runs the base decode path.
 
 ## Alternatives considered
 

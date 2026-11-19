@@ -27,7 +27,8 @@ import {
 
 import { wrappedValidateZSchemaStorage, ZSchemaClass } from '../../plugins/validate-z-schema/index.mjs';
 import { wrappedValidateAjvStorage, getAjv } from '../../plugins/validate-ajv/index.mjs';
-import { wrappedValidateEffectStorage } from '../../plugins/validate-effect/index.mjs';
+import { getValidator as getEffectValidator, wrappedValidateEffectStorage } from '../../plugins/validate-effect/index.mjs';
+import { Schema } from 'effect';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 /**
@@ -1169,7 +1170,12 @@ describe('validate-effect plugin', () => {
         assert.strictEqual(validationError.params.format, 'date-time');
         await instance.close();
     });
-    it('applies the same validation contract with the boolean gate and the base decode', () => {
+    it('falls back to the base decode when Schema.validate is absent, same contract when present', () => {
+        // Published Effect 4.1.4 has no `Schema.validate`, so the gate is dormant there and the
+        // default validator must fall back to the base decode. When a future installed Effect
+        // provides the API, this same test asserts the gated path keeps the 422 contract. The
+        // test never claims the gate ran: it only compares the two contracts.
+        const hasGate = typeof (Schema as any).validate === 'function';
         const schema = fillWithDefaultSettings(clone(schemas.human));
         const gated = getEffectValidator(schema);
         const base = getEffectValidator(schema, { validate: false });
@@ -1179,8 +1185,9 @@ describe('validate-effect plugin', () => {
         assert.deepStrictEqual(base(validDoc), []);
         const gatedErrors = gated(invalidDoc);
         const baseErrors = base(invalidDoc);
-        assert.ok(gatedErrors.length > 0);
-        assert.ok(baseErrors.length > 0);
+        const mode = hasGate ? 'gate active' : 'gate dormant (fallback to base decode)';
+        assert.ok(gatedErrors.length > 0, 'expected gated errors, ' + mode);
+        assert.ok(baseErrors.length > 0, 'expected base errors, ' + mode);
         assert.strictEqual(gatedErrors[0].field, baseErrors[0].field);
         assert.strictEqual(gatedErrors[0].keyword, baseErrors[0].keyword);
         assert.strictEqual(gatedErrors[0].instancePath, baseErrors[0].instancePath);

@@ -599,7 +599,7 @@
     "crypto-js": "4.2.0",
     "custom-idle-queue": "5.0.2",
     "dexie": "4.4.2",
-    "effect": "^4.1.5",
+    "effect": "^4.1.4",
     "event-reduce-js": "8.0.0",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "17.0.2",
