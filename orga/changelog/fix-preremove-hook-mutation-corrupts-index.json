@@ -1,0 +1,5 @@
+{
+    "text": "FIX `remove()` and `bulkRemove()` used the data mutated by a `preRemove` hook as the previous document state, so that a removed document stayed in the index and was still returned by queries when the hook changed an indexed field",
+    "links": [],
+    "priority": 5
+}
