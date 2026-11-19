@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the database viewer evaluated selectors and sort differently in dump mode and on the system collections than on live collections (`$regex` with `$options`, `null` comparisons, `$ne` on arrays, `$size`, `$elemMatch`, `$not`, `$mod`, `$type`, missing values in the sort). Both now use the query matcher and sort comparator of the RxDB core",
+    "links": [],
+    "priority": 4
+}
