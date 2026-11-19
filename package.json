@@ -664,7 +664,7 @@
     "get-port": "7.2.0",
     "global-jsdom": "30.0.0",
     "globals": "17.14.0",
-    "google-drive-mock": "1.2.2",
+    "google-drive-mock": "1.2.3",
     "graphql-http": "1.23.1",
     "graphql-subscriptions": "3.0.0",
     "gzip-size-cli": "5.1.0",
