@@ -26,6 +26,15 @@ const YOUTUBE_VIDEOS: Omit<VideoBoxProps, 'dark'>[] = [
         description: 'This video demonstrates how to quickly prototype a security-first, peer-to-peer messaging app using Solid JS, RxDB, and WebRTC.'
     },
     {
+        videoId: 'cHfJnK8-H4I',
+        title: 'Stop Building Slow React Apps: The Local-First Architecture (RxDB Tutorial)',
+        duration: '29:05',
+        startAt: 0,
+        uploadDate: '2026-11-14',
+        language: 'en',
+        description: 'A full tutorial that builds a local-first React application with RxDB and explains how local storage, reactive queries, and replication make the app fast and offline-capable.'
+    },
+    {
         videoId: 'qHWrooWyCYg',
         title: 'This solved a problem I\'ve had in Angular for years',
         duration: '03:45',
