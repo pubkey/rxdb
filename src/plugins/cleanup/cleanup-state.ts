@@ -68,11 +68,17 @@ export async function cleanupRxState(
                 if (rxCollection.closed) {
                     return true;
                 }
-                return state._cleanup().catch(err => {
-                    /**
-                     * The collection can be closed while the cleanup is running.
-                     * Then the cleanup run ends without an error.
-                     */
+                /**
+                 * The collection can be closed while the cleanup is running.
+                 * Then the cleanup run ends without an error.
+                 * A step of the cleanup that runs on the closed collection
+                 * might never settle, and this queue is shared by all
+                 * databases, so it must not wait for that step.
+                 */
+                return Promise.race([
+                    state._cleanup(),
+                    firstValueFrom(rxCollection.closed$, { defaultValue: true }).then(() => true)
+                ]).catch(err => {
                     if (rxCollection.closed) {
                         return true;
                     }
