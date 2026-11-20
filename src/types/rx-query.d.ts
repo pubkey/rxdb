@@ -98,11 +98,15 @@ export type MangoQuerySelectorAndIndex<RxDocType = any> = {
 export type MangoQueryNoLimit<RxDocType> = MangoQuerySelectorAndIndex<RxDocType> & {
     /**
      * Sorting of the results.
-     * If no sort is set, RxDB will sort by the primary key.
-     * Also if sort is set, RxDB will add primaryKey sorting
-     * if the primaryKey was not in the sort parameters before.
+     * If no sort is set, RxDB sorts by the fields of the index
+     * that fits the selector best. When no index fits, it sorts by the
+     * first index of the schema, and by the primary key when the
+     * schema has no indexes. So set a sort when your code depends
+     * on the order of the results.
+     * RxDB always appends the primary key as last sort field
+     * when it is not part of the sort parameters.
      * This ensures that there is a deterministic sorting of the
-     * results, not mather at which order the documents have been
+     * results, no matter in which order the documents have been
      * inserted into the storage.
      */
     sort?: MangoQuerySortPart<RxDocType>[];

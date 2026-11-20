@@ -249,6 +249,8 @@ const result = await query.exec();
 :::note RxDB will always append the primary key to the sort parameters
 For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
 This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.
+
+A query without `sort` is NOT sorted by the primary key. RxDB sorts it by the fields of the [index](./rx-schema.md#indexes) that fits the selector best, so that the query can run over that index. When no index fits the selector, the first index of the schema is used, and the primary key only when the schema has no indexes. Set `sort` explicitly when your code depends on the order of the results.
 :::
 
 
