@@ -523,6 +523,24 @@ addRxPlugin(RxDBJsonDumpPlugin);
                     assert.deepStrictEqual(state.get(), expected);
                 }
 
+                /**
+                 * The cleanup still runs in the background.
+                 * All RxState cleanups run in one shared queue, so a cleanup
+                 * that is cut off by removing its database
+                 * would block the cleanup of the other tests.
+                 * Wait until the database is idle and the amount
+                 * of state documents no longer changes.
+                 */
+                let lastDocsAmount = -1;
+                let unchangedChecks = 0;
+                await waitUntil(async () => {
+                    await database.requestIdlePromise();
+                    const docsAmount = (await state.collection.find().exec()).length;
+                    unchangedChecks = docsAmount === lastDocsAmount ? unchangedChecks + 1 : 0;
+                    lastDocsAmount = docsAmount;
+                    return unchangedChecks >= 3;
+                }, undefined, 50);
+
                 await database.remove();
             });
         });
