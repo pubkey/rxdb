@@ -55,8 +55,8 @@
     "style-loader": "4.0.0",
     "testcafe": "3.7.7",
     "testcafe-hammerhead": "31.7.9",
-    "webpack": "5.111.1",
-    "webpack-cli": "7.2.3",
-    "webpack-dev-server": "6.0.0"
+    "webpack": "5.112.2",
+    "webpack-cli": "7.3.1",
+    "webpack-dev-server": "6.1.0"
   }
 }
