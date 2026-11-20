@@ -3063,11 +3063,7 @@ In contrast to other (server-side) database replication protocols, the RxDB Sync
 
 On the [RxDocument](./rx-document.md) level, the replication works like git, where the fork/client contains all new writes and must be merged with the master/server before it can push its new state to the master/server.
 
-```
-A---B-----------D   master/server state
-     \         /
-      B---C---D     fork/client state
-```
+![RxDB replication on the document level](./files/replication-document-level.svg)
 
 - The client pulls the latest state `B` from the master.
 - The client does some changes `C+D`.
@@ -3084,19 +3080,7 @@ The server **must** implement the following methods to be compatible with the re
 - **pushHandler** a method that can be called by the client to send client-side writes to the master. It gets an array with the `assumedMasterState` and the `newForkState` of each document write as input. It must return an array that contains the master document states of all conflicts. If there are no conflicts, it must return an empty array.
 - **pullStream** an observable that emits batches of all master writes and the latest checkpoint of the write batches.
 
-```
-        +--------+                             +--------+ 
-        |        | pullHandler()               |        |
-        |        |--------------------->       |        | 
-        |        |                             |        | 
-        |        |                             |        |
-        | Client | pushHandler()               | Server |
-        |        |--------------------->       |        | 
-        |        |                             |        |
-        |        |   pullStream$               |        | 
-        |        |   <-------------------------|        | 
-        +--------+                             +--------+
-```
+  ![RxDB replication on the transfer level with pullHandler, pushHandler and pullStream](./files/replication-transfer-level.svg)
 
 The replication runs in two **different modes**:
 
@@ -3157,20 +3141,12 @@ By default, the field is `_deleted`. If your remote endpoint uses a different fi
 
 When multiple clients (or the server) modify the same document at the same time (or when they are offline), it can happen that a conflict arises during the replication.
 
-```
-A---B1---C1---X    master/server state
-     \       /
-      B1---C2      fork/client state
-```
+![RxDB replication conflict](./files/replication-conflict.svg)
 
 In the case above, the client would tell the master to move the document state from `B1` to `C2` by calling `pushHandler()`. But because the actual master state is `C1` and not `B1`, the master would reject the write by sending back the actual master state `C1`. 
 **RxDB resolves all conflicts on the client** so it would call the conflict handler of the [RxCollection](./rx-collection.md) and create a new document state `D` that can then be written to the master.
 
-```
-A---B1---C1---X---D    master/server state
-     \       / \ /
-      B1---C2---D      fork/client state
-```
+![RxDB replication conflict resolved on the client](./files/replication-conflict-resolved.svg)
 
 The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentally overwrite other peoples changes when they go online again.
 You can specify a custom conflict handler by setting the property `conflictHandler` when calling `addCollection()`.
@@ -3289,6 +3265,8 @@ const replicationState = await replicateRxCollection({
          * Notice that the modifier can be called
          * multiple times and should not contain
          * any side effects.
+         * The modifier must not throw, a throwing
+         * modifier cancels the replication.
          * (optional)
          */
         modifier: d => d,
@@ -3358,6 +3336,8 @@ const replicationState = await replicateRxCollection({
          * Notice that the modifier can be called
          * multiple times and should not contain
          * any side effects.
+         * The modifier must not throw, a throwing
+         * modifier cancels the replication.
          * (optional)
          */
         modifier: d => d,
@@ -3455,6 +3435,12 @@ replicationState.error$.subscribe((error) => {
     }
 });
 ```
+
+#### Errors in the modifiers
+
+The `pull.modifier` and the `push.modifier` must not throw. Errors of the handlers are retried, but a modifier that throws on a document will throw on the same document again, and skipping the document would lose data.
+
+When a modifier throws, the error is emitted once on `error$` and the replication stops. This ensures that the replication does not end up in a broken state.
 
 ### Security
 
