@@ -41,11 +41,7 @@ In contrast to other (server-side) database replication protocols, the RxDB Sync
 
 On the [RxDocument](./rx-document.md) level, the replication works like git, where the fork/client contains all new writes and must be merged with the master/server before it can push its new state to the master/server.
 
-```
-A---B-----------D   master/server state
-     \         /
-      B---C---D     fork/client state
-```
+<p align="center"><img src="./files/replication-document-level.svg" alt="RxDB replication on the document level" width="780" /></p>
 
 - The client pulls the latest state `B` from the master.
 - The client does some changes `C+D`.
@@ -65,19 +61,7 @@ The server **must** implement the following methods to be compatible with the re
 - **pullStream** an observable that emits batches of all master writes and the latest checkpoint of the write batches.
 
 
-```
-        +--------+                             +--------+ 
-        |        | pullHandler()               |        |
-        |        |--------------------->       |        | 
-        |        |                             |        | 
-        |        |                             |        |
-        | Client | pushHandler()               | Server |
-        |        |--------------------->       |        | 
-        |        |                             |        |
-        |        |   pullStream$               |        | 
-        |        |   <-------------------------|        | 
-        +--------+                             +--------+
-```
+<p align="center"><img src="./files/replication-transfer-level.svg" alt="RxDB replication on the transfer level with pullHandler, pushHandler and pullStream" width="780" /></p>
 
 
 
@@ -142,20 +126,12 @@ By default, the field is `_deleted`. If your remote endpoint uses a different fi
 
 When multiple clients (or the server) modify the same document at the same time (or when they are offline), it can happen that a conflict arises during the replication.
 
-```
-A---B1---C1---X    master/server state
-     \       /
-      B1---C2      fork/client state
-```
+<p align="center"><img src="./files/replication-conflict.svg" alt="RxDB replication conflict" width="780" /></p>
 
 In the case above, the client would tell the master to move the document state from `B1` to `C2` by calling `pushHandler()`. But because the actual master state is `C1` and not `B1`, the master would reject the write by sending back the actual master state `C1`. 
 **RxDB resolves all conflicts on the client** so it would call the conflict handler of the [RxCollection](./rx-collection.md) and create a new document state `D` that can then be written to the master.
 
-```
-A---B1---C1---X---D    master/server state
-     \       / \ /
-      B1---C2---D      fork/client state
-```
+<p align="center"><img src="./files/replication-conflict-resolved.svg" alt="RxDB replication conflict resolved on the client" width="780" /></p>
 
 The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentally overwrite other peoples changes when they go online again.
 You can specify a custom conflict handler by setting the property `conflictHandler` when calling `addCollection()`.
