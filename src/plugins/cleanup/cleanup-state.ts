@@ -1,11 +1,17 @@
-import type { RxCleanupPolicy, RxState } from '../../types/index.d.ts';
-import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils/index.ts';
+import type { RxCleanupPolicy, RxCollection, RxState } from '../../types/index.d.ts';
+import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import { DEFAULT_CLEANUP_POLICY, awaitReplicationInSyncOrCanceled } from './cleanup-helper.ts';
 import { initialCleanupWait } from './cleanup.ts';
 import { firstValueFrom } from 'rxjs';
 
 let RXSTATE_CLEANUP_QUEUE: Promise<any> = PROMISE_RESOLVE_TRUE;
+
+/**
+ * One promise per collection that resolves when the collection gets closed,
+ * so that the cleanup runs do not subscribe to closed$ each time.
+ */
+const CLOSED_PROMISE_BY_COLLECTION = new WeakMap<RxCollection, Promise<boolean>>();
 
 export async function startCleanupForRxState(state: RxState<unknown, unknown>) {
     const rxCollection = state.collection;
@@ -77,7 +83,11 @@ export async function cleanupRxState(
                  */
                 return Promise.race([
                     state._cleanup(),
-                    firstValueFrom(rxCollection.closed$, { defaultValue: true }).then(() => true)
+                    getFromMapOrCreate(
+                        CLOSED_PROMISE_BY_COLLECTION,
+                        rxCollection,
+                        () => firstValueFrom(rxCollection.closed$).then(() => true)
+                    )
                 ]).catch(err => {
                     if (rxCollection.closed) {
                         return true;
