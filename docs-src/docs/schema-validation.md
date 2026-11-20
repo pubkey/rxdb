@@ -169,6 +169,10 @@ RxDB requires `maxLength` on a string primary key field.
 
 The converter emits the RxDB JSON schema, so RxDB still stores a JSON schema and the `validate-effect` wrapper validates it with Effect. The `rxdb-effect-schema` package is external and maintained by its author. It does not ship as part of the core `validate-effect` plugin. Recursive schemas are rejected because RxDB does not support `$ref`. Effect refinements that the JSON Schema exporter cannot express do not survive the conversion.
 
+#### Boolean gate
+
+At runtime, the wrapper feature-detects the installed Effect. When the installed Effect exposes `Schema.validate`, the wrapper runs a boolean gate ahead of the detailed decode. Valid writes return through this fast path without the full decode, while rejected writes still run the detailed decode to build the 422 error. When `Schema.validate` is absent, the wrapper decodes every write with the base path. There is no API change and the 422 error contract stays the same.
+
 ### validate-z-schema
 
 Both `is-my-json-valid` and `validate-ajv` use `eval()` to perform validation which might not be wanted when `'unsafe-eval'` is not allowed in Content Security Policies. This one is using [z-schema](https://github.com/zaggino/z-schema) as validator which doesn't use `eval`.
