@@ -1,17 +1,11 @@
-import type { RxCleanupPolicy, RxCollection, RxState } from '../../types/index.d.ts';
-import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../../plugins/utils/index.ts';
+import type { RxCleanupPolicy, RxState } from '../../types/index.d.ts';
+import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import { DEFAULT_CLEANUP_POLICY, awaitReplicationInSyncOrCanceled } from './cleanup-helper.ts';
 import { initialCleanupWait } from './cleanup.ts';
-import { firstValueFrom } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 
 let RXSTATE_CLEANUP_QUEUE: Promise<any> = PROMISE_RESOLVE_TRUE;
-
-/**
- * One promise per collection that resolves when the collection gets closed,
- * so that the cleanup runs do not subscribe to closed$ each time.
- */
-const CLOSED_PROMISE_BY_COLLECTION = new WeakMap<RxCollection, Promise<boolean>>();
 
 export async function startCleanupForRxState(state: RxState<unknown, unknown>) {
     const rxCollection = state.collection;
@@ -81,19 +75,23 @@ export async function cleanupRxState(
                  * might never settle, and this queue is shared by all
                  * databases, so it must not wait for that step.
                  */
-                return Promise.race([
-                    state._cleanup(),
-                    getFromMapOrCreate(
-                        CLOSED_PROMISE_BY_COLLECTION,
-                        rxCollection,
-                        () => firstValueFrom(rxCollection.closed$).then(() => true)
-                    )
-                ]).catch(err => {
+                const closedSub = new Subscription();
+                const closedPromise = new Promise<boolean>(res => {
+                    closedSub.add(rxCollection.closed$.subscribe(() => res(true)));
+                });
+                try {
+                    return await Promise.race([
+                        state._cleanup(),
+                        closedPromise
+                    ]);
+                } catch (err) {
                     if (rxCollection.closed) {
                         return true;
                     }
                     throw err;
-                });
+                } finally {
+                    closedSub.unsubscribe();
+                }
             });
         isDone = await RXSTATE_CLEANUP_QUEUE;
     }
