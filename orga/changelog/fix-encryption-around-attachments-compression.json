@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX attachments could not be read (`attachment does not exist`) when the encryption storage wrapper was wrapped around the attachments-compression storage wrapper",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9765",
+            "linkText": "#9765"
+        }
+    ],
+    "priority": 5
+}
