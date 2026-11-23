@@ -140,7 +140,7 @@ When you use RxDB, every read and write goes to local storage (IndexedDB in brow
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -173,6 +173,8 @@ const openTodos = await db.todos.find({
     sort: [{ dueAt: 'asc' }]
 }).exec();
 ```
+
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB and works with the same code.
 
 Writes made while offline are stored locally and automatically pushed to Supabase when the connection is restored.
 
@@ -337,20 +339,22 @@ RxDB's storage layer is pluggable. You choose the storage engine based on the pl
 
 | Environment | Storage Option |
 |---|---|
-| Browser | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (high-throughput writes) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
-| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Browser | [IndexedDB](../../rx-storage-indexeddb.md) <PremiumIcon /> |
+| Browser (high-throughput writes) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) <PremiumIcon /> |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) <PremiumIcon /> |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) <PremiumIcon /> |
+| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) <PremiumIcon /> |
 | Tests | [Memory](../../rx-storage-memory.md) |
+
+The storages marked with <PremiumIcon /> are part of [RxDB Premium](/premium/).
 
 Switching storage is a one-line change:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 // For React Native:
-// import { getRxStorageSQLite } from 'rxdb/plugins/storage-sqlite';
+// import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -365,18 +369,16 @@ The [OPFS storage](../../rx-storage-opfs.md) option is worth noting specifically
 
 When a user opens a web application in multiple browser tabs, each tab typically has its own JavaScript runtime. Without coordination, each tab would have its own copy of the local database, and writes from one tab would not appear in others.
 
-RxDB solves this with the [SharedWorker storage](../../rx-storage-shared-worker.md):
+RxDB solves this with the [SharedWorker storage](../../rx-storage-shared-worker.md) <PremiumIcon />:
 
 ```ts
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const db = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```
@@ -541,7 +543,7 @@ Create a database and start the replication:
 ```ts
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 import { createClient } from '@supabase/supabase-js';
 import { replicateSupabase } from 'rxdb/plugins/replication-supabase';
 

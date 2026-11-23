@@ -125,12 +125,14 @@ RxDB separates the query engine from the storage layer through the [RxStorage in
 
 | Environment | Storage Option |
 |---|---|
-| Browser (general use) | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (write-heavy workloads) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
-| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Browser (general use) | [IndexedDB](../../rx-storage-indexeddb.md) <PremiumIcon /> |
+| Browser (write-heavy workloads) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) <PremiumIcon /> |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) <PremiumIcon /> |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) <PremiumIcon /> |
+| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) <PremiumIcon /> |
 | Tests | [Memory](../../rx-storage-memory.md) |
+
+The storages marked with <PremiumIcon /> are part of [RxDB Premium](/premium/).
 
 Switching storage is a one-line change in the database creation call. The rest of the application, including queries, replication configuration, and schema definitions, remains unchanged:
 
@@ -138,9 +140,9 @@ Switching storage is a one-line change in the database creation call. The rest o
 import { createRxDatabase } from 'rxdb/plugins/core';
 
 // Change this import to switch storage engines
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
-// import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
-// import { getRxStorageSQLite } from 'rxdb/plugins/storage-sqlite';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+// import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
+// import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -423,18 +425,16 @@ PouchDB stores conflicting revisions as alternate branches in the revision tree.
 
 When a user opens a web app in multiple browser tabs, each tab has its own JavaScript process. A PouchDB write in one tab does not automatically appear in reactive queries in another tab. Synchronizing state across tabs requires custom coordination code using `localStorage` events, `BroadcastChannel`, or a similar mechanism.
 
-RxDB handles this through the [SharedWorker storage option](../../rx-storage-shared-worker.md). All tabs share a single database instance running in the SharedWorker. A write from one tab automatically propagates to reactive queries in all other tabs without any additional code:
+RxDB handles this through the [SharedWorker storage option](../../rx-storage-shared-worker.md) <PremiumIcon />. All tabs share a single database instance running in the SharedWorker. A write from one tab automatically propagates to reactive queries in all other tabs without any additional code:
 
 ```ts
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const db = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```
@@ -481,14 +481,14 @@ Because RxDB does not store revision trees and its storage layer is optimized fo
 - **Range queries**: RxDB's IndexedDB storage layout uses indexes designed for range queries. PouchDB's layout is designed for replication correctness.
 - **Storage size after sustained use**: RxDB database size is proportional to the number of documents. PouchDB database size grows with both the number of documents and the number of updates to each document.
 
-When using the [OPFS storage](../../rx-storage-opfs.md), RxDB gets an additional performance advantage over PouchDB, because OPFS bypasses IndexedDB's transaction overhead entirely:
+When using the [OPFS storage](../../rx-storage-opfs.md) <PremiumIcon />, RxDB gets an additional performance advantage over PouchDB, because OPFS bypasses IndexedDB's transaction overhead entirely:
 
 ```ts
-import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 const db = await createRxDatabase({
     name: 'myapp',
-    storage: getRxStorageOPFS()
+    storage: getRxStorageOPFSMainThread()
 });
 ```
 

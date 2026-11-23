@@ -306,13 +306,11 @@ RxDB has multiple [replication plugins](./replication.md) to replicate database 
 #### HTTP
 
 ```ts
-import {
-  replicateHTTP,
-  pullQueryBuilderFromRxSchema,
-} from "rxdb/plugins/replication-http";
+import { replicateRxCollection } from "rxdb/plugins/replication";
 
-replicateHTTP({
+replicateRxCollection({
   collection: myDatabase.todos,
+  replicationIdentifier: "my-http-replication",
   push: {
     handler: async (rows) => {
       return fetch("https://example.com/api/todos/push", {

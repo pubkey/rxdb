@@ -75,8 +75,8 @@ The numbers reflect this. As of July 30, 2026, [absurd-sql](https://github.com/j
 
 You pick the storage that matches your runtime and constraints, and you can swap it without changing application code:
 
-- [OPFS storage](../../rx-storage-opfs.md) for the fastest persistent option in modern browsers.
-- [IndexedDB storage](../../rx-storage-indexeddb.md) for broad compatibility (and for working around the [slow IndexedDB problem](../../slow-indexeddb.md) using RxDB's optimizations).
+- [OPFS storage](../../rx-storage-opfs.md) <PremiumIcon /> for the fastest persistent option in modern browsers.
+- [IndexedDB storage](../../rx-storage-indexeddb.md) <PremiumIcon /> for broad compatibility (and for working around the [slow IndexedDB problem](../../slow-indexeddb.md) using RxDB's optimizations).
 - [SQLite storage](../../rx-storage-sqlite.md) when you do want SQLite under the hood, in Node.js, Electron, React Native, or in browsers via `sqlite-wasm`.
 - Memory storage for tests.
 
@@ -96,7 +96,7 @@ Define a JSON Schema once. RxDB validates inserts, generates types, and runs ver
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
   name: 'mydb',
@@ -141,6 +141,8 @@ await db.todos.insert({
 });
 ```
 
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB and works with the same code.
+
 No SQL strings, no manual cache invalidation, no hand-rolled change feed.
 
 ## Code Sample: Switching Storages Without Rewriting Code
@@ -149,7 +151,7 @@ One of the practical pains with absurd-sql is that it is tied to its specific In
 
 ```ts
 // Before: IndexedDB
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
   name: 'mydb',
@@ -159,11 +161,11 @@ const db = await createRxDatabase({
 
 ```ts
 // After: OPFS, same collections, same queries, same replication.
-import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 const db = await createRxDatabase({
   name: 'mydb',
-  storage: getRxStorageOPFS()
+  storage: getRxStorageOPFSMainThread()
 });
 ```
 
@@ -226,11 +228,11 @@ npm install rxdb rxjs
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 const db = await createRxDatabase({
   name: 'mydb',
-  storage: getRxStorageOPFS()
+  storage: getRxStorageOPFSMainThread()
 });
 ```
 

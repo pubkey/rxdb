@@ -59,7 +59,7 @@ The example below mirrors what a LokiJS user would write to insert a document an
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
   name: 'mydb',
@@ -105,6 +105,8 @@ query.$.subscribe(todos => {
   console.log('current todos:', todos.map(t => t.name));
 });
 ```
+
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB and works with the same code.
 
 Compared to LokiJS, the meaningful difference is not the API surface, it is what happens under the hood: each insert is durable in IndexedDB, the query is reactive through RxJS, and other tabs of the same origin see the change automatically.
 
