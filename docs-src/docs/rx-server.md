@@ -331,7 +331,7 @@ const myChangeValidator = function(authData, change){
 
 ## Conflict handling
 
-To [detect and handle conflicts](./replication.md#conflict-handling), the conflict handler from the endpoints RxCollection is used.
+To [detect and handle conflicts](./transactions-conflicts-revisions.md#replication-conflicts), the conflict handler from the endpoints RxCollection is used.
 
 ## FAQ
 

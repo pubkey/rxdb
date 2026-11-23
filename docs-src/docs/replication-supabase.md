@@ -243,7 +243,7 @@ const replication = replicateSupabase({
 
 ### Do other things with the replication state
 
-The `RxSupabaseReplicationState` which is returned from `replicateSupabase()` allows you to run all functionality of the normal [RxReplicationState](./replication.md).
+The `RxSupabaseReplicationState` which is returned from `replicateSupabase()` allows you to run all functionality of the normal [RxReplicationState](./rx-replication-state.md).
 
 
 

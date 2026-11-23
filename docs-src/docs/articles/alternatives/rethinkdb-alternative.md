@@ -292,7 +292,7 @@ In a realtime multi-user system, two users can edit the same document concurrent
 
 RxDB operates on a local-first model: users can edit locally while offline, and those edits sync when connectivity returns. If two clients edited the same document while disconnected, both versions must be reconciled when they sync.
 
-RxDB handles this with a configurable [conflict handler](../../replication.md):
+RxDB handles this with a configurable [conflict handler](../../transactions-conflicts-revisions.md#custom-conflict-handler):
 
 ```typescript
 await db.addCollections({
