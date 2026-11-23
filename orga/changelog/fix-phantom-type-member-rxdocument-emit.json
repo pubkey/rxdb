@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
     "text": "FIX the TypeScript types declared `RxDocument.$emit()`, also on `RxLocalDocument`, which does not exist at runtime, so the type-correct call `myDocument.$emit()` threw `$emit is not a function`",
-    "links": [],
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9814",
+            "linkText": "#9814"
+        }
+    ],
     "priority": 4
 }
