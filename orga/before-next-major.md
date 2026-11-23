@@ -694,7 +694,7 @@ Todo:
 - The cleanup must not delete operations documents before its merged document is accepted by the other side.
 - Breaking: the stored format of the operations documents changes, so existing states have to be migrated. With the conflict handler, apps that replicate a state today get another result for a conflict.
 
-There is no implementation yet. The pull request that rebuilds the in-memory state and has tests for both scenarios is TODO_LINK_TO_THE_PULL_REQUEST_OF_THE_RXSTATE_REBUILD_FIX.
+There is no implementation yet. The pull request that rebuilds the in-memory state and has tests for both scenarios is [#9816](https://github.com/pubkey/rxdb/pull/9816).
 
 ## Database `exportJSON()` must not contain the internal RxState collection
 
