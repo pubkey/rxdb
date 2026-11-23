@@ -76,7 +76,7 @@ The same lookup in RxDB, by primary key, with a typed result and a schema valida
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'mydb',
@@ -105,6 +105,8 @@ await db.addCollections({
 const todo = await db.todos.findOne('todo1').exec();
 console.log(todo?.name);
 ```
+
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 The RxDB version is longer at setup time, but the database now knows the shape of a todo, can index `done` and `dueAt`, and can stream changes to the rest of the app.
 
