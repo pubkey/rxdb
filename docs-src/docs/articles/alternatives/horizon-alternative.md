@@ -299,7 +299,8 @@ import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 const db = await createRxDatabase({
     name: 'myapp',
-    storage: getRxStorageOPFSMainThread() // use OPFS for higher throughput in the browser
+    // use OPFS for higher throughput in the browser
+    storage: getRxStorageOPFSMainThread()
 });
 ```
 
