@@ -347,15 +347,18 @@ Removes the collection's object instance from the [RxDatabase](./rx-database.md)
 await myDatabase.todos.close();
 ```
 
-### onClose / onRemove()
-With these you can add a function that is run when the collection was closed or removed.
-This works even across multiple browser tabs so you can detect when another tab removes the collection
-and your application can behave accordingly.
+### onClose / onRemove
+`onClose` and `onRemove` are arrays of functions and not methods. To run a function when the collection is closed or removed, you have to `push()` it into the array. A function can return a `Promise`, which is awaited by `close()` and `remove()`.
 
 ```js
-await myDatabase.todos.onClose(() => console.log('I am closed'));
-await myDatabase.todos.onRemove(() => console.log('I am removed'));
+myDatabase.todos.onClose.push(() => console.log('I am closed'));
+myDatabase.todos.onRemove.push(() => console.log('I am removed'));
 ```
+
+- **onClose**: The functions run when the collection is closed with `myDatabase.todos.close()` or `myDatabase.close()`. Because a collection is closed before it is removed, they also run on each removal.
+- **onRemove**: The functions run when the collection is removed with `myDatabase.todos.remove()` or `myDatabase.remove()`.
+
+A removal works across multiple browser tabs. When another tab removes the collection or the database, the collection is also closed in the current tab and the functions of both arrays run, so your application can detect the removal and behave accordingly. A `close()` in another tab only closes the instance of that tab and does not run the functions of the current tab.
 
 
 
