@@ -963,9 +963,13 @@ addRxPlugin(RxDBJsonDumpPlugin);
             if (!config.storage.hasReplication) {
                 return;
             }
-            function syncWith(
-                state: RxState<TestState, ReactivityType>,
-                remoteState: RxState<TestState, ReactivityType>
+            type CounterState = {
+                [key: string]: number;
+            };
+            function syncWith<StateType>(
+                state: RxState<StateType, any>,
+                remoteState: RxState<StateType, any>,
+                pushBatchSize?: number
             ) {
                 const replicationState = replicateRxCollection({
                     collection: state.collection,
@@ -976,12 +980,37 @@ addRxPlugin(RxDBJsonDumpPlugin);
                         stream$: getPullStream(remoteState.collection)
                     },
                     push: {
-                        handler: getPushHandler(remoteState.collection)
+                        handler: getPushHandler(remoteState.collection),
+                        batchSize: pushBatchSize
                     }
                 });
                 ensureReplicationHasNoErrors(replicationState);
                 return replicationState;
             }
+            /**
+             * Waits until the value is as expected. On a timeout
+             * the assertion shows the difference.
+             */
+            async function awaitEqual(getValue: () => any, expected: any) {
+                await waitUntil(() => deepEqual(getValue(), expected), 5000).catch(() => { });
+                assert.deepStrictEqual(getValue(), expected);
+            }
+            async function openCounterState(name: string, cleanupPolicy?: Partial<RxCleanupPolicy>) {
+                const database = await createRxDatabase({
+                    name,
+                    storage: useSchemaValidator ? wrappedValidateAjvStorage({
+                        storage: config.storage.getStorage()
+                    }) : config.storage.getStorage(),
+                    cleanupPolicy
+                });
+                return database.addState<CounterState>();
+            }
+            const CLEANUP_POLICY: Partial<RxCleanupPolicy> = {
+                awaitReplicationsInSync: false,
+                minimumCollectionAge: 0,
+                runEach: 1000 * 60 * 60,
+                waitForLeadership: false
+            };
             it('should sync a write that was done after the last sync', async () => {
                 const stateA = await getState();
                 const stateB = await getState();
@@ -1024,7 +1053,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 const replicationState = syncWith(stateA, stateB);
                 await awaitConflictResolved(stateA);
                 await replicationState.awaitInSync();
-                await waitUntil(() => deepEqual(stateA.get(), { b: 2 }));
+                await awaitEqual(() => stateA.get(), { b: 2 });
 
                 // a write after the sync must run on the stored state
                 await stateA.set('b', plusOne);
@@ -1058,21 +1087,16 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 const replicationState = syncWith(stateA, stateB);
                 await awaitConflictResolved(stateA);
                 await replicationState.awaitInSync();
-                await waitUntil(() => deepEqual(lastOfArray(emitted), { b: 2 }));
-                await waitUntil(() => emittedA.length === 2);
-                await waitUntil(() => emittedB.length === 2);
-                assert.deepStrictEqual(emittedA, [1, undefined]);
-                assert.deepStrictEqual(emittedB, [undefined, 2]);
+                await awaitEqual(() => lastOfArray(emitted), { b: 2 });
+                await awaitEqual(() => emittedA, [1, undefined]);
+                await awaitEqual(() => emittedB, [undefined, 2]);
 
                 subs.forEach(sub => sub.unsubscribe());
                 await stateA.collection.database.close();
                 await stateB.collection.database.close();
             });
             it('should rebuild the state of another instance of the same database when both sides have written before the sync', async () => {
-                if (
-                    !config.storage.hasMultiInstance ||
-                    config.storage.name === 'remote' // same as in the multiInstance tests
-                ) {
+                if (!config.storage.hasMultiInstance) {
                     return;
                 }
                 const databaseName = randomToken(10);
@@ -1086,13 +1110,12 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 const replicationState = syncWith(stateA, stateB);
                 await awaitConflictResolved(stateA);
                 await replicationState.awaitInSync();
-                await waitUntil(() => deepEqual(stateA.get(), { b: 2 }));
-                await waitUntil(() => deepEqual(otherStateA.get(), { b: 2 }));
+                await awaitEqual(() => stateA.get(), { b: 2 });
+                await awaitEqual(() => otherStateA.get(), { b: 2 });
 
                 await otherStateA.set('b', plusOne);
-                await waitUntil(() => stateA.get('b') === 3);
                 assert.deepStrictEqual(otherStateA.get(), { b: 3 });
-                assert.deepStrictEqual(stateA.get(), { b: 3 });
+                await awaitEqual(() => stateA.get(), { b: 3 });
 
                 await stateA.collection.database.close();
                 await otherStateA.collection.database.close();
@@ -1102,47 +1125,17 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 if (!config.storage.hasPersistence) {
                     return;
                 }
-                type CounterState = {
-                    [key: string]: number;
-                };
-                const storage = useSchemaValidator ? wrappedValidateAjvStorage({
-                    storage: config.storage.getStorage()
-                }) : config.storage.getStorage();
-                const openState = async (name: string, cleanupPolicy?: Partial<RxCleanupPolicy>) => {
-                    const database = await createRxDatabase({
-                        name,
-                        storage,
-                        cleanupPolicy
-                    });
-                    return database.addState<CounterState>();
-                };
-                const sync = (state: RxState<CounterState>, remoteState: RxState<CounterState>) => {
-                    const newReplicationState = replicateRxCollection({
-                        collection: state.collection,
-                        replicationIdentifier: 'rx-state-replication-test',
-                        live: true,
-                        pull: {
-                            handler: getPullHandler(remoteState.collection),
-                            stream$: getPullStream(remoteState.collection)
-                        },
-                        push: {
-                            handler: getPushHandler(remoteState.collection)
-                        }
-                    });
-                    ensureReplicationHasNoErrors(newReplicationState);
-                    return newReplicationState;
-                };
                 const nameA = randomToken(10);
                 const nameB = randomToken(10);
                 const writes = 7;
 
                 // both sides are in sync
-                let stateA = await openState(nameA);
-                let stateB = await openState(nameB);
+                let stateA = await openCounterState(nameA);
+                let stateB = await openCounterState(nameB);
                 for (let i = 0; i < writes; i++) {
                     await stateA.set('k' + i, () => i);
                 }
-                let replicationState = sync(stateA, stateB);
+                let replicationState = syncWith(stateA, stateB);
                 await replicationState.awaitInSync();
                 await waitUntil(() => stateB.get('k' + (writes - 1)) === writes - 1);
                 await replicationState.cancel();
@@ -1150,12 +1143,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 // B writes while A runs the cleanup without a connection
                 await stateB.set('b', () => 2);
-                stateA = await openState(nameA, {
-                    awaitReplicationsInSync: false,
-                    minimumCollectionAge: 0,
-                    runEach: 1000 * 60 * 60,
-                    waitForLeadership: false
-                });
+                stateA = await openCounterState(nameA, CLEANUP_POLICY);
                 const cleanedStateA = stateA;
                 await waitUntil(async () => {
                     const docs = await cleanedStateA.collection.find().exec();
@@ -1166,20 +1154,66 @@ addRxPlugin(RxDBJsonDumpPlugin);
                  * The merged operations document of A loses the conflict
                  * and the deletions of A are replicated to B.
                  */
-                replicationState = sync(stateA, stateB);
+                replicationState = syncWith(stateA, stateB);
                 const syncedStateB = stateB;
                 await waitUntil(async () => {
                     const docs = await syncedStateB.collection.find().exec();
                     return docs.length === 1;
                 });
                 await replicationState.awaitInSync();
-                await waitUntil(() => deepEqual(syncedStateB.get(), { b: 2 }));
-                await waitUntil(() => deepEqual(cleanedStateA.get(), { b: 2 }));
+                await awaitEqual(() => syncedStateB.get(), { b: 2 });
+                await awaitEqual(() => cleanedStateA.get(), { b: 2 });
 
                 await replicationState.cancel();
                 await stateB.collection.database.close();
-                stateB = await openState(nameB);
+                stateB = await openCounterState(nameB);
                 assert.deepStrictEqual(stateB.get(), { b: 2 });
+
+                await stateA.collection.database.close();
+                await stateB.collection.database.close();
+            });
+            it('should have the same state in memory as after a reload when the other side has written the ids of operations that the cleanup deleted', async () => {
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
+                const nameA = randomToken(10);
+                let stateA = await openCounterState(nameA);
+                const stateB = await openCounterState(randomToken(10));
+                const expected: CounterState = {};
+                for (let i = 0; i < 7; i++) {
+                    await stateA.set('a' + i, () => i);
+                }
+                for (let i = 0; i < 8; i++) {
+                    await stateB.set('b' + i, () => i);
+                    expected['b' + i] = i;
+                }
+
+                // the cleanup of A deletes the operations 0 to 6 and stores the state as operation 7
+                await stateA.collection.database.close();
+                stateA = await openCounterState(nameA, CLEANUP_POLICY);
+                const cleanedStateA = stateA;
+                await waitUntil(async () => {
+                    const docs = await cleanedStateA.collection.find().exec();
+                    return docs.length === 1;
+                });
+
+                /**
+                 * All 8 operations of A conflict with the ones of B.
+                 * With the small batch size, operation 7 of A is overwritten
+                 * before the deleted operations get the state of B.
+                 */
+                const replicationState = syncWith(stateA, stateB, 2);
+                await waitUntil(async () => {
+                    const docs = await cleanedStateA.collection.find().exec();
+                    return docs.length === 8 && docs.every(doc => doc.ops[0].k.startsWith('b'));
+                });
+                await replicationState.awaitInSync();
+                await awaitEqual(() => cleanedStateA.get(), expected);
+
+                await replicationState.cancel();
+                await stateA.collection.database.close();
+                stateA = await openCounterState(nameA);
+                assert.deepStrictEqual(stateA.get(), expected);
 
                 await stateA.collection.database.close();
                 await stateB.collection.database.close();

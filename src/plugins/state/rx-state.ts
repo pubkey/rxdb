@@ -102,31 +102,25 @@ export class RxStateBase<T, Reactivity = unknown> {
             this._ownEmits$,
             this.collection.eventBulks$.pipe(
                 /**
-                 * Filter out event bulks that do not contain
-                 * relevant events for this instance.
-                 * Only INSERT events from OTHER instances need
-                 * to be processed. Own-instance INSERTs are
-                 * already handled via _ownEmits$, and DELETE
-                 * events (e.g. from cleanup) do not change state.
+                 * Only INSERT events from OTHER instances are merged
+                 * into the state. Own-instance INSERTs are
+                 * already handled via _ownEmits$.
+                 * A replication can also overwrite, delete, or insert documents
+                 * with an id that is already merged. The state cannot be corrected
+                 * from these events, so it is built again from the storage.
                  */
                 filter((eventBulk: RxChangeEventBulk<RxStateDocument>) => {
                     if (!this._initDone) {
                         this._eventDuringInit = true;
                         return false;
                     }
-                    /**
-                     * This instance only inserts operations documents and deletes
-                     * them in the cleanup after their operations are stored in a newer document.
-                     * An UPDATE or DELETE event can also come from a replication
-                     * that has overwritten or deleted documents which are merged into the state.
-                     */
-                    if (eventBulk.events.some(event => event.operation !== 'INSERT')) {
+                    const events = eventBulk.events;
+                    const fromOther = events.filter(event => event.documentData.sId !== this._instanceId);
+                    const hasNonInsert = events.some(event => event.operation !== 'INSERT');
+                    if (hasNonInsert || fromOther.some(event => event.documentData.id <= this._lastMergedId)) {
                         this._rebuildState();
                     }
-                    return eventBulk.events.some(event =>
-                        event.operation === 'INSERT' &&
-                        event.documentData.sId !== this._instanceId
-                    );
+                    return !hasNonInsert && fromOther.length > 0;
                 }),
                 tap((eventBulk: RxChangeEventBulk<RxStateDocument>) => {
                     const events = eventBulk.events;
@@ -358,10 +352,7 @@ export class RxStateBase<T, Reactivity = unknown> {
         this._writeQueue = this._writeQueue.then(async () => {
             let docs: RxDocument<RxStateDocument>[] = [];
             let lastMergedId: string | undefined;
-            /**
-             * When an operations document of another instance was merged
-             * during the query, the query result might not contain it.
-             */
+            // query again when an operations document was merged during the query
             while (lastMergedId !== this._lastMergedId) {
                 lastMergedId = this._lastMergedId;
                 docs = await this.collection.find({ sort: [{ id: 'asc' }] }).exec();

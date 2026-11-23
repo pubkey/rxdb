@@ -684,9 +684,9 @@ Related closed pull requests that contain parts of this change: [#9603](https://
 An RxState stores each write as an operations document with a counter as id (`00000000000000`, `00000000000001`, ...). Instances that share one storage get a conflict error on the same id and retry with the next one. Two devices that replicate `myState.collection` do not share a storage, so when both write before they sync, both create a document with the same id. The replication handles that as a conflict, the default conflict handler keeps the master state, and the fork document is overwritten.
 
 - With `await stateA.set('a', () => 1)` on one device and `await stateB.set('b', () => 2)` on the other one, both states are `{ b: 2 }` after the sync. The write of one device is dropped.
-- When one device runs the cleanup while the other one wrote without a connection, the merged document of the cleanup loses the conflict, but the deletions of the older operations documents are replicated. Both devices then only have the one write of the other device and the whole earlier state is lost.
+- When one device runs the cleanup while the other one wrote without a connection, and the device that ran the cleanup is the fork side of the replication, the merged document of the cleanup loses the conflict, but the deletions of the older operations documents are replicated. Both devices then only have the one write of the other device and the whole earlier state is lost. When the device that ran the cleanup is the master, its merged document wins and only the write of the other device is dropped.
 
-Since the fix that rebuilds the in-memory state after such a replicated change, `get()` and the observables show the stored state. The writes are still lost.
+The in-memory state is built again from the storage after such a replicated change, so `get()` and the observables show the stored state. The writes are still lost.
 
 Todo:
 - Give the operations documents ids that are unique per device, for example the counter plus the instance id, so that two devices never write the same document. The order of the operations, `nextRxStateId()`, the `_lastMergedId` comparisons, and the cleanup have to work with these ids.
