@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the typings of the standalone query builder of `createQueryBuilder()` did not match the runtime: the documented call forms `.where('note').exists(true)`, `.where('tags').elemMatch({ $regex: '^back' })`, `.where('items').elemMatch(elem => { ... })`, `.where({ priority: { $not: { $gt: 5 } } })` and `.find()` did not compile",
+    "links": [],
+    "priority": 3
+}
