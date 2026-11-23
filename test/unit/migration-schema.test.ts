@@ -468,14 +468,14 @@ describe('migration-schema.test.ts', function () {
                     assert.strictEqual(docs.length, 5);
                     await col.database.remove();
                 });
-                describe('multiple calls in the same tick with multiInstance: false', () => {
+                [false, true].forEach(multiInstance => describe('multiple calls in the same tick with multiInstance: ' + multiInstance, () => {
                     const docsAmount = 25;
                     async function createCollectionWithCountedStrategyCalls() {
                         const name = randomToken(10);
                         const db = await createRxDatabase({
                             name,
                             storage: config.storage.getStorage(),
-                            multiInstance: false
+                            multiInstance
                         });
                         const cols = await db.addCollections({
                             human: {
@@ -490,7 +490,7 @@ describe('migration-schema.test.ts', function () {
                         const db2 = await createRxDatabase({
                             name,
                             storage: config.storage.getStorage(),
-                            multiInstance: false
+                            multiInstance
                         });
                         const strategyCalls = { count: 0 };
                         const cols2 = await db2.addCollections({
@@ -500,9 +500,8 @@ describe('migration-schema.test.ts', function () {
                                 migrationStrategies: {
                                     1: (doc: any) => doc,
                                     2: (doc: any) => doc,
-                                    3: async (doc: any) => {
+                                    3: (doc: any) => {
                                         strategyCalls.count = strategyCalls.count + 1;
-                                        await promiseWait(0);
                                         doc.age = parseInt(doc.age, 10);
                                         return doc;
                                     }
@@ -547,7 +546,26 @@ describe('migration-schema.test.ts', function () {
                         assert.deepStrictEqual(status2, status1);
                         await collection.database.remove();
                     });
-                });
+                    it('should run the migration once on two startMigration() calls', async () => {
+                        const { collection, strategyCalls } = await createCollectionWithCountedStrategyCalls();
+                        await Promise.all([
+                            collection.startMigration(10),
+                            collection.startMigration(10)
+                        ]);
+                        const status = await collection.getMigrationState().getStatus();
+                        await assertMigratedOnce(collection, strategyCalls, status);
+                        await collection.database.remove();
+                    });
+                    it('should run the migration once on migratePromise() followed by startMigration()', async () => {
+                        const { collection, strategyCalls } = await createCollectionWithCountedStrategyCalls();
+                        const [status] = await Promise.all([
+                            collection.migratePromise(10),
+                            collection.startMigration(10)
+                        ]);
+                        await assertMigratedOnce(collection, strategyCalls, status);
+                        await collection.database.remove();
+                    });
+                }));
             });
             describe('negative', () => {
                 it('should reject when migration fails', async () => {
@@ -2662,7 +2680,7 @@ describe('migration-schema.test.ts', function () {
 
             // Now call migratePromise() again; no migration needed this time.
             // A second RxMigrationState is needed because the first one has
-            // this.started === true and would throw DM1 inside startMigration().
+            // already started its migration and would throw DM1 inside startMigration().
             // Instead, open a fresh database so a new RxMigrationState is created.
             await db2.close();
 
