@@ -414,7 +414,7 @@ Using RxDB's HTTP replication functionality, you can sync the to-do application 
 
 #### Import the Replication Plugin
 ```ts
-import { replicateRxCollection } from 'rxdb/plugins/replication-http';
+import { replicateRxCollection } from 'rxdb/plugins/replication';
 ```
 
 #### Start the Replication

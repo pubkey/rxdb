@@ -85,7 +85,7 @@ import {
 import {
     getMemoryMappedRxStorage
 } from 'rxdb-premium/plugins/storage-memory-mapped';
-import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-worker';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 
 const myDatabase = await createRxDatabase({

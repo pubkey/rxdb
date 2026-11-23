@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `replicateWithWebsocketServer()` did not resolve while the websocket server was not reachable, so the app never got the `RxReplicationState` and could not observe `error$` or call `cancel()`. It now resolves without waiting for the first connection and the replication starts as soon as the server is reachable. Also the websocket replication client no longer crashes the Node.js process with an uncaught `WebSocket was closed before the connection was established` error when a connection attempt times out because the server accepts the TCP connection but does not answer the handshake, or when `cancel()` is called during a connection attempt",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9808",
+            "linkText": "#9808"
+        }
+    ],
+    "priority": 5
+}

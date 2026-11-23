@@ -117,18 +117,20 @@ RxDB has a pluggable storage system. You choose the storage engine that matches 
 
 | Environment | Storage Option |
 |---|---|
-| Browser | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [Filesystem / SQLite](../../rx-storage-sqlite.md) |
+| Browser | [IndexedDB](../../rx-storage-indexeddb.md) <PremiumIcon /> |
+| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) <PremiumIcon /> |
+| React Native / Expo | [SQLite](../../rx-storage-sqlite.md) <PremiumIcon /> |
+| Node.js / Electron | [Filesystem / SQLite](../../rx-storage-sqlite.md) <PremiumIcon /> |
 | Tests | [Memory](../../rx-storage-memory.md) |
-| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) <PremiumIcon /> |
+
+The storages marked with <PremiumIcon /> are part of [RxDB Premium](/premium/).
 
 Switching storage engines requires changing only the `storage` parameter when creating the database. All application code above that layer remains the same:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const myDatabase = await createRxDatabase({
     name: 'myapp',
@@ -301,18 +303,16 @@ In addition to custom HTTP replication, RxDB provides ready-made plugins for com
 
 ### Multi-Tab Coordination
 
-RxDB handles multi-tab browser applications with its [SharedWorker storage](../../rx-storage-shared-worker.md). When multiple tabs of the same application are open, they all connect to a single shared database instance running in a SharedWorker. All writes and subscriptions go through this shared instance, so a change made in one tab is immediately visible in all other tabs:
+RxDB handles multi-tab browser applications with its [SharedWorker storage](../../rx-storage-shared-worker.md) <PremiumIcon />. When multiple tabs of the same application are open, they all connect to a single shared database instance running in a SharedWorker. All writes and subscriptions go through this shared instance, so a change made in one tab is immediately visible in all other tabs:
 
 ```ts
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```
@@ -409,14 +409,14 @@ Create a database, add a collection, and subscribe to reactive queries:
 ```ts
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // Add the dev mode plugin for schema validation errors during development
 addRxPlugin(RxDBDevModePlugin);
 
 const myDatabase = await createRxDatabase({
     name: 'todoapp',
-    storage: getRxStorageIndexedDB()
+    storage: getRxStorageDexie()
 });
 
 await myDatabase.addCollections({

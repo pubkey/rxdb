@@ -84,7 +84,7 @@ RxDB uses a leader election mechanism so writes from any tab propagate to all op
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const myDatabase = await createRxDatabase({
   name: 'mydatabase',
@@ -128,6 +128,8 @@ myDatabase.todos
     console.log('open todos:', openTodos.length);
   });
 ```
+
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 The query returns an observable. There is no polling, no manual export, and no diff logic in the UI layer.
 

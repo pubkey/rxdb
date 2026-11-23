@@ -84,18 +84,16 @@ Couchbase added JavaScript/browser support to Couchbase Lite in 2025. The librar
 
 Couchbase Lite for JavaScript does not support running the same database across multiple browser tabs simultaneously. If a user opens the application in two tabs, the behavior is undefined and may produce data inconsistencies. There is no cross-tab synchronization or locking mechanism.
 
-RxDB handles this natively with its [SharedWorker storage](../../rx-storage-shared-worker.md). All tabs share a single database instance running in a Web Worker. A write in one tab propagates to reactive queries in all other tabs automatically:
+RxDB handles this natively with its [SharedWorker storage](../../rx-storage-shared-worker.md) <PremiumIcon />. All tabs share a single database instance running in a Web Worker. A write in one tab propagates to reactive queries in all other tabs automatically:
 
 ```ts
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const db = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```
@@ -184,21 +182,23 @@ RxDB separates its query engine from the storage layer via the [RxStorage interf
 
 | Environment | RxDB Storage Option |
 |---|---|
-| Browser (general use) | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (high throughput) | [OPFS](../../rx-storage-opfs.md) |
-| React Native | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
-| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Browser (general use) | [IndexedDB](../../rx-storage-indexeddb.md) <PremiumIcon /> |
+| Browser (high throughput) | [OPFS](../../rx-storage-opfs.md) <PremiumIcon /> |
+| React Native | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) <PremiumIcon /> |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) <PremiumIcon /> |
+| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) <PremiumIcon /> |
 | Testing | [Memory](../../rx-storage-memory.md) |
+
+The storages marked with <PremiumIcon /> are part of [RxDB Premium](/premium/).
 
 Switching storage is a single-line change in the database creation call. The rest of the application code remains identical:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 // swap for any other storage without changing application code:
-// import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
-// import { getRxStorageSQLite } from 'rxdb/plugins/storage-sqlite';
+// import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
+// import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -418,14 +418,14 @@ Without the passphrase, the raw storage contents are unreadable. This protects u
 
 ### Performance: OPFS Storage
 
-For browser applications that need high write throughput, RxDB supports the [Origin Private File System (OPFS)](../../rx-storage-opfs.md) as a storage backend. OPFS gives JavaScript direct filesystem access within the browser's sandboxed origin, bypassing IndexedDB's transaction model entirely:
+For browser applications that need high write throughput, RxDB supports the [Origin Private File System (OPFS)](../../rx-storage-opfs.md) <PremiumIcon /> as a storage backend. OPFS gives JavaScript direct filesystem access within the browser's sandboxed origin, bypassing IndexedDB's transaction model entirely:
 
 ```ts
-import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 const db = await createRxDatabase({
     name: 'myapp',
-    storage: getRxStorageOPFS()
+    storage: getRxStorageOPFSMainThread()
 });
 ```
 

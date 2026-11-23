@@ -139,7 +139,7 @@ In RxDB, every query is Observable. When you subscribe to a query, you receive t
 
 ```typescript
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -174,6 +174,8 @@ db.todos.find({
 });
 ```
 
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
+
 This is equivalent to Horizon's `watch()` API, but the data comes from local IndexedDB storage, not a remote server. The UI works the same way whether the user is online or offline.
 
 RxDB uses the [event-reduce algorithm](https://github.com/pubkey/event-reduce) to make reactive updates efficient. When a document changes, RxDB checks whether the existing query result can be updated by applying the change event directly without re-running the full query against storage. This keeps reactive UI updates fast even in write-heavy workloads.
@@ -192,18 +194,16 @@ This is the [offline-first architecture](../../offline-first.md). RxDB treats lo
 
 Horizon ran as a single connection per browser window. If a user opened two tabs of the same application, each tab would maintain its own WebSocket connection to the server, and local state between tabs could diverge.
 
-RxDB provides a [SharedWorker storage mode](../../rx-storage-shared-worker.md) that runs a single database instance in a shared worker. All tabs share that single instance, so a write in one tab is immediately reflected in reactive queries in all other tabs without any additional code:
+RxDB provides a [SharedWorker storage mode](../../rx-storage-shared-worker.md) <PremiumIcon /> that runs a single database instance in a shared worker. All tabs share that single instance, so a write in one tab is immediately reflected in reactive queries in all other tabs without any additional code:
 
 ```typescript
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const db = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```
@@ -283,21 +283,24 @@ RxDB's storage layer is separate from its query and replication logic. The same 
 
 | Environment | Storage Option |
 |---|---|
-| Browser (standard) | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
-| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Browser (standard) | [IndexedDB](../../rx-storage-indexeddb.md) <PremiumIcon /> |
+| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) <PremiumIcon /> |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) <PremiumIcon /> |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) <PremiumIcon /> |
+| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) <PremiumIcon /> |
 | Testing / CI | [Memory](../../rx-storage-memory.md) |
+
+The storages marked with <PremiumIcon /> are part of [RxDB Premium](/premium/).
 
 Switching storage is a one-line change:
 
 ```typescript
-import { getRxStorageOpfs } from 'rxdb/plugins/storage-opfs';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 const db = await createRxDatabase({
     name: 'myapp',
-    storage: getRxStorageOpfs() // use OPFS for higher throughput in the browser
+    // use OPFS for higher throughput in the browser
+    storage: getRxStorageOPFSMainThread()
 });
 ```
 
@@ -404,7 +407,7 @@ RxDB includes a built-in [encryption plugin](../../encryption.md) that encrypts 
 import {
     wrappedKeyEncryptionCryptoJsStorage
 } from 'rxdb/plugins/encryption-crypto-js';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -463,13 +466,13 @@ Create a database, add a collection, write documents, and subscribe to reactive 
 ```typescript
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 addRxPlugin(RxDBDevModePlugin);
 
 const db = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageIndexedDB()
+    storage: getRxStorageDexie()
 });
 
 await db.addCollections({
