@@ -442,7 +442,7 @@ describe('replication-websocket.test.ts', () => {
             // the failed connection attempts must be emitted
             const errors: any[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
-            await waitUntil(() => errors.length > 0);
+            await waitUntil(() => errors.length > 0, 4000);
             assert.strictEqual(errors[0].code, 'RC_STREAM');
 
             // go 'online' by starting the server
@@ -476,7 +476,7 @@ describe('replication-websocket.test.ts', () => {
             await waitUntil(async () => {
                 const doc = await localCollection.findOne('server-doc-after-connect').exec();
                 return !!doc;
-            });
+            }, 2000);
             await localCollection.insert(schemaObjects.humanWithTimestampData({
                 id: 'client-doc-after-connect'
             }));
@@ -500,13 +500,21 @@ describe('replication-websocket.test.ts', () => {
              * so that the socket of the client stays in the connecting state.
              */
             const pendingSockets: IncomingMessage['socket'][] = [];
-            let closedByClient = 0;
+            const closedByClient = new Set<IncomingMessage['socket']>();
             const hangingServer = new WebSocketServer({
                 port: portAndUrl.port,
                 verifyClient: (info: { req: IncomingMessage; }, _callback: (res: boolean) => void) => {
                     pendingSockets.push(info.req.socket);
-                    info.req.socket.once('end', () => closedByClient++);
-                    info.req.socket.resume();
+                    /**
+                     * The server keeps its side of the socket open during the handshake,
+                     * so 'close' is only emitted on a reset. A normal close
+                     * of the client is emitted as 'end'.
+                     */
+                    const socket = info.req.socket;
+                    socket.once('end', () => closedByClient.add(socket));
+                    socket.once('close', () => closedByClient.add(socket));
+                    socket.on('error', () => { });
+                    socket.resume();
                 }
             });
             await new Promise<void>(res => hangingServer.once('listening', () => res()));
@@ -527,13 +535,13 @@ describe('replication-websocket.test.ts', () => {
                 await remoteCollection.database.close();
                 throw new Error('replicateWithWebsocketServer() did not resolve while the server is not reachable');
             }
-            await waitUntil(() => pendingSockets.length === 1);
+            await waitUntil(() => pendingSockets.length === 1, 2000);
 
             await replicationState.cancel();
             assert.strictEqual(replicationState.isStopped(), true);
 
             // the canceled client must close its connection attempt
-            await waitUntil(() => closedByClient === 1);
+            await waitUntil(() => closedByClient.size === 1, 2000);
 
             await closeHangingServer();
             await localCollection.database.close();
@@ -560,7 +568,7 @@ describe('replication-websocket.test.ts', () => {
             // wait until the first connection attempt has failed
             const errors: any[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
-            await waitUntil(() => errors.length > 0);
+            await waitUntil(() => errors.length > 0, 4000);
 
             const canceled = await Promise.race([
                 replicationState.cancel().then(() => true),
