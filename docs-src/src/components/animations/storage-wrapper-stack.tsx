@@ -67,11 +67,11 @@ export function StorageWrapperStack() {
                     return (
                         <g key={l.label}>
                             <rect className="sws-link" x="104" y={y + 20} width="18" height="1.5" />
-                            <rect className={'sws-layer sws-' + (i + 1) + (base ? ' sws-base' : '')} x="122" y={y} width="170" height="40" rx="5" />
+                            <rect className={'sws-layer sws-' + (i + 1) + (base ? ' sws-base' : '')} x="122" y={y} width="170" height="40" />
                             <text className="sws-label" x="132" y={y + 17}>{l.label}</text>
                             <text className={'sws-sub' + (base ? ' sws-base-sub' : '')} x="132" y={y + 30}>{l.sub}</text>
                             <g className={'sws-doc sws-' + (i + 1)}>
-                                <rect x="8" y={y + 9} width="96" height="22" rx="4" />
+                                <rect x="8" y={y + 9} width="96" height="22" />
                                 <text x="56" y={y + 23} textAnchor="middle">{l.doc}</text>
                             </g>
                         </g>

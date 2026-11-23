@@ -70,30 +70,30 @@ export function ReactiveQuery() {
             >
                 {SOURCES.map((s, i) => (
                     <g key={s.label} className={'rq-pill rq-s' + (i + 1)}>
-                        <rect x={s.x} y="8" width="92" height="20" rx="10" />
+                        <rect x={s.x} y="8" width="92" height="20" />
                         <text x={s.x + 46} y="21" textAnchor="middle">{s.label}</text>
                     </g>
                 ))}
 
-                <rect className="rq-box" x="8" y="40" width="84" height="116" rx="5" />
+                <rect className="rq-box" x="8" y="40" width="84" height="116" />
                 <text className="rq-label" x="16" y="54">todos</text>
                 {ROWS.map((y, i) => (
-                    <rect key={y} className={'rq-row rq-r' + (i + 1)} x="16" y={y} width="68" height="20" rx="3" style={{ ['--rq-c' as string]: COLORS[i] } as React.CSSProperties} />
+                    <rect key={y} className={'rq-row rq-r' + (i + 1)} x="16" y={y} width="68" height="20" style={{ ['--rq-c' as string]: COLORS[i] } as React.CSSProperties} />
                 ))}
 
                 <rect className="rq-track" x="92" y="97" width="118" height="2" />
                 {COLORS.map((c, i) => (
                     <circle key={c} className={'rq-marble rq-m' + (i + 1)} cx="92" cy="98" r="5" fill={c} />
                 ))}
-                <rect className="rq-query" x="112" y="78" width="78" height="40" rx="5" />
+                <rect className="rq-query" x="112" y="78" width="78" height="40" />
                 <text className="rq-label" x="151" y="94" textAnchor="middle">RxQuery</text>
                 <text className="rq-code" x="151" y="108" textAnchor="middle">query.$</text>
 
                 <g className="rq-ui">
-                    <rect className="rq-box" x="208" y="40" width="84" height="116" rx="5" />
+                    <rect className="rq-box" x="208" y="40" width="84" height="116" />
                     <text className="rq-label" x="216" y="54">UI</text>
                     {ROWS.map((y, i) => (
-                        <rect key={y} className={'rq-row rq-r' + (i + 1)} x="216" y={y} width="68" height="20" rx="3" style={{ ['--rq-c' as string]: COLORS[i] } as React.CSSProperties} />
+                        <rect key={y} className={'rq-row rq-r' + (i + 1)} x="216" y={y} width="68" height="20" style={{ ['--rq-c' as string]: COLORS[i] } as React.CSSProperties} />
                     ))}
                 </g>
 

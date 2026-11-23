@@ -61,23 +61,23 @@ export function DataModel() {
                 role="img"
                 aria-label="RxDB data model: an RxDatabase contains RxCollections like todos, each RxCollection contains RxDocuments like todo1, todo2 and todo3, and all documents are stored in the RxStorage below."
             >
-                <rect className="dm-box" x="8" y="6" width="284" height="174" rx="6" />
+                <rect className="dm-box" x="8" y="6" width="284" height="174" />
                 <text className="dm-label" x="18" y="20">RxDatabase</text>
                 <text className="dm-name" x="80" y="20">myDatabase</text>
 
-                <rect className="dm-col" x="18" y="28" width="184" height="142" rx="5" />
+                <rect className="dm-col" x="18" y="28" width="184" height="142" />
                 <text className="dm-label" x="28" y="42">RxCollection</text>
                 <text className="dm-name" x="100" y="42">todos</text>
                 {DOCS.map((d, i) => (
                     <g key={d.id} className={'dm-doc dm-d' + (i + 1)}>
-                        <rect x="28" y={d.y} width="164" height="24" rx="4" />
+                        <rect x="28" y={d.y} width="164" height="24" />
                         <text className="dm-id" x="36" y={d.y + 15}>{d.id}</text>
                         <text x="72" y={d.y + 15}>{'name: \'' + d.name + '\''}</text>
                     </g>
                 ))}
                 <text className="dm-label" x="28" y="160">RxDocuments</text>
 
-                <rect className="dm-more" x="210" y="28" width="72" height="142" rx="5" />
+                <rect className="dm-more" x="210" y="28" width="72" height="142" />
                 <text className="dm-label" x="246" y="96" textAnchor="middle">more</text>
                 <text className="dm-label" x="246" y="108" textAnchor="middle">collections</text>
 
@@ -92,7 +92,7 @@ export function DataModel() {
                     />
                 ))}
 
-                <rect className="dm-storage" x="8" y="188" width="284" height="30" rx="5" />
+                <rect className="dm-storage" x="8" y="188" width="284" height="30" />
                 <text className="dm-storage-text" x="150" y="206.5" textAnchor="middle">RxStorage: IndexedDB, SQLite, OPFS, memory, ...</text>
             </svg>
         </div>
