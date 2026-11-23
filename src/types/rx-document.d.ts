@@ -11,7 +11,6 @@ import type {
     RxAttachmentCreatorBase64
 } from './rx-attachment.d.ts';
 import type { RxDocumentData, WithDeleted } from './rx-storage.d.ts';
-import type { RxChangeEvent } from './rx-change-event.d.ts';
 import type { DeepReadonly, MaybePromise, PlainJsonValue } from './util.d.ts';
 import type { UpdateQuery } from './plugins/update.d.ts';
 import type { CRDTEntry } from './plugins/crdt.d.ts';
@@ -100,7 +99,6 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
      * of the document. Lazily initialized on first property access.
      */
     _propertyCache: Map<string, any> | undefined;
-    $emit(cE: RxChangeEvent<RxDocType>): void;
     _saveData(newData: any, oldData: RxDocumentData<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     // /internal things
 

@@ -414,6 +414,11 @@ describe('typings.test.ts', function () {
             await oneDoc.save();
             // @ts-expect-error rev does not exist on a RxAttachment
             const rev = attachment.rev;
+            // @ts-expect-error $emit() does not exist on a RxDocument
+            oneDoc.$emit({} as any);
+            const localDoc = await myCollection.insertLocal('foobar', { foo: 'bar' });
+            // @ts-expect-error $emit() does not exist on a RxLocalDocument
+            localDoc.$emit({} as any);
 
             const insertPromise: Promise<RxDocument<DocType>> = myCollection.insertCRDT({
                 ifMatch: {
