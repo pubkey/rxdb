@@ -130,14 +130,8 @@ import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
 import { 
     getRxStorageIndexedDB
 } from 'rxdb-premium/plugins/storage-indexeddb';
-import {
-    createRxDatabase,
-    addRxPlugin
-} from 'rxdb';
-import {
-    RxDBReplicationGraphQLPlugin
-} from 'rxdb/plugins/replication-graphql';
-addRxPlugin(RxDBReplicationGraphQLPlugin);
+import { createRxDatabase } from 'rxdb';
+import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 const baseStorage = getRxStorageIndexedDB();
 
@@ -150,14 +144,17 @@ exposeWorkerRxStorage({
  * Then create a normal RxDatabase and RxCollections
  * and start the replication.
  */
-const database = await createRxDatabase({
+const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: baseStorage
 });
-await db.addCollections({
-    humans: {/* ... */}
+await myDatabase.addCollections({
+    todos: {/* ... */}
 });
-const replicationState = db.humans.syncGraphQL({/* ... */});
+const replicationState = replicateGraphQL({
+    collection: myDatabase.todos,
+    /* ... */
+});
 ```
 
 
