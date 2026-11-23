@@ -289,6 +289,21 @@ const db2 = await createRxDatabase({
 });
 ```
 
+### resetCollectionOnSchemaChange
+`(optional=false)`
+When you change the schema of a collection without increasing its `version`, `addCollections()` throws the error [`DB6`](./errors.md#DB6) because the stored documents might not match the new schema.
+During development this gets in the way, for example when you switch between git branches that use different schemas. With `resetCollectionOnSchemaChange: true`, RxDB deletes the whole stored state of that collection instead and creates the collection empty with the new schema. The deleted state includes the documents of all schema versions, the attachments, and the replication and migration states. Other collections are not touched, and each reset logs a `console.warn()` message.
+
+Because this deletes local data, `resetCollectionOnSchemaChange` is only allowed to be set in [dev-mode](./dev-mode.md). Without the dev-mode plugin, `createRxDatabase()` throws the error [`DB16`](./errors.md#DB16). In production, increase the schema `version` and add [migration strategies](./migration-schema.md) instead.
+
+```js
+const db = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  resetCollectionOnSchemaChange: true
+});
+```
+
 ### closeDuplicates
 `(optional=false)`
 

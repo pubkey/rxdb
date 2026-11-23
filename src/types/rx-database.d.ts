@@ -99,6 +99,13 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      */
     eventReduce?: boolean | RxEventReduceOptions;
     ignoreDuplicate?: boolean;
+    /**
+     * When a collection is added with a schema that has changed
+     * without a new version number, delete the stored state of that collection
+     * instead of throwing the error DB6.
+     * Only allowed in dev-mode.
+     */
+    resetCollectionOnSchemaChange?: boolean;
     options?: any;
     /**
      * When set to a positive number (in milliseconds), live query updates triggered by

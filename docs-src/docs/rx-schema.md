@@ -546,6 +546,7 @@ To change the schema in **production**-mode, do the following steps:
 
 In **development**-mode, the schema-change can be simplified by **one of these** strategies:
 
+-   Set [resetCollectionOnSchemaChange](./rx-database.md#resetcollectiononschemachange) to `true` when creating the database so that the stored data of a collection is deleted when its schema has changed
 -   Use the memory-storage so your db resets on restart and your schema is not saved permanently
 -   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
 -   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'mydatabase' + new Date().getTime()`

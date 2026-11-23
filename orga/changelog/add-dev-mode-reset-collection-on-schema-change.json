@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "ADD the `resetCollectionOnSchemaChange` setting to `createRxDatabase()`, which is only allowed in dev-mode. When enabled, a collection whose schema was changed without a new version number is no longer rejected with the error `DB6`. Instead the stored state of that collection is deleted and the collection is created empty with the new schema. This helps when switching between git branches that use different schemas",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9822",
+            "linkText": "#9822"
+        }
+    ],
+    "priority": 7
+}
