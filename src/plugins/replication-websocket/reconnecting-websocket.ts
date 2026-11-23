@@ -254,7 +254,11 @@ export class ReconnectingWebSocket {
     private removeHandlers(socket: any) {
         socket.onopen = null;
         socket.onclose = null;
-        socket.onerror = null;
+        /**
+         * A socket that is closed while it is still connecting emits an error.
+         * Without a handler that error is thrown as an uncaught exception.
+         */
+        socket.onerror = () => { };
         socket.onmessage = null;
     }
 

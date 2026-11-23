@@ -18,6 +18,7 @@ import {
 } from '../../plugins/utils/index.ts';
 import {
     filter,
+    firstValueFrom,
     Subject,
     Subscription,
     BehaviorSubject,
@@ -43,7 +44,11 @@ export type WebsocketClient = {
 };
 
 
-export async function createWebSocketClient<RxDocType>(options: WebsocketClientOptions<RxDocType>): Promise<WebsocketClient> {
+/**
+ * Does not wait for the connection. The socket connects in the
+ * background and retries until the server is reachable.
+ */
+function createWebSocketClientInstance<RxDocType>(options: WebsocketClientOptions<RxDocType>): WebsocketClient {
     const wsClient = new ReconnectingWebSocket(
         options.url,
         [],
@@ -59,23 +64,18 @@ export async function createWebSocketClient<RxDocType>(options: WebsocketClientO
         });
         error$.next(emitError);
     };
-    await new Promise<void>(res => {
-        wsClient.onopen = () => {
-
-            if (options.headers) {
-                const authMessage: WebsocketMessageType = {
-                    collection: options.collection.name,
-                    id: randomToken(10),
-                    params: [options.headers],
-                    method: 'auth'
-                };
-                wsClient.send(JSON.stringify(authMessage));
-            }
-
-            connected$.next(true);
-            res();
-        };
-    });
+    wsClient.onopen = () => {
+        if (options.headers) {
+            const authMessage: WebsocketMessageType = {
+                collection: options.collection.name,
+                id: randomToken(10),
+                params: [options.headers],
+                method: 'auth'
+            };
+            wsClient.send(JSON.stringify(authMessage));
+        }
+        connected$.next(true);
+    };
     wsClient.onclose = () => {
         connected$.next(false);
     };
@@ -92,13 +92,18 @@ export async function createWebSocketClient<RxDocType>(options: WebsocketClientO
         message$,
         error$
     };
+}
 
+export async function createWebSocketClient<RxDocType>(options: WebsocketClientOptions<RxDocType>): Promise<WebsocketClient> {
+    const websocketClient = createWebSocketClientInstance(options);
+    await firstValueFrom(websocketClient.connected$.pipe(filter(isConnected => isConnected)));
+    return websocketClient;
 }
 
 export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     options: WebsocketClientOptions<RxDocType>
 ): Promise<RxReplicationState<RxDocType, CheckpointType>> {
-    const websocketClient = await createWebSocketClient(options);
+    const websocketClient = createWebSocketClientInstance(options);
     const wsClient = websocketClient.socket;
     const messages$ = websocketClient.message$;
 
