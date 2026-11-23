@@ -105,6 +105,7 @@ Before a pull request is opened, a second subagent reviews the test and the diff
 
 - It runs the test without the fix and with the fix and checks that the test fails because of the bug and not for another reason.
 - It checks that the fix removes the cause and does not only hide the symptom, and that the finding passes "What is a bug" and "What is not a bug".
+- It checks every comment that the diff adds. A comment that explains the change, says why a shortcut is fine, or repeats what the code says has to be removed.
 - When it finds a problem, the first subagent fixes it and the review runs again. The pull request is only opened after the review found nothing.
 
 The main session makes sure that no bug gets more than one pull request:
@@ -143,6 +144,12 @@ The remote storage rethrows a server error as a plain error with the serialized 
 - Find out why the wrong state was reachable before you fix it. A check that only catches the wrong state where it showed up, like a null check, is not a fix of the cause.
 - Search the sibling code for the same pattern, for example the other storages, the other replication plugins, or the same method on local documents. Fix the places that have the same cause in the same pull request and name the places that you checked.
 - When the fix changes more than 50 lines outside of the tests and the changelog entry, stop and ask the user before you go on. A fix of that size is often a rewrite or a new feature.
+- Add as few comments as possible, at best none. The next agent reads a comment as "this is how it is done here" and repeats it, and nobody can enforce a comment.
+    - Do not write a comment that says why a quick fix, a shortcut, or a special case is fine. When it needs that comment, it is not the fix of the cause.
+    - Do not write a comment that repeats what the code or a name already says. Rename the variable or the function instead.
+    - The reasoning for the fix goes into the commit message and the pull request, not into the code.
+    - When a comment would state a rule that later code has to follow, write a test that fails when the rule is broken instead of the comment.
+    - Keep a comment only where the code has to be this way for a reason that neither the code nor a test can show, and keep it short.
 - When an input or a combination can be made to work, make it work instead of throwing a new error.
 - Checks for wrong usage belong into the dev-mode plugin, not into production code.
 - Use `newRxError()` with a code from `src/plugins/dev-mode/error-messages.ts`. Check the open pull requests for codes that are reserved already.
