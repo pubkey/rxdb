@@ -21,7 +21,7 @@ The default policy starts cleaning up queries depending on how many queries are 
 * It does nothing while fewer than 100 queries are in the cache.
 * It will never uncache queries that have subscribers to their results.
 * When 100 or more queries are in the cache, it uncaches all queries without subscribers that have never been executed, no matter how old they are.
-* When more than 100 queries are still in the cache after that, it uncaches the queries without subscribers that have not been used for the longest time, until 100 queries are left.
+* When more than 100 queries are still in the cache after that, it uncaches the queries without subscribers that have not been used for the longest time, until 100 queries are left or only queries with subscribers remain.
 
 ## Other references to queries
 
@@ -35,10 +35,10 @@ It gets the `RxCollection` as first parameter and the `QueryCache` as second. Th
 To apply a custom policy to a [RxCollection](./rx-collection.md), add the function as attribute `cacheReplacementPolicy`.
 
 ```ts
-const collection = await myDatabase.addCollections({
-    humans: {
-        schema: mySchema,
-        cacheReplacementPolicy: function(){ /* ... */ }
+const collections = await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema,
+        cacheReplacementPolicy: function(collection, queryCache){ /* ... */ }
     }
 });
 ```
