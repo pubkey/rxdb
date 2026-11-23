@@ -5,6 +5,8 @@ examples/
 .claude/
 .aiexclude
 .claudeignore
+AGENTS.md
+CLAUDE.md
 docs/
 docs-src/
 orga/
