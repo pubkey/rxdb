@@ -929,6 +929,7 @@ describe('other', () => {
                 const sizeQuery = myCollection.find().where('tags').size(2);
                 const resultPromise: Promise<RxDocument<DocType>[]> = sizeQuery.exec();
                 const builder = createQueryBuilder<DocType>().where('tags').size(2);
+                const regexQuery = myCollection.find().where('firstName').regex({ $regex: '^foo' });
 
                 // @ts-expect-error the RxQuery has no all() method
                 myCollection.find().where('tags').all(['foo']);
