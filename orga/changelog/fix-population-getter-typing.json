@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the `RxDocument` type did not know the population getters with the underscore suffix like `myDocument.subtasks_`, so the documented call did not compile in TypeScript",
+    "links": [],
+    "priority": 4
+}

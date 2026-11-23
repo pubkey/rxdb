@@ -316,6 +316,25 @@ describe('typings.test.ts', function () {
             const observable = oneDoc.age$;
             observable.subscribe();
         });
+        it('should know the populate getters with the underscore suffix', async () => {
+            type DocType = {
+                id: string;
+                name: string;
+                parent?: string;
+                subtasks?: string[];
+            };
+            const oneDoc: RxDocument<DocType> = {} as any;
+
+            const parentPromise: Promise<any> = oneDoc.parent_;
+            const parent = await oneDoc.parent_;
+            const parentName: string = parent.name;
+
+            const subtasks = await oneDoc.subtasks_;
+            const subtaskNames: string[] = subtasks.map((subtask: RxDocument<DocType>) => subtask.name);
+
+            // @ts-expect-error there is no populate getter for a field that is not in the document type
+            const notThere = oneDoc.notThere_;
+        });
         it('.putAttachment()', async () => {
             const myDb: any = {};
 
