@@ -41,6 +41,18 @@ const result = await myDestinationCollection.find().exec();
 
 
 
+## Installation
+
+To use `addPipeline()`, you have to add the `pipeline` plugin.
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBPipelinePlugin } from 'rxdb/plugins/pipeline';
+addRxPlugin(RxDBPipelinePlugin);
+```
+
+The pipeline plugin adds the [leader election plugin](./leader-election.md) by itself because a pipeline waits for the leadership before it starts. You do not have to add it on your own.
+
 ## Creating a RxPipeline
 
 Pipelines are created on top of a source [RxCollection](./rx-collection.md) and have another `RxCollection` as destination. An identifier is used to identify the state of the pipeline so that different pipelines have a different processing checkpoint state. A plain JavaScript function `handler` is used to process the data of the source collection writes.
@@ -60,7 +72,13 @@ const pipeline = await mySourceCollection.addPipeline({
                 category: doc.category
             });
         }
-    }
+    },
+    /**
+     * If true, the pipeline only starts
+     * when the current instance is the leader.
+     * (optional) [default=true]
+     */
+    waitForLeadership: true
 });
 ```
 

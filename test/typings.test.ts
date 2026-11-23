@@ -30,6 +30,7 @@ import {
     CouchBulkDocResultRow
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
+import { createQueryBuilder } from '../plugins/query-builder/index.mjs';
 import { RxDatabaseProvider } from '../plugins/react/index.mjs';
 import type { AngularSignalReactivityLambda } from '../plugins/reactivity-angular/index.mjs';
 import type { Signal } from '@angular/core';
@@ -316,6 +317,25 @@ describe('typings.test.ts', function () {
             const observable = oneDoc.age$;
             observable.subscribe();
         });
+        it('should know the populate getters with the underscore suffix', async () => {
+            type DocType = {
+                id: string;
+                name: string;
+                parent?: string;
+                subtasks?: string[];
+            };
+            const oneDoc: RxDocument<DocType> = {} as any;
+
+            const parentPromise: Promise<any> = oneDoc.parent_;
+            const parent = await oneDoc.parent_;
+            const parentName: string = parent.name;
+
+            const subtasks = await oneDoc.subtasks_;
+            const subtaskNames: string[] = subtasks.map((subtask: RxDocument<DocType>) => subtask.name);
+
+            // @ts-expect-error there is no populate getter for a field that is not in the document type
+            const notThere = oneDoc.notThere_;
+        });
         it('.putAttachment()', async () => {
             const myDb: any = {};
 
@@ -414,6 +434,11 @@ describe('typings.test.ts', function () {
             await oneDoc.save();
             // @ts-expect-error rev does not exist on a RxAttachment
             const rev = attachment.rev;
+            // @ts-expect-error $emit() does not exist on a RxDocument
+            oneDoc.$emit({} as any);
+            const localDoc = await myCollection.insertLocal('foobar', { foo: 'bar' });
+            // @ts-expect-error $emit() does not exist on a RxLocalDocument
+            localDoc.$emit({} as any);
 
             const insertPromise: Promise<RxDocument<DocType>> = myCollection.insertCRDT({
                 ifMatch: {
@@ -916,6 +941,24 @@ describe('other', () => {
                 const myCollection: RxCollection<DocType> = myCollections.humans;
 
                 const query = myCollection.findOne().where('nestedObject.foo').eq('foobar');
+            });
+            it('should know the operator methods of the query-builder plugin', () => {
+                type DocType = {
+                    passportId: string;
+                    firstName: string;
+                    tags: string[];
+                };
+                const myCollection: RxCollection<DocType> = {} as any;
+
+                const sizeQuery = myCollection.find().where('tags').size(2);
+                const resultPromise: Promise<RxDocument<DocType>[]> = sizeQuery.exec();
+                const builder = createQueryBuilder<DocType>().where('tags').size(2);
+                const regexQuery = myCollection.find().where('firstName').regex({ $regex: '^foo' });
+
+                // @ts-expect-error the RxQuery has no all() method
+                myCollection.find().where('tags').all(['foo']);
+                // @ts-expect-error the query builder has no all() method
+                createQueryBuilder<DocType>().where('tags').all(['foo']);
             });
             describe('rx-error', () => {
                 it('should know the parameters of the error', async () => {

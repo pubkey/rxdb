@@ -19,7 +19,7 @@ Replicating your Firestore state to RxDB can bring multiple benefits compared to
 - You can run complex [NoSQL queries](./why-nosql.md) on your documents because you are not bound to the [Firestore Query](https://firebase.google.com/docs/firestore/query-data/queries) handling. You can also use local indexes, [compression](./key-compression.md) and [encryption](./encryption.md) and do things like [fulltext search](./fulltext-search.md), fully locally.
 - Your application can be truly [Offline-First](./offline-first.md) because your data is stored in a client side database. In contrast Firestore by itself only provides options to support [offline also](https://cloud.google.com/firestore/docs/manage-data/enable-offline) which more works like a cache and requires the user to be online at application start to run authentication.
 - It reduces the vendor lock in because you can switch out the backend server afterwards without having to rebuild big parts of the application. RxDB supports replication plugins with multiple technologies and it is even easy to set up with your [custom backend](./replication.md).
-- You can use sophisticated [conflict resolution strategies](./replication.md#conflict-handling) so you are not bound to the Firestore [last-write-wins](https://stackoverflow.com/a/47781502/3443137) strategy which is not suitable for many applications.
+- You can use sophisticated [conflict resolution strategies](./transactions-conflicts-revisions.md#replication-conflicts) so you are not bound to the Firestore [last-write-wins](https://stackoverflow.com/a/47781502/3443137) strategy which is not suitable for many applications.
 - The initial load time of your application can be decreased because it will do an incremental replication on restarts.
 
 
@@ -96,7 +96,7 @@ const replicationState = replicateFirestore({
 });
 ```
 
-To observe and cancel the replication, you can use any other methods from the [ReplicationState](./replication.md) like `error$`, `cancel()` and `awaitInitialReplication()`.
+To observe and cancel the replication, you can use any other methods from the [RxReplicationState](./rx-replication-state.md) like `error$`, `cancel()` and `awaitInitialReplication()`.
 
 
 </Steps>

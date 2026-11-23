@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the cleanup plugin and the pipeline plugin called `RxDatabase.waitForLeadership()` without adding the leader-election plugin. With only the cleanup plugin added, the automatic cleanup never ran and ended in an unhandled promise rejection. With only the pipeline plugin added, `addPipeline()` rejected and later queries on the destination collection never resolved. Both plugins now add the leader-election plugin by themselves, like the replication plugins do",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9818",
+            "linkText": "#9818"
+        }
+    ],
+    "priority": 5
+}

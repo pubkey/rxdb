@@ -10,6 +10,20 @@ An RxDocument is an object which represents the data of a single JSON document s
 
 RxDB works on RxDocuments instead of plain JSON data to have more convenient operations on the documents. Also Documents that are fetched multiple times by different queries or operations are automatically de-duplicated by RxDB in memory.
 
+## Read and Change a Document
+
+Fetch a document, read its fields as properties, and write a change with `patch()`. An `RxDocument` instance does not change after a write. Instead `patch()` resolves with a new instance that has the new data. Read more in [Document Lifetime and Immutability](#document-lifetime-and-immutability).
+
+```ts
+const myDocument = await myDatabase.todos.findOne('todo1').exec(true);
+console.log(myDocument.name);
+// > 'Learn RxDB'
+
+const updatedDocument = await myDocument.patch({ done: true });
+console.log(updatedDocument.done);
+// > true
+```
+
 ## insert
 To insert a document into a collection, you have to call the collection's `.insert()` function.
 ```js
@@ -163,7 +177,6 @@ await myDocument.incrementalRemove();
 ```
 
 
-
 ### getLatest()
 
 Returns the latest known state of the `RxDocument`.
@@ -192,33 +205,6 @@ To fully purge a document, use the [cleanup plugin](./cleanup.md).
 ```js
 myDocument.remove();
 ```
-
-### Remove and update in a single atomic operation
-
-Sometimes you want to change a document's value and also remove it in the same operation. For example this can be useful when you use [replication](./replication.md) and want to set a `deletedAt` timestamp. Then you might have to ensure that setting this timestamp and deleting the document happens in the same atomic operation.
-
-To do this the modifying operations of a document accept setting the `_deleted` field. For example:
-
-```ts
-
-// update() and remove()
-await doc.update({
-  $set: {
-    done: true,
-    _deleted: true
-  }
-});
-
-// modify() and remove()
-await doc.modify(data => {
-  data.done = true;
-  data._deleted = true;
-  return data;
-});
-```
-
-
-
 
 ### deleted$
 Emits a boolean value, depending on whether the RxDocument is deleted or not.
@@ -292,7 +278,6 @@ json.name = 'Learn RxDB queries'; // The returned document can be mutated
 ```
 
 
-
 :::note All methods of RxDocument are bound to the instance
 When you get a method from a `RxDocument`, the method is automatically bound to the document's instance. This means you do not have to use things like `myMethod.bind(myDocument)` like you would do in jsx.
 :::
@@ -330,6 +315,35 @@ To avoid this, either:
 - Re-query the collection to get a fresh document.
 
 **How long to keep a reference to an `RxDocument`.** Treat an `RxDocument` like plain JSON data - it is a snapshot valid at the time of retrieval. RxDB manages query result caching internally via [event-reduce](./rx-query.md), so you do not need to cache documents yourself. For components that display document data and need live updates, subscribe to the document's `$` observable instead of holding a static reference.
+
+## Advanced Operations
+
+The following operation is mostly needed together with [replication](./replication.md), where a deleted document still has to carry a last change.
+
+### Remove and update in a single atomic operation
+
+Sometimes you want to change a document's value and also remove it in the same operation. For example this can be useful when you use [replication](./replication.md) and want to set a `deletedAt` timestamp. Then you might have to ensure that setting this timestamp and deleting the document happens in the same atomic operation.
+
+To do this the modifying operations of a document accept setting the `_deleted` field. For example:
+
+```ts
+
+// update() and remove()
+await doc.update({
+  $set: {
+    done: true,
+    _deleted: true
+  }
+});
+
+// modify() and remove()
+await doc.modify(data => {
+  data.done = true;
+  data._deleted = true;
+  return data;
+});
+```
+
 
 ## Revisions (`_rev`)
 
