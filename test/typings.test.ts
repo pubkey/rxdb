@@ -7,6 +7,7 @@
  */
 import * as assert from 'assert';
 import * as React from 'react';
+import type { Observable } from 'rxjs';
 import {
     HumanCompositePrimaryDocType,
     schemas
@@ -316,6 +317,36 @@ describe('typings.test.ts', function () {
             // top level
             const observable = oneDoc.age$;
             observable.subscribe();
+        });
+        it('should know the observable and reactivity getters of optional fields', () => {
+            type DocType = {
+                id: string;
+                name: string;
+                note?: string;
+            };
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            const oneDoc: RxDocument<DocType, {}, SetReactivityLambda> = {} as any;
+
+            oneDoc.note$.subscribe();
+            const observable: Observable<string | undefined> = oneDoc.note$;
+            const signal: Set<string | undefined> = oneDoc.note$$;
+
+            // @ts-expect-error the observable emits undefined while the field is not set
+            const observableWrong: Observable<string> = oneDoc.note$;
+            // @ts-expect-error the signal contains undefined while the field is not set
+            const signalWrong: Set<string> = oneDoc.note$$;
+        });
+        it('should know the type of a known field when the document type has an index signature', () => {
+            type DocType = {
+                id: string;
+                [k: string]: string | number | undefined;
+            };
+            const oneDoc: RxDocument<DocType> = {} as any;
+
+            const idObservable: Observable<string> = oneDoc.id$;
+            const otherObservable: Observable<string | number | undefined> = oneDoc.other$;
         });
         it('should know the populate getters with the underscore suffix', async () => {
             type DocType = {

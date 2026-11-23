@@ -33,10 +33,14 @@ export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = unknow
  */
 type ExtendObservables<RxDocumentType> = {
     [P in keyof RxDocumentType as `${string & P}$`]: Observable<RxDocumentType[P]>;
+} & {
+    readonly [P in keyof RxDocumentType & string as `${P}$`]: {};
 };
 
 type ExtendReactivity<RxDocumentType, Reactivity> = {
     [P in keyof RxDocumentType as `${string & P}$$`]: Reactified<Reactivity, RxDocumentType[P]>;
+} & {
+    readonly [P in keyof RxDocumentType & string as `${P}$$`]: {};
 };
 
 /**
