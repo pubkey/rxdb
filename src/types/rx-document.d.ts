@@ -31,16 +31,18 @@ export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = unknow
  * an observable.
  * TODO how to do this for the nested fields?
  */
-type ExtendObservables<RxDocumentType> = {
+type ExtendObservables<RxDocumentType> = ObservableGetters<RxDocumentType> & RequiredObservableGetters<RxDocumentType>;
+
+type ObservableGetters<RxDocumentType> = {
     [P in keyof RxDocumentType as `${string & P}$`]: Observable<RxDocumentType[P]>;
-} & {
+};
+
+type RequiredObservableGetters<RxDocumentType> = {
     readonly [P in keyof RxDocumentType & string as `${P}$`]: {};
 };
 
 type ExtendReactivity<RxDocumentType, Reactivity> = {
     [P in keyof RxDocumentType as `${string & P}$$`]: Reactified<Reactivity, RxDocumentType[P]>;
-} & {
-    readonly [P in keyof RxDocumentType & string as `${P}$$`]: {};
 };
 
 /**

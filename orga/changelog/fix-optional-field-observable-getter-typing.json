@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX the observable getter `myDocument.field$` and the reactivity getter `myDocument.field$$` of an optional field were typed as possibly `undefined`, although the getters exist for every top-level field",
+    "text": "FIX the observable getter `myDocument.field$` of an optional field was typed as possibly `undefined`, although the getter exists for every top-level field",
     "links": [],
     "priority": 4
 }
