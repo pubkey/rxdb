@@ -18,6 +18,13 @@ export const HOOKS = {
      * @async
      */
     createRxDatabase: [],
+    /**
+     * Runs at the start of RxDatabase.addCollections(),
+     * before the collection meta documents are written
+     * and before the storage instances are created.
+     * @async
+     */
+    preAddRxCollections: [],
     preCreateRxCollection: [],
     createRxCollection: [],
     createRxState: [],
