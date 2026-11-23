@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
     "text": "FIX the schema migration ran twice with `multiInstance: false` when `startMigration()` or `migratePromise()` were called more than once before the first call had started the migration, for example `startMigration()` followed by `migratePromise()` in the same tick. The migration strategies ran twice for each document, the migration status reported more handled documents than the total, and the memory storage threw an unhandled `removed already` rejection. These calls now share one migration run",
-    "links": [],
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9827",
+            "linkText": "#9827"
+        }
+    ],
     "priority": 5
 }
