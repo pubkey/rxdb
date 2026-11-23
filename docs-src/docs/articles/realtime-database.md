@@ -204,7 +204,7 @@ The middle column is a valid target, and it is a common one. There are good reas
 RxDB still fits there. Instead of being the source of truth, the local database becomes a **cached materialized view** of the server state:
 
 - The server owns the data. Your API decides what a given user is allowed to see, and it decides the final state of every write.
-- RxDB holds the subset that this user needs, kept current by a [pull-only replication](../replication.md#pull-only-replication) over your own change stream.
+- RxDB holds the subset that this user needs, kept current by a [pull-only replication](../replicate-rx-collection.md#pull-only-replication) over your own change stream.
 - The UI reads from the local storage, so [reactive queries](../reactivity.md) stay inside the 16ms budget without touching the network.
 - Writes go to your API. The accepted state comes back through the same pull stream, so the client never invents a state the server did not confirm.
 - [Partial sync](../partial-sync.md) scopes the view: several replication states for several slices of data, started and stopped as the user navigates.
@@ -311,7 +311,7 @@ No. Google's own documentation states "We recommend new customers start with Clo
 </FaqItem>
 <FaqItem question="Can I use RxDB as a cache in front of my own server instead of going fully local-first?">
 
-Yes. When your server has to stay the source of truth, run a [pull-only replication](../replication.md#pull-only-replication) and treat the local database as a cached materialized view: reads and [reactive queries](../reactivity.md) come from local storage, writes go through your API, and the accepted state comes back on the pull stream. You keep local query speed and reactive UI updates, and you give up offline writes. **[Partial sync](../partial-sync.md)** scopes how much of the backend each client holds.
+Yes. When your server has to stay the source of truth, run a [pull-only replication](../replicate-rx-collection.md#pull-only-replication) and treat the local database as a cached materialized view: reads and [reactive queries](../reactivity.md) come from local storage, writes go through your API, and the accepted state comes back on the pull stream. You keep local query speed and reactive UI updates, and you give up offline writes. **[Partial sync](../partial-sync.md)** scopes how much of the backend each client holds.
 
 </FaqItem>
 <FaqItem question="How fast does a realtime database have to be?">

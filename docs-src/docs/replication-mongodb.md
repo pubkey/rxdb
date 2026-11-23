@@ -207,7 +207,7 @@ const replicationState = replicateMongoDB({
 The `RxMongoDBReplicationState` which is
 returned from `replicateMongoDB()` allows
 you to run all functionality of the normal
-[RxReplicationState](./replication.md) like
+[RxReplicationState](./rx-replication-state.md) like
 observing errors or doing start/stop
 operations.
 :::

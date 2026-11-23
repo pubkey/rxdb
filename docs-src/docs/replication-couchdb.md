@@ -92,11 +92,11 @@ const replicationState = replicateCouchDB(
 );
 ```
 
-When you call `replicateCouchDB()` it returns a `RxCouchDBReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) so any other method that can be used there can also be used on the CouchDB replication state.
+When you call `replicateCouchDB()` it returns a `RxCouchDBReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./rx-replication-state.md) so any other method that can be used there can also be used on the CouchDB replication state.
 
 ## Conflict handling
 
-When conflicts appear during replication, the `conflictHandler` of the `RxCollection` is used, equal to the other replication plugins. Read more about conflict handling [here](./replication.md#conflict-handling).
+When conflicts appear during replication, the `conflictHandler` of the `RxCollection` is used, equal to the other replication plugins. Read more about conflict handling [here](./transactions-conflicts-revisions.md#replication-conflicts).
 
 ## Auth example
 

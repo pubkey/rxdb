@@ -166,7 +166,7 @@ When attachment replication is enabled, attachment binary data is encoded as bas
 
 ### pull & push
 
-Standard RxDB [Replication Options](./replication.md) for batch size, modifiers, etc.
+Standard RxDB [replication options](./replicate-rx-collection.md#options) for batch size, modifiers, etc.
 
 ## Technical Details
 
@@ -179,7 +179,7 @@ Standard RxDB [Replication Options](./replication.md) for batch size, modifiers,
 - The replication relies on the `modifiedTime` of files in Google Drive.
 
 ### Conflict Resolution
-- Conflicts are handled using the standard RxDB [conflict handling](./replication.md#conflict-handling) strategies.
+- Conflicts are handled using the standard RxDB [conflict handling](./transactions-conflicts-revisions.md#replication-conflicts) strategies.
 - The plugin assumes a master-slave replication pattern where the client (RxDB) merges changes.
 - If the `transaction` file is locked by another device, the write retries until the lock is released or times out.
 

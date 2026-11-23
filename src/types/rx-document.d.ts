@@ -11,7 +11,6 @@ import type {
     RxAttachmentCreatorBase64
 } from './rx-attachment.d.ts';
 import type { RxDocumentData, WithDeleted } from './rx-storage.d.ts';
-import type { RxChangeEvent } from './rx-change-event.d.ts';
 import type { DeepReadonly, MaybePromise, PlainJsonValue } from './util.d.ts';
 import type { UpdateQuery } from './plugins/update.d.ts';
 import type { CRDTEntry } from './plugins/crdt.d.ts';
@@ -23,7 +22,7 @@ export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = unknow
     RxDocumentType,
     OrmMethods,
     Reactivity
-> & RxDocumentType & OrmMethods & ExtendObservables<RxDocumentType> & ExtendReactivity<RxDocumentType, Reactivity>;
+> & RxDocumentType & OrmMethods & ExtendObservables<RxDocumentType> & ExtendReactivity<RxDocumentType, Reactivity> & ExtendPopulate<RxDocumentType>;
 
 
 /**
@@ -38,6 +37,15 @@ type ExtendObservables<RxDocumentType> = {
 
 type ExtendReactivity<RxDocumentType, Reactivity> = {
     [P in keyof RxDocumentType as `${string & P}$$`]: Reactified<Reactivity, RxDocumentType[P]>;
+};
+
+/**
+ * RxDocument.parent_ resolves with the same value as RxDocument.populate('parent').
+ * The schema is not known to the document type, so each top level field
+ * gets the getter. At runtime it throws on a field that has no ref.
+ */
+type ExtendPopulate<RxDocumentType> = {
+    [P in keyof RxDocumentType & string as `${P}_`]: Promise<any>;
 };
 
 /**
@@ -100,7 +108,6 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
      * of the document. Lazily initialized on first property access.
      */
     _propertyCache: Map<string, any> | undefined;
-    $emit(cE: RxChangeEvent<RxDocType>): void;
     _saveData(newData: any, oldData: RxDocumentData<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     // /internal things
 
