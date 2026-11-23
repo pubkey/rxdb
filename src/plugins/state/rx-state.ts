@@ -84,6 +84,11 @@ export class RxStateBase<T, Reactivity = unknown> {
      * All operations documents with a lower id are merged too.
      */
     public _lastMergedId = '';
+    /**
+     * Ids of the operations documents that were merged from the storage
+     * before their INSERT event has arrived. Emptied on each rebuild of the state.
+     */
+    public _mergedAhead = new Set<string>();
 
     constructor(
         public readonly prefix: string,
@@ -108,6 +113,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                  * A replication can also overwrite, delete, or insert documents
                  * with an id that is already merged. The state cannot be corrected
                  * from these events, so it is built again from the storage.
+                 * An INSERT of a document that was merged from the storage before is skipped.
                  */
                 filter((eventBulk: RxChangeEventBulk<RxStateDocument>) => {
                     if (!this._initDone) {
@@ -117,7 +123,9 @@ export class RxStateBase<T, Reactivity = unknown> {
                     const events = eventBulk.events;
                     const fromOther = events.filter(event => event.documentData.sId !== this._instanceId);
                     const hasNonInsert = events.some(event => event.operation !== 'INSERT');
-                    if (hasNonInsert || fromOther.some(event => event.documentData.id <= this._lastMergedId)) {
+                    const unknown = fromOther.filter(event => event.documentData.id <= this._lastMergedId &&
+                        !this._mergedAhead.delete(event.documentData.id));
+                    if (hasNonInsert || unknown.length > 0) {
                         this._rebuildState();
                     }
                     return !hasNonInsert && fromOther.length > 0;
@@ -143,7 +151,10 @@ export class RxStateBase<T, Reactivity = unknown> {
                              * now would apply the operations in the wrong order.
                              */
                             this._mergeMissingOperations()
-                                .then(() => this._ownEmits$.next(this._state))
+                                .then(() => {
+                                    this._mergedAhead.delete(event.documentData.id);
+                                    this._ownEmits$.next(this._state);
+                                })
                                 .catch(() => { });
                         }
                     }
@@ -281,6 +292,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                             sId: this._instanceId,
                             ops
                         });
+                        this._mergedAhead.delete(nextId);
                         /**
                          * When a newer operation was merged during the insert,
                          * the state already contains this write
@@ -310,6 +322,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                     const documentInDb = writeError.documentInDb;
                     if (this._lastMergedId < documentInDb.id) {
                         this._lastMergedId = documentInDb.id;
+                        this._mergedAhead.add(documentInDb.id);
                         this.mergeOperationsIntoState(documentInDb.ops);
                         this._ownEmits$.next(this._state);
                     }
@@ -338,6 +351,7 @@ export class RxStateBase<T, Reactivity = unknown> {
             const doc = docs[index];
             if (doc.id > this._lastMergedId) {
                 this._lastMergedId = doc.id;
+                this._mergedAhead.add(doc.id);
                 this.mergeOperationsIntoState(doc.ops);
             }
         }
@@ -358,7 +372,13 @@ export class RxStateBase<T, Reactivity = unknown> {
                 docs = await this.collection.find({ sort: [{ id: 'asc' }] }).exec();
             }
             let state: any = {};
-            docs.forEach(doc => state = mergeOperationsIntoState(state, doc.ops));
+            this._mergedAhead.clear();
+            docs.forEach(doc => {
+                state = mergeOperationsIntoState(state, doc.ops);
+                if (doc.id > this._lastMergedId) {
+                    this._mergedAhead.add(doc.id);
+                }
+            });
             const lastDoc = docs[docs.length - 1];
             if (lastDoc && lastDoc.id > this._lastMergedId) {
                 this._lastMergedId = lastDoc.id;
