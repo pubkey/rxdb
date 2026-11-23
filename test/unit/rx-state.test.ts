@@ -17,8 +17,13 @@ import {
 } from '../../plugins/core/index.mjs';
 import {
     isDeno,
-    isFastMode
+    isFastMode,
+    getPullHandler,
+    getPullStream,
+    getPushHandler,
+    ensureReplicationHasNoErrors
 } from '../../plugins/test-utils/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import {
     nextRxStateId,
     RxDBStatePlugin
@@ -871,6 +876,89 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 await state1.collection.database.close();
                 await state2.collection.database.close();
                 await freshState.collection.database.remove();
+            });
+        });
+        describe('replication', () => {
+            if (!config.storage.hasReplication) {
+                return;
+            }
+            function syncWith(
+                state: RxState<TestState, ReactivityType>,
+                remoteState: RxState<TestState, ReactivityType>
+            ) {
+                const replicationState = replicateRxCollection({
+                    collection: state.collection,
+                    replicationIdentifier: 'rx-state-replication-test',
+                    live: true,
+                    pull: {
+                        handler: getPullHandler(remoteState.collection),
+                        stream$: getPullStream(remoteState.collection)
+                    },
+                    push: {
+                        handler: getPushHandler(remoteState.collection)
+                    }
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                return replicationState;
+            }
+            it('should sync a write that was done after the last sync', async () => {
+                const stateA = await getState();
+                const stateB = await getState();
+                await stateA.set('a', () => 1);
+
+                const replicationState = syncWith(stateA, stateB);
+                await replicationState.awaitInSync();
+                await waitUntil(() => stateB.get('a') === 1);
+
+                await stateB.set('b', () => 2);
+                await waitUntil(() => stateA.get('b') === 2);
+                await replicationState.awaitInSync();
+
+                assert.deepStrictEqual(stateA.get(), { a: 1, b: 2 });
+                assert.deepStrictEqual(stateB.get(), { a: 1, b: 2 });
+
+                await stateA.collection.database.close();
+                await stateB.collection.database.close();
+            });
+            it('should not lose a write when both sides have written before the sync', async () => {
+                const stateA = await getState();
+                const stateB = await getState();
+                await stateA.set('a', () => 1);
+                await stateB.set('b', () => 2);
+
+                const replicationState = syncWith(stateA, stateB);
+                await replicationState.awaitInSync();
+                await wait(isFastMode() ? 100 : 300);
+                await replicationState.awaitInSync();
+
+                assert.deepStrictEqual(stateA.get(), { a: 1, b: 2 });
+                assert.deepStrictEqual(stateB.get(), { a: 1, b: 2 });
+
+                await stateA.collection.database.close();
+                await stateB.collection.database.close();
+            });
+            it('should have the same state in memory as after a reload when both sides have written before the sync', async () => {
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
+                const databaseName = randomToken(10);
+                const stateA = await getState(databaseName);
+                const stateB = await getState();
+                await stateA.set('a', () => 1);
+                await stateB.set('b', () => 2);
+
+                const replicationState = syncWith(stateA, stateB);
+                await replicationState.awaitInSync();
+                await wait(isFastMode() ? 100 : 300);
+                await replicationState.awaitInSync();
+
+                const inMemory = stateA.get();
+                await stateA.collection.database.close();
+                const reloadedStateA = await getState(databaseName);
+                assert.deepStrictEqual(inMemory, reloadedStateA.get());
+
+                await reloadedStateA.collection.database.close();
+                await stateB.collection.database.close();
             });
         });
         describe('issues', () => {
