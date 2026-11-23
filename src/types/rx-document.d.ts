@@ -22,7 +22,7 @@ export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = unknow
     RxDocumentType,
     OrmMethods,
     Reactivity
-> & RxDocumentType & OrmMethods & ExtendObservables<RxDocumentType> & ExtendReactivity<RxDocumentType, Reactivity>;
+> & RxDocumentType & OrmMethods & ExtendObservables<RxDocumentType> & ExtendReactivity<RxDocumentType, Reactivity> & ExtendPopulate<RxDocumentType>;
 
 
 /**
@@ -37,6 +37,15 @@ type ExtendObservables<RxDocumentType> = {
 
 type ExtendReactivity<RxDocumentType, Reactivity> = {
     [P in keyof RxDocumentType as `${string & P}$$`]: Reactified<Reactivity, RxDocumentType[P]>;
+};
+
+/**
+ * RxDocument.parent_ resolves with the same value as RxDocument.populate('parent').
+ * The schema is not known to the document type, so each top level field
+ * gets the getter. At runtime it throws on a field that has no ref.
+ */
+type ExtendPopulate<RxDocumentType> = {
+    [P in keyof RxDocumentType & string as `${P}_`]: Promise<any>;
 };
 
 /**

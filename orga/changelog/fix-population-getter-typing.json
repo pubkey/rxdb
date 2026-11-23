@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the `RxDocument` type did not know the population getters with the underscore suffix like `myDocument.subtasks_`, so the documented call did not compile in TypeScript",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9819",
+            "linkText": "#9819"
+        }
+    ],
+    "priority": 4
+}
