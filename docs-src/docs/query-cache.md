@@ -16,12 +16,12 @@ To not let RxDB fill up all the memory, a `cache replacement policy` is defined 
 
 ## The default policy
 
-The default policy starts cleaning up queries depending on how much queries are in the cache and how much document data they contain.
+The default policy starts cleaning up queries depending on how many queries are in the cache. It counts all cached queries, also the ones that have subscribers.
 
-* It will never uncache queries that have subscribers to their results
-* It tries to always have less than 100 queries without subscriptions in the cache.
-* It prefers to uncache queries that have never executed and are older than 30 seconds
-* It prefers to uncache queries that have not been used for longer time
+* It does nothing while fewer than 100 queries are in the cache.
+* It will never uncache queries that have subscribers to their results.
+* When 100 or more queries are in the cache, it uncaches all queries without subscribers that have never been executed, no matter how old they are.
+* When more than 100 queries are still in the cache after that, it uncaches the queries without subscribers that have not been used for the longest time, until 100 queries are left or only queries with subscribers remain.
 
 ## Other references to queries
 
@@ -30,15 +30,15 @@ With JavaScript, it is not possible to count references to variables. Therefore 
 ## Using a custom policy
 
 A cache replacement policy is a normal JavaScript function according to the type `RxCacheReplacementPolicy`.
-It gets the `RxCollection` as first parameter and the `QueryCache` as second. Then it iterates over the cached `RxQuery` instances and uncaches the desired ones with `uncacheRxQuery(rxQuery)`. When you create your custom policy, you should have a look at the [default](https://github.com/pubkey/rxdb/blob/master/src/query-cache.ts).
+It gets the `RxCollection` as first parameter and the `QueryCache` as second. Then it iterates over the cached `RxQuery` instances and uncaches the desired ones with `uncacheRxQuery(queryCache, rxQuery)`. When you create your custom policy, you should have a look at the [default](https://github.com/pubkey/rxdb/blob/master/src/query-cache.ts).
 
 To apply a custom policy to a [RxCollection](./rx-collection.md), add the function as attribute `cacheReplacementPolicy`.
 
 ```ts
-const collection = await myDatabase.addCollections({
-    humans: {
-        schema: mySchema,
-        cacheReplacementPolicy: function(){ /* ... */ }
+const collections = await myDatabase.addCollections({
+    todos: {
+        schema: todoSchema,
+        cacheReplacementPolicy: function(collection, queryCache){ /* ... */ }
     }
 });
 ```

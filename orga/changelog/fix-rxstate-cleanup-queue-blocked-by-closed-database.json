@@ -1,0 +1,11 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the automatic cleanup of an RxState never ran again for all other databases of the JavaScript process when a database was closed or removed while the cleanup of its RxState was running. This happened on the remote RxStorage, where a call on a closed storage instance never settles.",
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9791",
+            "linkText": "#9791"
+        }
+    ],
+    "priority": 5
+}
