@@ -358,7 +358,7 @@ myDatabase.todos.onRemove.push(() => console.log('I am removed'));
 - **onClose**: The functions run when the collection is closed with `myDatabase.todos.close()` or `myDatabase.close()`. Because a collection is closed before it is removed, they also run on each removal.
 - **onRemove**: The functions run when the collection is removed with `myDatabase.todos.remove()` or `myDatabase.remove()`.
 
-A removal works across multiple browser tabs. When another tab removes the collection or the database, the collection is also closed in the current tab and the functions of both arrays run, so your application can detect the removal and behave accordingly. A `close()` in another tab only closes the instance of that tab and does not run the functions of the current tab.
+A removal works across multiple browser tabs. When another tab calls `remove()` on the collection or on the database, the collection is also closed in the current tab and the functions of both arrays run, so your application can detect the removal and behave accordingly. A `close()` in another tab only closes the instance of that tab and does not run the functions of the current tab.
 
 
 
