@@ -16,9 +16,25 @@ An RxDatabase Object contains your [collections](./rx-collection.md) and handles
 <DataModel />
 </DocsAnimation>
 
+## Create a Database
+
+Call `createRxDatabase()` with a `name` and a [storage](./rx-storage.md). The storage decides where the data is stored, in this example in the browser's localStorage. All other parameters are optional.
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage()
+});
+```
+
+Next, add [collections](./rx-collection.md) to the database to store documents.
+
 ## Creation
 
-The database is created by the asynchronous `.createRxDatabase()` function of the core RxDB module. It has the following parameters:
+The database is created by the asynchronous `.createRxDatabase()` function of the core RxDB module. Besides `name` and `storage`, it has these common optional parameters:
 
 ```javascript
 import { createRxDatabase } from 'rxdb/plugins/core';
@@ -106,85 +122,13 @@ When you create more than one instance of the same database in a single javascri
 Optimizes observed and recurring queries with the [EventReduce algorithm](./event-reduce.md). `true` uses the default options. Set `eventReduce: false` to disable it,
 or pass an object to configure it, like the size of the result window buffer. See [EventReduce](./event-reduce.md) for all options.
 
-### ignoreDuplicate
-`(optional=false)`
-If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
-To prevent this common mistake, RxDB will throw an error when you do this.
-In some rare cases like unit-tests, you want to do this intentionally by setting `ignoreDuplicate` to `true`. Because setting `ignoreDuplicate: true` in production will decrease the performance by having multiple instances of the same database, `ignoreDuplicate` is only allowed to be set in [dev-mode](./dev-mode.md).
-
-```js
-const db1 = await createRxDatabase({
-  name: 'mydatabase',
-  storage: getRxStorageLocalstorage(),
-  ignoreDuplicate: true
-});
-const db2 = await createRxDatabase({
-  name: 'mydatabase',
-  storage: getRxStorageLocalstorage(),
-  // this create-call will not throw because
-  // you explicitly allow it
-  ignoreDuplicate: true
-});
-```
-
-### closeDuplicates
-`(optional=false)`
-
-Closes all other RxDatabase instances that have the same storage+name combination.
-
-```js
-const db1 = await createRxDatabase({
-  name: 'mydatabase',
-  storage: getRxStorageLocalstorage(),
-  closeDuplicates: true
-});
-const db2 = await createRxDatabase({
-  name: 'mydatabase',
-  storage: getRxStorageLocalstorage(),
-  closeDuplicates: true // this create-call will close db1
-});
-
-// db1 is now closed.
-```
-
-
-
-### hashFunction
-
-By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide your own hash function instead. A hash function gets a `string`, `ArrayBuffer`, or `Blob` as input and returns a `Promise` that resolves a string. When a `Blob` is received (for attachment digest hashing), convert it to a string or ArrayBuffer before hashing.
-
-```ts
-// example hash function that runs in plain JavaScript
-import { sha256 } from 'ohash';
-import { blobToBase64String } from 'rxdb';
-async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
-    if (typeof Blob !== 'undefined' && input instanceof Blob) {
-        input = await blobToBase64String(input);
-    } else if (input instanceof ArrayBuffer) {
-        input = new TextDecoder().decode(new Uint8Array(input));
-    }
-    return sha256(input);
-}
-const myDatabase = await createRxDatabase({
-  hashFunction: myOwnHashFunction
-  /* ... */
-});
-```
-
-If you get the error message `TypeError: Cannot read properties of undefined (reading 'digest')` this likely means that you are neither running on `localhost` nor on `https` which is why your browser might not allow access to `crypto.subtle.digest`.
-
-### liveQueryUpdateThrottleTime
-`(optional, default: 0 = disabled)`
-
-Groups write-triggered live query updates to limit how often RxDB re-evaluates queries during write bursts. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime) for full documentation.
-
 ## Methods
 
 ### Observe with $
 Calling this will return an [RxJS Observable](http://reactivex.io/documentation/observable.html) which streams all write events of the `RxDatabase`.
 
 ```javascript
-myDb.$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### exportJSON()
@@ -327,3 +271,77 @@ sub.unsubscribe();
 ```
 
 
+## Advanced Options
+
+You only need these parameters of `createRxDatabase()` for special setups like unit tests, runtimes without `crypto.subtle`, or live queries with many writes.
+
+### ignoreDuplicate
+`(optional=false)`
+If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
+To prevent this common mistake, RxDB will throw an error when you do this.
+In some rare cases like unit-tests, you want to do this intentionally by setting `ignoreDuplicate` to `true`. Because setting `ignoreDuplicate: true` in production will decrease the performance by having multiple instances of the same database, `ignoreDuplicate` is only allowed to be set in [dev-mode](./dev-mode.md).
+
+```js
+const db1 = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  ignoreDuplicate: true
+});
+const db2 = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  // this create-call will not throw because
+  // you explicitly allow it
+  ignoreDuplicate: true
+});
+```
+
+### closeDuplicates
+`(optional=false)`
+
+Closes all other RxDatabase instances that have the same storage+name combination.
+
+```js
+const db1 = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  closeDuplicates: true
+});
+const db2 = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  closeDuplicates: true // this create-call will close db1
+});
+
+// db1 is now closed.
+```
+
+
+### hashFunction
+
+By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide your own hash function instead. A hash function gets a `string`, `ArrayBuffer`, or `Blob` as input and returns a `Promise` that resolves a string. When a `Blob` is received (for attachment digest hashing), convert it to a string or ArrayBuffer before hashing.
+
+```ts
+// example hash function that runs in plain JavaScript
+import { sha256 } from 'ohash';
+import { blobToBase64String } from 'rxdb';
+async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
+    if (typeof Blob !== 'undefined' && input instanceof Blob) {
+        input = await blobToBase64String(input);
+    } else if (input instanceof ArrayBuffer) {
+        input = new TextDecoder().decode(new Uint8Array(input));
+    }
+    return sha256(input);
+}
+const myDatabase = await createRxDatabase({
+  hashFunction: myOwnHashFunction
+  /* ... */
+});
+```
+
+If you get the error message `TypeError: Cannot read properties of undefined (reading 'digest')` this likely means that you are neither running on `localhost` nor on `https` which is why your browser might not allow access to `crypto.subtle.digest`.
+
+### liveQueryUpdateThrottleTime
+`(optional, default: 0 = disabled)`
+
+Groups write-triggered live query updates to limit how often RxDB re-evaluates queries during write bursts. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime) for full documentation.
