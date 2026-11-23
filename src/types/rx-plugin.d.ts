@@ -123,6 +123,10 @@ export interface RxPlugin {
             collection: RxCollection;
             state: RxState<unknown, unknown>;
         }>;
+        preAddRxCollections?: RxPluginHooks<{
+            database: RxDatabase;
+            collectionCreators: { [collectionName: string]: RxCollectionCreator<any>; };
+        }>;
         preCreateRxCollection?: RxPluginHooks<RxCollectionCreator<any> & {
             name: string;
             database: RxDatabase;

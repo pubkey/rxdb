@@ -59,6 +59,7 @@ import {
     RxSchema
 } from './rx-schema.ts';
 import {
+    HOOKS,
     runPluginHooks,
     runAsyncPluginHooks
 } from './hooks.ts';
@@ -347,6 +348,12 @@ export class RxDatabaseBase<
     }): Promise<{ [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> }> {
         if (this.closePromise) {
             throw newRxError('DB15', { database: this.name });
+        }
+        if (HOOKS.preAddRxCollections.length > 0) {
+            await runAsyncPluginHooks('preAddRxCollections', {
+                database: this,
+                collectionCreators
+            });
         }
         const jsonSchemas: { [key in keyof CreatedCollections]: RxJsonSchema<any> } = {} as any;
         const schemas: { [key in keyof CreatedCollections]: RxSchema<any> } = {} as any;
@@ -888,6 +895,7 @@ export function createRxDatabase<
         multiInstance = true,
         eventReduce = true,
         ignoreDuplicate = false,
+        resetCollectionOnSchemaChange = false,
         options = {},
         cleanupPolicy,
         closeDuplicates = false,
@@ -954,6 +962,11 @@ export function createRxDatabase<
             // check if combination already used
             throwIfDatabaseNameUsed(name, storage);
         }
+        if (resetCollectionOnSchemaChange && !overwritable.isDevMode()) {
+            throw newRxError('DB16', {
+                database: name
+            });
+        }
 
         USED_DATABASE_NAMES.add(databaseNameKey);
         hasRegisteredName = true;
@@ -999,6 +1012,7 @@ export function createRxDatabase<
                 multiInstance,
                 eventReduce,
                 ignoreDuplicate,
+                resetCollectionOnSchemaChange,
                 options,
                 localDocuments
             }

@@ -779,6 +779,47 @@ describe('rx-database.test.ts', () => {
             );
             await db2.close();
         });
+        it('resetCollectionOnSchemaChange should delete the collection state instead of throwing DB6', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
+            const name = randomToken(10);
+            const storage = config.storage.getStorage();
+            const changedSchema = { ...schemas.human, description: 'changed' };
+            const db1 = await createRxDatabase({ name, storage });
+            await db1.addCollections({
+                items: { schema: schemas.human },
+                other: { schema: schemas.human }
+            });
+            await db1.items.insert(schemaObjects.humanData());
+            await db1.other.insert(schemaObjects.humanData());
+            await db1.close();
+
+            const db2 = await createRxDatabase({ name, storage, resetCollectionOnSchemaChange: true });
+            await db2.addCollections({
+                items: { schema: changedSchema },
+                other: { schema: schemas.human }
+            });
+            assert.strictEqual((await db2.items.find().exec()).length, 0);
+            assert.strictEqual((await db2.other.find().exec()).length, 1);
+            await db2.items.insert(schemaObjects.humanData());
+            await db2.close();
+
+            // an unchanged schema must not delete the data again
+            const db3 = await createRxDatabase({ name, storage, resetCollectionOnSchemaChange: true });
+            await db3.addCollections({ items: { schema: changedSchema } });
+            assert.strictEqual((await db3.items.find().exec()).length, 1);
+            await db3.close();
+
+            // without the setting, the changed schema must still throw
+            const db4 = await createRxDatabase({ name, storage });
+            await AsyncTestUtil.assertThrows(
+                () => db4.addCollections({ items: { schema: schemas.human } }),
+                'RxError',
+                'DB6'
+            );
+            await db4.remove();
+        });
     });
     describe('.close()', () => {
         describe('positive', () => {

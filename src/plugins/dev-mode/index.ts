@@ -29,6 +29,10 @@ import { DeepReadonly } from '../../types/util.ts';
 import { deepFreeze } from '../../plugins/utils/index.ts';
 import { checkWriteRows, ensurePrimaryKeyValid } from './check-document.ts';
 import { addDevModeTrackingIframe } from './dev-mode-tracking.ts';
+import {
+    rememberResetCollectionOnSchemaChange,
+    resetCollectionsWithChangedSchema
+} from './reset-on-schema-change.ts';
 
 export * from './check-schema.ts';
 export * from './unallowed-properties.ts';
@@ -141,8 +145,10 @@ Docs: ${err.docs}`;
             }
         },
         createRxDatabase: {
-            after: async function (args) {
-            }
+            after: rememberResetCollectionOnSchemaChange
+        },
+        preAddRxCollections: {
+            before: resetCollectionsWithChangedSchema
         },
         preCreateRxCollection: {
             after: function (args: RxCollectionCreator<any> & { name: string; }) {

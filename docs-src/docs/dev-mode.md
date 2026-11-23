@@ -116,6 +116,12 @@ disableWarnings();
 ```
 
 
+## Reset a collection when its schema changes
+
+When you change the schema of a collection without increasing its `version`, RxDB throws the error [`DB6`](./errors.md#DB6) because the stored documents might not match the new schema. During development this gets in the way, for example when you switch between git branches that use different schemas.
+
+To fix this, set [resetCollectionOnSchemaChange](./rx-database.md#resetcollectiononschemachange) to `true` when you create the [RxDatabase](./rx-database.md). The dev-mode then deletes the stored state of a collection whose schema has changed and creates the collection empty with the new schema.
+
 ## Disable the tracking iframe
 
 When used in localhost and in the browser, the dev-mode plugin can add a tracking iframe to the DOM. This is used to track the effectiveness of marketing efforts of RxDB.

@@ -291,7 +291,7 @@ export const ERROR_MESSAGES = {
     DB6: {
         message: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this: https://rxdb.info/rx-schema.html?console=qa#faq',
         cause: 'The schema hash does not match the schema stored in the internal database.',
-        fix: 'If you changed the schema, you must increment the version number. If not, check why the hash is different.',
+        fix: 'If you changed the schema, you must increment the version number. If not, check why the hash is different. During development you can set resetCollectionOnSchemaChange: true when calling createRxDatabase() to delete the stored data of the collection instead.',
         docs: 'https://rxdb.info/rx-schema.html?console=errors&code=DB6#faq'
     },
     // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
@@ -341,6 +341,12 @@ export const ERROR_MESSAGES = {
         cause: 'You called a method on a database after RxDatabase.close() was called.',
         fix: 'Create a new database instance with createRxDatabase() instead of using the closed one.',
         docs: 'https://rxdb.info/rx-database.html?console=errors&code=DB15'
+    },
+    DB16: {
+        message: 'resetCollectionOnSchemaChange is only allowed in dev-mode and must never be used in production',
+        cause: 'You used the resetCollectionOnSchemaChange option in a production environment.',
+        fix: 'Remove resetCollectionOnSchemaChange: true or switch to dev-mode.',
+        docs: 'https://rxdb.info/rx-database.html?console=errors&code=DB16'
     },
 
     // rx-collection
