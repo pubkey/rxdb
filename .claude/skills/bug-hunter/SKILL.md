@@ -112,7 +112,7 @@ The main session makes sure that no bug gets more than one pull request:
 - Keep a list of all assumed bugs that were handed to a subagent, each with the affected files and functions and the suspected cause.
 - Before you spawn a subagent, compare the assumed bug with that list and with the open pull requests of the repository. When it has the same cause as an entry, do not spawn a subagent. Two symptoms with the same cause are one bug.
 - Tell each subagent which other assumed bugs are in work, so that it stops and reports when its finding turns out to be one of them.
-- Keep at most five pull requests of the bug hunt open at the same time. When more findings are valid, open the pull requests of the most severe ones first (lost or wrong data, then a promise that never settles or a crash, then wrong typings or docs) and list the others for the user. Open the next one when one is merged or closed.
+- Keep at most 15 pull requests of the bug hunt open at the same time. When more findings are valid, open the pull requests of the most severe ones first (lost or wrong data, then a promise that never settles or a crash, then wrong typings or docs) and list the others for the user. Open the next one when one is merged or closed.
 - When a subagent reports its result, compare the real cause and the changed files with the other results before its pull request is counted as done. When two pull requests fix the same bug, keep the one with the better test and fix, move a test that only the other one has into it, and close the other one with a comment that links the kept one.
 
 ## How to reproduce a bug
