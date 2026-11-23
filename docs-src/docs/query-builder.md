@@ -29,7 +29,8 @@ await myDatabase.addCollections({
 });
 await myDatabase.todos.bulkInsert([ /* todo1, todo2, todo3, todo4 */ ]);
 
-// selector: { done: { $eq: false }, priority: { $gte: 5 } }, sort: [{ priority: 'desc' }]
+// selector: { done: { $eq: false }, priority: { $gte: 5 } }
+// sort: [{ priority: 'desc' }]
 const query = myDatabase.todos.find()
     .where('done').eq(false)
     .where('priority').gte(5)
