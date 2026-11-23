@@ -30,6 +30,7 @@ import {
     CouchBulkDocResultRow
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
+import { createQueryBuilder } from '../plugins/query-builder/index.mjs';
 import { RxDatabaseProvider } from '../plugins/react/index.mjs';
 import type { AngularSignalReactivityLambda } from '../plugins/reactivity-angular/index.mjs';
 import type { Signal } from '@angular/core';
@@ -916,6 +917,23 @@ describe('other', () => {
                 const myCollection: RxCollection<DocType> = myCollections.humans;
 
                 const query = myCollection.findOne().where('nestedObject.foo').eq('foobar');
+            });
+            it('should know the operator methods of the query-builder plugin', () => {
+                type DocType = {
+                    passportId: string;
+                    firstName: string;
+                    tags: string[];
+                };
+                const myCollection: RxCollection<DocType> = {} as any;
+
+                const sizeQuery = myCollection.find().where('tags').size(2);
+                const resultPromise: Promise<RxDocument<DocType>[]> = sizeQuery.exec();
+                const builder = createQueryBuilder<DocType>().where('tags').size(2);
+
+                // @ts-expect-error the RxQuery has no all() method
+                myCollection.find().where('tags').all(['foo']);
+                // @ts-expect-error the query builder has no all() method
+                createQueryBuilder<DocType>().where('tags').all(['foo']);
             });
             describe('rx-error', () => {
                 it('should know the parameters of the error', async () => {

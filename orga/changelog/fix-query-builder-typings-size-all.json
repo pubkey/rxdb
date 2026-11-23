@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the typings of the query-builder plugin did not match the runtime: `RxQuery` had no `size()` method, so the documented `.where('tags').size(2)` did not compile, and `NoSqlQueryBuilder` still declared the removed `all()` method, so `createQueryBuilder().where('tags').all(['foo'])` compiled and threw `all is not a function`",
+    "links": [],
+    "priority": 4
+}

@@ -144,6 +144,7 @@ export declare class RxQuery<
         $regex: string;
         $options: MangoQueryRegexOptions;
     }): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
+    size(queryObj: number): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
     exists(queryObj: any): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
     elemMatch(queryObj: any): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;
     mod(queryObj: [number, number]): RxQuery<RxDocumentType, RxQueryResult, OrmMethods, Reactivity>;

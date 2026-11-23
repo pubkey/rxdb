@@ -442,7 +442,6 @@ export interface NoSqlQueryBuilder<DocType = any> extends NoSqlQueryBuilderClass
     ne: ReturnSelfFunction<DocType>;
     in: ReturnSelfFunction<DocType>;
     nin: ReturnSelfFunction<DocType>;
-    all: ReturnSelfFunction<DocType>;
     regex: ReturnSelfFunction<DocType>;
     size: ReturnSelfFunction<DocType>;
 
