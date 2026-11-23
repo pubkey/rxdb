@@ -679,6 +679,23 @@ An implementation with tests is in the closed pull request [#9561](https://githu
 
 Related closed pull requests that contain parts of this change: [#9603](https://github.com/pubkey/rxdb/pull/9603) (the digest that a wrapped storage changed is set on the write rows of the caller, so that the encryption and the attachments-compression storage work in both wrapping orders) and [#9556](https://github.com/pubkey/rxdb/pull/9556) (the `length` of the write data is used for the stored attachment).
 
+## RxState: writes of two devices must not get the same operations document id
+
+An RxState stores each write as an operations document with a counter as id (`00000000000000`, `00000000000001`, ...). Instances that share one storage get a conflict error on the same id and retry with the next one. Two devices that replicate `myState.collection` do not share a storage, so when both write before they sync, both create a document with the same id. The replication handles that as a conflict, the default conflict handler keeps the master state, and the fork document is overwritten.
+
+- With `await stateA.set('a', () => 1)` on one device and `await stateB.set('b', () => 2)` on the other one, both states are `{ b: 2 }` after the sync. The write of one device is dropped.
+- When one device runs the cleanup while the other one wrote without a connection, the merged document of the cleanup loses the conflict, but the deletions of the older operations documents are replicated. Both devices then only have the one write of the other device and the whole earlier state is lost.
+
+Since the fix that rebuilds the in-memory state after such a replicated change, `get()` and the observables show the stored state. The writes are still lost.
+
+Todo:
+- Give the operations documents ids that are unique per device, for example the counter plus the instance id, so that two devices never write the same document. The order of the operations, `nextRxStateId()`, the `_lastMergedId` comparisons, and the cleanup have to work with these ids.
+- Alternative: a conflict handler for the collection of the RxState that keeps the operations of both sides in the resolved document. It has to define the order of a full-state operation (`k: ''`, written by the cleanup and by `set('')`) against the operations of the other side, otherwise the document of the cleanup still drops the other write.
+- The cleanup must not delete operations documents before its merged document is accepted by the other side.
+- Breaking: the stored format of the operations documents changes, so existing states have to be migrated. With the conflict handler, apps that replicate a state today get another result for a conflict.
+
+There is no implementation yet. The pull request that rebuilds the in-memory state and has tests for both scenarios is TODO_LINK_TO_THE_PULL_REQUEST_OF_THE_RXSTATE_REBUILD_FIX.
+
 ## Database `exportJSON()` must not contain the internal RxState collection
 
 `RxDatabase.exportJSON()` contains the internal `rx-state-*` collection of an RxState. `importJSON()` of that dump into a database without the state throws `JD1`.

@@ -114,6 +114,15 @@ export class RxStateBase<T, Reactivity = unknown> {
                         this._eventDuringInit = true;
                         return false;
                     }
+                    /**
+                     * This instance only inserts operations documents and deletes
+                     * them in the cleanup after their operations are stored in a newer document.
+                     * An UPDATE or DELETE event can also come from a replication
+                     * that has overwritten or deleted documents which are merged into the state.
+                     */
+                    if (eventBulk.events.some(event => event.operation !== 'INSERT')) {
+                        this._rebuildState();
+                    }
                     return eventBulk.events.some(event =>
                         event.operation === 'INSERT' &&
                         event.documentData.sId !== this._instanceId
@@ -338,6 +347,36 @@ export class RxStateBase<T, Reactivity = unknown> {
                 this.mergeOperationsIntoState(doc.ops);
             }
         }
+    }
+
+    /**
+     * Builds the state again from all operations documents of the storage.
+     * Runs in the write queue so that pending set() calls
+     * run their modifiers on the rebuilt state.
+     */
+    _rebuildState() {
+        this._writeQueue = this._writeQueue.then(async () => {
+            let docs: RxDocument<RxStateDocument>[] = [];
+            let lastMergedId: string | undefined;
+            /**
+             * When an operations document of another instance was merged
+             * during the query, the query result might not contain it.
+             */
+            while (lastMergedId !== this._lastMergedId) {
+                lastMergedId = this._lastMergedId;
+                docs = await this.collection.find({ sort: [{ id: 'asc' }] }).exec();
+            }
+            let state: any = {};
+            docs.forEach(doc => state = mergeOperationsIntoState(state, doc.ops));
+            const lastDoc = docs[docs.length - 1];
+            if (lastDoc && lastDoc.id > this._lastMergedId) {
+                this._lastMergedId = lastDoc.id;
+            }
+            if (!deepEqual(state, this._state)) {
+                this._state = state;
+                this._ownEmits$.next(this._state);
+            }
+        }).catch(() => { });
     }
 
     mergeOperationsIntoState(
