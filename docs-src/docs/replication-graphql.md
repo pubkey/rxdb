@@ -499,7 +499,7 @@ RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuil
 
 ### RxGraphQLReplicationState
 
-When you call `replicateGraphQL()` it returns a `RxGraphQLReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) with some GraphQL specific methods.
+When you call `replicateGraphQL()` it returns a `RxGraphQLReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./rx-replication-state.md) with some GraphQL specific methods.
 
 #### .setHeaders()
 

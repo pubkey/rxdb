@@ -266,6 +266,16 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'replicate-rx-collection',
+          label: 'replicateRxCollection()'
+        },
+        {
+          type: 'doc',
+          id: 'rx-replication-state',
+          label: 'RxReplicationState'
+        },
+        {
+          type: 'doc',
           id: 'replication-http',
           label: 'HTTP Replication'
         },
