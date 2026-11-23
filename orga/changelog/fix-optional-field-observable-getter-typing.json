@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
     "text": "FIX the observable getter `myDocument.field$` of an optional field was typed as possibly `undefined`, although the getter exists for every top-level field",
-    "links": [],
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9828",
+            "linkText": "#9828"
+        }
+    ],
     "priority": 4
 }
