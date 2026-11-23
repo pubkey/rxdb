@@ -543,6 +543,87 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 await database.remove();
             });
+            it('should run the automatic cleanup after another database was removed while its cleanup was running', async () => {
+                type CounterState = {
+                    [key: string]: number;
+                };
+                const storage = useSchemaValidator ? wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                }) : config.storage.getStorage();
+                const openState = async () => {
+                    const database = await createRxDatabase({
+                        name: randomToken(10),
+                        storage,
+                        cleanupPolicy: {
+                            awaitReplicationsInSync: false,
+                            minimumCollectionAge: 0,
+                            minimumDeletedTime: 0,
+                            runEach: 0,
+                            waitForLeadership: false
+                        }
+                    });
+                    return database.addState<CounterState>();
+                };
+
+                /**
+                 * Which step of the cleanup is running when the database
+                 * gets removed depends on the timing, so this is done several times.
+                 * Slow storages get fewer rounds to stay inside of the test timeout.
+                 */
+                const maxRounds = 10;
+                const roundsStartTime = Date.now();
+                for (let round = 0; round < maxRounds && Date.now() - roundsStartTime < 3000; round++) {
+                    const state = await openState();
+                    const database = state.collection.database;
+                    let counter = 0;
+                    const writeNext = () => {
+                        const value = counter++;
+                        return state.set('k' + value, () => value);
+                    };
+
+                    /**
+                     * The cleanup starts when the database is idle after a write,
+                     * and it only merges the state when there are more than 5 writes.
+                     * The idle calls are resolved in the order of their requests,
+                     * so the cleanup starts right after this one.
+                     */
+                    const idlePromise = database.requestIdlePromise();
+                    for (let i = 0; i < 6; i++) {
+                        await writeNext();
+                    }
+                    await idlePromise;
+                    // the next idle call is resolved three timeouts after the previous one
+                    await wait(0);
+                    await wait(0);
+                    await wait(0);
+
+                    /**
+                     * Now the cleanup reads the state documents from the storage.
+                     * While writes arrive, that read is repeated for some time,
+                     * so the cleanup is still running when the database gets removed.
+                     * All writes of the app are awaited before.
+                     */
+                    const startTime = Date.now();
+                    while (Date.now() - startTime < 30) {
+                        await writeNext();
+                    }
+                    await database.remove();
+                }
+
+                // the cleanup of a database that is created afterwards must still run
+                const lastState = await openState();
+                const writes = 10;
+                for (let i = 0; i < writes; i++) {
+                    await lastState.set('k' + i, () => i);
+                }
+                await waitUntil(async () => {
+                    const docs = await lastState.collection.find().exec();
+                    return docs.length <= 5;
+                });
+                assert.strictEqual(Object.keys(lastState.get()).length, writes);
+
+                await lastState.collection.database.remove();
+            });
         });
         describe('multiInstance', () => {
             if (

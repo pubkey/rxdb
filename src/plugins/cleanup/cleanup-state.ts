@@ -3,7 +3,7 @@ import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import { DEFAULT_CLEANUP_POLICY, awaitReplicationInSyncOrCanceled } from './cleanup-helper.ts';
 import { initialCleanupWait } from './cleanup.ts';
-import { firstValueFrom } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 
 let RXSTATE_CLEANUP_QUEUE: Promise<any> = PROMISE_RESOLVE_TRUE;
 
@@ -68,16 +68,30 @@ export async function cleanupRxState(
                 if (rxCollection.closed) {
                     return true;
                 }
-                return state._cleanup().catch(err => {
-                    /**
-                     * The collection can be closed while the cleanup is running.
-                     * Then the cleanup run ends without an error.
-                     */
+                /**
+                 * The collection can be closed while the cleanup is running.
+                 * Then the cleanup run ends without an error.
+                 * A step of the cleanup that runs on the closed collection
+                 * might never settle, and this queue is shared by all
+                 * databases, so it must not wait for that step.
+                 */
+                const closedSub = new Subscription();
+                const closedPromise = new Promise<boolean>(res => {
+                    closedSub.add(rxCollection.closed$.subscribe(() => res(true)));
+                });
+                try {
+                    return await Promise.race([
+                        state._cleanup(),
+                        closedPromise
+                    ]);
+                } catch (err) {
                     if (rxCollection.closed) {
                         return true;
                     }
                     throw err;
-                });
+                } finally {
+                    closedSub.unsubscribe();
+                }
             });
         isDone = await RXSTATE_CLEANUP_QUEUE;
     }
