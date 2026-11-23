@@ -24,9 +24,10 @@ const replicationState = replicateRxCollection({
     pull: {
         async handler(lastCheckpoint, batchSize) {
             const minUpdatedAt = lastCheckpoint ? lastCheckpoint.updatedAt : 0;
-            const response = await fetch(
-                `https://example.com/api/sync/pull?minUpdatedAt=${minUpdatedAt}&limit=${batchSize}`
-            );
+            const url = 'https://example.com/api/sync/pull'
+                + '?minUpdatedAt=' + minUpdatedAt
+                + '&limit=' + batchSize;
+            const response = await fetch(url);
             // must return { documents, checkpoint }
             return await response.json();
         }
@@ -38,7 +39,7 @@ const replicationState = replicateRxCollection({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(rows)
             });
-            // must return the master states of all conflicts, or [] when there are none
+            // must return the master states of all conflicts, or []
             return await response.json();
         }
     }
