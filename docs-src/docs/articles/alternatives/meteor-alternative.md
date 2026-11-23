@@ -109,7 +109,7 @@ await myDatabase.addCollections({
 });
 ```
 
-The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB and works with the same code.
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 When this database is created, data is stored in IndexedDB on the user's device. If the user closes the browser and reopens the app with no internet connection, the app can read all locally stored data immediately. No server round-trip is required to render the interface.
 
@@ -392,11 +392,11 @@ Create a database and a collection:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 const myDatabase = await createRxDatabase({
     name: 'my-local-app',
-    storage: getRxStorageIndexedDB()
+    storage: getRxStorageDexie()
 });
 
 await myDatabase.addCollections({

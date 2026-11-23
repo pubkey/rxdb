@@ -77,7 +77,7 @@ You pick the storage that matches your runtime and constraints, and you can swap
 
 - [OPFS storage](../../rx-storage-opfs.md) <PremiumIcon /> for the fastest persistent option in modern browsers.
 - [IndexedDB storage](../../rx-storage-indexeddb.md) <PremiumIcon /> for broad compatibility (and for working around the [slow IndexedDB problem](../../slow-indexeddb.md) using RxDB's optimizations).
-- [SQLite storage](../../rx-storage-sqlite.md) when you do want SQLite under the hood, in Node.js, Electron, React Native, or in browsers via `sqlite-wasm`.
+- [SQLite storage](../../rx-storage-sqlite.md) <PremiumIcon /> when you do want SQLite under the hood, in Node.js, Electron, React Native, or in browsers via `sqlite-wasm`.
 - Memory storage for tests.
 
 ### Reactive queries and collections
@@ -141,7 +141,7 @@ await db.todos.insert({
 });
 ```
 
-The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB and works with the same code.
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 No SQL strings, no manual cache invalidation, no hand-rolled change feed.
 
@@ -228,11 +228,11 @@ npm install rxdb rxjs
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 const db = await createRxDatabase({
   name: 'mydb',
-  storage: getRxStorageOPFSMainThread()
+  storage: getRxStorageDexie()
 });
 ```
 

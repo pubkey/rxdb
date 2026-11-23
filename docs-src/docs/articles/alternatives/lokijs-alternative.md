@@ -106,7 +106,7 @@ query.$.subscribe(todos => {
 });
 ```
 
-The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB and works with the same code.
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 Compared to LokiJS, the meaningful difference is not the API surface, it is what happens under the hood: each insert is durable in IndexedDB, the query is reactive through RxJS, and other tabs of the same origin see the change automatically.
 

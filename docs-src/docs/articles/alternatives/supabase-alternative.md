@@ -174,7 +174,7 @@ const openTodos = await db.todos.find({
 }).exec();
 ```
 
-The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB and works with the same code.
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 Writes made while offline are stored locally and automatically pushed to Supabase when the connection is restored.
 
@@ -543,7 +543,7 @@ Create a database and start the replication:
 ```ts
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { createClient } from '@supabase/supabase-js';
 import { replicateSupabase } from 'rxdb/plugins/replication-supabase';
 
@@ -551,7 +551,7 @@ addRxPlugin(RxDBDevModePlugin);
 
 const db = await createRxDatabase({
     name: 'myapp',
-    storage: getRxStorageIndexedDB()
+    storage: getRxStorageDexie()
 });
 
 await db.addCollections({

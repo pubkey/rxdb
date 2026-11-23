@@ -174,7 +174,7 @@ db.todos.find({
 });
 ```
 
-The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB and works with the same code.
+The IndexedDB RxStorage is part of [RxDB Premium <PremiumIcon />](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 This is equivalent to Horizon's `watch()` API, but the data comes from local IndexedDB storage, not a remote server. The UI works the same way whether the user is online or offline.
 
@@ -465,13 +465,13 @@ Create a database, add a collection, write documents, and subscribe to reactive 
 ```typescript
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 addRxPlugin(RxDBDevModePlugin);
 
 const db = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageIndexedDB()
+    storage: getRxStorageDexie()
 });
 
 await db.addCollections({
