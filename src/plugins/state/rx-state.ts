@@ -86,7 +86,8 @@ export class RxStateBase<T, Reactivity = unknown> {
     public _lastMergedId = '';
     /**
      * Ids of the operations documents that were merged from the storage
-     * before their INSERT event has arrived. Emptied on each rebuild of the state.
+     * before their INSERT event has arrived. A rebuild of the state replaces
+     * the content with the ids it has read above the previous _lastMergedId.
      */
     public _mergedAhead = new Set<string>();
 
@@ -292,6 +293,11 @@ export class RxStateBase<T, Reactivity = unknown> {
                             sId: this._instanceId,
                             ops
                         });
+                        /**
+                         * A merge that ran during the insert can have read
+                         * the own document from the storage. Own events
+                         * never remove it from the set.
+                         */
                         this._mergedAhead.delete(nextId);
                         /**
                          * When a newer operation was merged during the insert,

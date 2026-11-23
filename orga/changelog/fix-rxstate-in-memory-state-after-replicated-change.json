@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX the in-memory state of an `RxState` did not follow the storage when a replication of `myState.collection` overwrote or deleted operations documents, so `get()` and the observables returned another state than after a reload. The state is now built again from the storage after such a change. Added testcases for the replication of an `RxState`",
+    "text": "FIX the in-memory state of an `RxState` did not follow the storage when a replication of `myState.collection` overwrote or deleted operations documents, or inserted one with an id that was merged already, so `get()` and the observables returned another state than after a reload. The state is now built again from the storage after such a change. Added testcases for the replication of an `RxState`",
     "links": [],
     "priority": 5
 }
