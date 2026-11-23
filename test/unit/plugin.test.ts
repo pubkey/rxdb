@@ -47,42 +47,58 @@ describe('plugin.test.js', () => {
             await addRxPlugin(RxDBDevModePlugin);
         });
     });
+    /**
+     * Runs a transpiled file of the unit test folder in a separate
+     * node-process and throws when it fails or writes to stderr.
+     */
+    async function runInOwnProcess(fileName: string) {
+        const execFileAsync = promisify(execFile);
+        let stderr: string;
+        try {
+            /**
+             * Run the mocha entrypoint with the current node binary
+             * instead of relying on the `mocha` shim being in the PATH,
+             * this also works on windows.
+             */
+            const result = await execFileAsync(
+                process.execPath,
+                [
+                    getRootPath() + 'node_modules/mocha/bin/mocha.js',
+                    getRootPath() + 'test_tmp/unit/' + fileName
+                ],
+                {
+                    maxBuffer: 1024 * 1024 * 64,
+                    // stop a process that hangs, before the test times out
+                    timeout: 30 * 1000
+                }
+            );
+            stderr = result.stderr;
+        } catch (err: any) {
+            console.error('errrrr');
+            console.dir(err.stdout);
+            throw new Error(`could not run ${fileName}.
+                # Error: ${err}
+                # Output: ${err.stdout}
+                # ErrOut: ${err.stderr}
+                `, { cause: err });
+        }
+
+        if (stderr.length > 0) {
+            throw new Error('got stderr: ' + stderr);
+        }
+    }
     describe('full.node.ts', () => {
         it('full.node.ts should run without errors', async () => {
-            if (!isNode)
-                return;
-
-            const execFileAsync = promisify(execFile);
-            let stderr: string;
-            try {
-                /**
-                 * Run the mocha entrypoint with the current node binary
-                 * instead of relying on the `mocha` shim being in the PATH,
-                 * this also works on windows.
-                 */
-                const result = await execFileAsync(
-                    process.execPath,
-                    [
-                        getRootPath() + 'node_modules/mocha/bin/mocha.js',
-                        getRootPath() + 'test_tmp/unit/full.node.js'
-                    ],
-                    { maxBuffer: 1024 * 1024 * 64 }
-                );
-                stderr = result.stderr;
-            } catch (err: any) {
-                console.error('errrrr');
-                console.dir(err.stdout);
-                throw new Error(`could not run full.node.js.
-                    # Error: ${err}
-                    # Output: ${err.stdout}
-                    # ErrOut: ${err.stderr}
-                    `, { cause: err });
-            }
-
-            if (stderr.length > 0) {
-                throw new Error('got stderr: ' + stderr);
-            }
+            await runInOwnProcess('full.node.js');
         });
+    });
+    describe('plugins that wait for the leadership', () => {
+        it('the automatic cleanup should run when only the cleanup plugin was added', async () => {
+            await runInOwnProcess('cleanup-only.node.js');
+        }).timeout(40 * 1000);
+        it('addPipeline() should work when only the pipeline plugin was added', async () => {
+            await runInOwnProcess('pipeline-only.node.js');
+        }).timeout(40 * 1000);
     });
     describe('hooks', () => {
         it('createRxDatabase', async () => {
