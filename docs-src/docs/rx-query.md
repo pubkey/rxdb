@@ -12,6 +12,22 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 
 To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](./rx-query-examples.md), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
 
+## Run and Observe a Query
+
+Create a query with `find()` and a [Mango selector](./rx-query-examples.md). `exec()` returns the matching documents once. The `$` observable emits the current result and emits again whenever a write changes the result, also when the write happens in another browser tab or comes from [replication](./replication.md).
+
+```ts
+const query = myDatabase.todos.find({
+    selector: { done: false }
+});
+
+const openTodos = await query.exec();
+// > [RxDocument[todo1], RxDocument[todo3], RxDocument[todo4]]
+
+query.$.subscribe(results => console.log(results.length));
+// > 3
+```
+
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
 
@@ -29,36 +45,6 @@ const results = await query.exec();
 // > [RxDocument[todo1], RxDocument[todo3]]
 ```
 
-## findOne() {#findOne}
-A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
-
-```js
-// find the todo with the name 'Buy groceries'
-const query = myDatabase.todos
-    .findOne({
-      selector: {
-        name: 'Buy groceries'
-      }
-    });
-```
-
-```js
-// find the todo that is due first
-const query = myDatabase.todos
-    .findOne({
-      selector: {},
-      sort: [
-        {dueAt: 'asc'}
-      ]
-    });
-const doc = await query.exec();
-// > RxDocument[todo1]
-```
-
-```js
-// find one document by the primary key
-const query = myDatabase.todos.findOne('todo1');
-```
 ## exec()
 Returns a `Promise` that resolves with the result-set of the query.
 
@@ -101,6 +87,36 @@ querySub.unsubscribe()
 
 When the [RxCollection](./rx-collection.md) or the [RxDatabase](./rx-database.md) of the query gets closed or removed, the observable completes and emits no more results or errors.
 
+## findOne() {#findOne}
+A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
+
+```js
+// find the todo with the name 'Buy groceries'
+const query = myDatabase.todos
+    .findOne({
+      selector: {
+        name: 'Buy groceries'
+      }
+    });
+```
+
+```js
+// find the todo that is due first
+const query = myDatabase.todos
+    .findOne({
+      selector: {},
+      sort: [
+        {dueAt: 'asc'}
+      ]
+    });
+const doc = await query.exec();
+// > RxDocument[todo1]
+```
+
+```js
+// find one document by the primary key
+const query = myDatabase.todos.findOne('todo1');
+```
 ## update()
 Runs an [update](./rx-document.md#update) on every RxDocument of the query-result.
 
@@ -254,37 +270,6 @@ A query without `sort` is NOT sorted by the primary key. RxDB sorts it by the fi
 :::
 
 
-## Setting a specific index
-
-By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used. This is the step you would otherwise write by hand, as shown in [IndexedDB query](./articles/indexeddb/indexeddb-query.md).
-But the query planner cannot know everything and sometimes will not pick the most optimal index.
-To improve query performance, you can specify which index must be used, when running the query.
-
-```ts
-const query = myDatabase.todos
-    .findOne({
-      selector: {
-        done: {
-          $eq: false
-        },
-        dueAt: {
-          $gt: '2026-01-03T00:00:00.000Z'
-        }
-      },
-      /**
-       * Because the developer knows that 50% of the todos are not done,
-       * but only 10% are due after the given date,
-       * it makes sense to enforce using the
-       * 'dueAt' index to improve
-       * performance.
-       * This could not be known by the query
-       * planner which might have chosen
-       * ['done', 'priority'] instead.
-       */
-      index: ['dueAt']
-    });
-```
-
 ## Count
 
 When you only need the amount of documents that match a query, but you do not need the document data itself, you can use a count query for **better performance**.
@@ -386,12 +371,7 @@ const database = await createRxDatabase({
 });
 ```
 
-### `allowSlowCount`
-To allow non-fully-indexed count queries, you can also specify that by setting `allowSlowCount: true` when creating the database.
-Doing this is mostly not wanted, because it would run the counting on the storage without having the document stored in the RxDB document cache.
-This is only recommended if the RxStorage is running remotely like in a WebWorker and you do not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.
-
-
+Read [`allowSlowCount`](#allowslowcount) for the cases where a slow count query makes sense.
 
 ## RxQuery instances are immutable
 Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQueries have to be immutable.
@@ -417,7 +397,48 @@ Returns true if the given object is an instance of RxQuery. Returns false if not
 const is = isRxQuery(myObj);
 ```
 
-## Query the Storage Directly
+## Advanced Query Options
+
+The following options help with performance tuning in special cases: a query planner that picks a slow index, count queries without a fitting index, large exports, and live queries with many writes.
+
+### Setting a specific index
+
+By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used. This is the step you would otherwise write by hand, as shown in [IndexedDB query](./articles/indexeddb/indexeddb-query.md).
+But the query planner cannot know everything and sometimes will not pick the most optimal index.
+To improve query performance, you can specify which index must be used, when running the query.
+
+```ts
+const query = myDatabase.todos
+    .findOne({
+      selector: {
+        done: {
+          $eq: false
+        },
+        dueAt: {
+          $gt: '2026-01-03T00:00:00.000Z'
+        }
+      },
+      /**
+       * Because the developer knows that 50% of the todos are not done,
+       * but only 10% are due after the given date,
+       * it makes sense to enforce using the
+       * 'dueAt' index to improve
+       * performance.
+       * This could not be known by the query
+       * planner which might have chosen
+       * ['done', 'priority'] instead.
+       */
+      index: ['dueAt']
+    });
+```
+
+### `allowSlowCount`
+To allow non-fully-indexed count queries, you can also specify that by setting `allowSlowCount: true` when creating the database.
+Doing this is mostly not wanted, because it would run the counting on the storage without having the document stored in the RxDB document cache.
+This is only recommended if the RxStorage is running remotely like in a WebWorker and you do not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.
+
+
+### Query the Storage Directly
 
 `exec()` returns `RxDocument` instances. RxDB creates and caches these instances, which costs time and memory when a query returns many documents that you only read once, for example for an export or a bulk computation. In that case you can skip the `RxDocument` layer and run the query against the [RxStorage](./rx-storage.md) instance of the collection with `collection.storageInstance.query()`.
 
@@ -474,7 +495,7 @@ Keep in mind what you lose when you query the storage directly:
 - The document cache of the collection is not used. Normally RxDB keeps one `RxDocument` instance per document revision and returns that same instance from every query. The storage returns new objects on every call instead, so when you run several raw queries, or mix them with normal queries, the same document can end up in memory multiple times.
 - [Middleware](./middleware.md) hooks like `postCreate` do not run. Storage wrappers like [encryption](./encryption.md), [key compression](./key-compression.md) and schema validation still apply, because `collection.storageInstance` is the wrapped storage instance.
 
-## liveQueryUpdateThrottleTime
+### liveQueryUpdateThrottleTime
 
 <BetaBlock since="17.1.0" />
 
