@@ -23,7 +23,8 @@ import {
 } from '../../plugins/core/index.mjs';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { nextPort } from '../helper/port-manager.ts';
-import { WebSocket } from 'ws';
+import { WebSocket, WebSocketServer } from 'ws';
+import type { IncomingMessage } from 'node:http';
 
 describe('replication-websocket.test.ts', () => {
     if (!config.storage.hasReplication) {
@@ -379,6 +380,217 @@ describe('replication-websocket.test.ts', () => {
         connectionSub.unsubscribe();
         await localCollection.database.close();
         await remoteCollection.database.close();
+    });
+    describe('server not reachable when the replication is started', () => {
+        /**
+         * Resolves with the RxReplicationState when replicateWithWebsocketServer()
+         * resolves while no server is listening on the url, otherwise with undefined.
+         * In the second case the server is started so that the pending call
+         * resolves and its socket can be closed.
+         */
+        async function startReplicationWhileOffline(
+            localCollection: RxCollection<TestDocType, {}, {}, {}>,
+            remoteCollection: RxCollection<TestDocType, {}, {}, {}>,
+            portAndUrl: { port: number; url: string; },
+            headers?: { [k: string]: string; },
+            freePort?: () => Promise<void>
+        ) {
+            const statePromise = replicateWithWebsocketServer<TestDocType, any>({
+                replicationIdentifier: randomToken(10),
+                collection: localCollection,
+                url: portAndUrl.url,
+                headers
+            });
+            const resolvedWhileOffline = await Promise.race([
+                statePromise.then(() => true),
+                wait(1000).then(() => false)
+            ]);
+            if (!resolvedWhileOffline) {
+                if (freePort) {
+                    await freePort();
+                }
+                startWebsocketServer({
+                    database: remoteCollection.database,
+                    port: portAndUrl.port
+                });
+                await (await statePromise).cancel();
+                return undefined;
+            }
+            return statePromise;
+        }
+
+        it('should resolve with the replication state and replicate when the server is started later', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: 1,
+                remote: 1
+            });
+            const portAndUrl = await nextPortAndUrl();
+            const headers = { authorization: 'token-' + randomToken(10) };
+
+            const replicationState = await startReplicationWhileOffline(
+                localCollection,
+                remoteCollection,
+                portAndUrl,
+                headers
+            );
+            if (!replicationState) {
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+                throw new Error('replicateWithWebsocketServer() did not resolve while the server is not reachable');
+            }
+
+            // the failed connection attempts must be emitted
+            const errors: any[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await waitUntil(() => errors.length > 0);
+            assert.strictEqual(errors[0].code, 'RC_STREAM');
+
+            // go 'online' by starting the server
+            const serverState = startWebsocketServer({
+                database: remoteCollection.database,
+                port: portAndUrl.port
+            });
+            const messagesOnServer: { method: string; params: any[]; }[] = [];
+            const connectionSub = serverState.onConnection$.subscribe(ws => {
+                ws.on('message', data => {
+                    if (Buffer.isBuffer(data)) {
+                        messagesOnServer.push(JSON.parse(data.toString('utf-8')));
+                    }
+                });
+            });
+
+            await replicationState.awaitInSync();
+            const serverDocs = await remoteCollection.find().exec();
+            assert.strictEqual(serverDocs.length, 2);
+            const clientDocs = await localCollection.find().exec();
+            assert.strictEqual(clientDocs.length, 2);
+
+            // the auth message must be the first message of the connection
+            assert.strictEqual(messagesOnServer[0].method, 'auth');
+            assert.deepStrictEqual(messagesOnServer[0].params, [headers]);
+
+            // ongoing writes must be replicated in both directions
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({
+                id: 'server-doc-after-connect'
+            }));
+            await waitUntil(async () => {
+                const doc = await localCollection.findOne('server-doc-after-connect').exec();
+                return !!doc;
+            });
+            await localCollection.insert(schemaObjects.humanWithTimestampData({
+                id: 'client-doc-after-connect'
+            }));
+            await replicationState.awaitInSync();
+            await remoteCollection.findOne('client-doc-after-connect').exec(true);
+
+            connectionSub.unsubscribe();
+            await replicationState.cancel();
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+        it('should be possible to cancel the replication while the first connection attempt is running', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: 1,
+                remote: 1
+            });
+            const portAndUrl = await nextPortAndUrl();
+
+            /**
+             * This server accepts the connection but never answers the handshake,
+             * so that the socket of the client stays in the connecting state.
+             */
+            const pendingSockets: IncomingMessage['socket'][] = [];
+            let closedByClient = 0;
+            const hangingServer = new WebSocketServer({
+                port: portAndUrl.port,
+                verifyClient: (info: { req: IncomingMessage; }, _callback: (res: boolean) => void) => {
+                    pendingSockets.push(info.req.socket);
+                    info.req.socket.once('end', () => closedByClient++);
+                    info.req.socket.resume();
+                }
+            });
+            await new Promise<void>(res => hangingServer.once('listening', () => res()));
+            const closeHangingServer = async () => {
+                pendingSockets.forEach(socket => socket.destroy());
+                await new Promise<void>(res => hangingServer.close(() => res()));
+            };
+
+            const replicationState = await startReplicationWhileOffline(
+                localCollection,
+                remoteCollection,
+                portAndUrl,
+                undefined,
+                closeHangingServer
+            );
+            if (!replicationState) {
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+                throw new Error('replicateWithWebsocketServer() did not resolve while the server is not reachable');
+            }
+            await waitUntil(() => pendingSockets.length === 1);
+
+            await replicationState.cancel();
+            assert.strictEqual(replicationState.isStopped(), true);
+
+            // the canceled client must close its connection attempt
+            await waitUntil(() => closedByClient === 1);
+
+            await closeHangingServer();
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
+        it('should be possible to cancel the replication when it was never connected', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: 1,
+                remote: 1
+            });
+            const portAndUrl = await nextPortAndUrl();
+
+            const replicationState = await startReplicationWhileOffline(
+                localCollection,
+                remoteCollection,
+                portAndUrl
+            );
+            if (!replicationState) {
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+                throw new Error('replicateWithWebsocketServer() did not resolve while the server is not reachable');
+            }
+
+            // wait until the first connection attempt has failed
+            const errors: any[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await waitUntil(() => errors.length > 0);
+
+            const canceled = await Promise.race([
+                replicationState.cancel().then(() => true),
+                wait(2000).then(() => false)
+            ]);
+            assert.strictEqual(canceled, true, 'cancel() must resolve when the replication was never connected');
+            assert.strictEqual(replicationState.isStopped(), true);
+
+            // a new replication on the same collection must work
+            let connections = 0;
+            const serverState = startWebsocketServer({
+                database: remoteCollection.database,
+                port: portAndUrl.port
+            });
+            const connectionSub = serverState.onConnection$.subscribe(() => connections++);
+            const secondReplicationState = await replicateWithWebsocketServer<TestDocType, any>({
+                replicationIdentifier: randomToken(10),
+                collection: localCollection,
+                url: portAndUrl.url
+            });
+            await secondReplicationState.awaitInSync();
+            const serverDocs = await remoteCollection.find().exec();
+            assert.strictEqual(serverDocs.length, 2);
+            assert.strictEqual(connections, 1);
+
+            connectionSub.unsubscribe();
+            await secondReplicationState.cancel();
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
     });
     it('should answer invalid requests with an error response and keep serving the connection', async () => {
         const remoteCollection = await humansCollection.createHumanWithTimestamp(1, undefined, false);

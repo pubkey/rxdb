@@ -62,6 +62,8 @@ const replicationState = await replicateWithWebsocketServer({
 await replicationState.cancel();
 ```
 
+`replicateWithWebsocketServer()` does not wait for the connection. It resolves with the [RxReplicationState](./replication.md) also when the server is not reachable, so you can subscribe to `replicationState.error$` or call `cancel()` while the client is offline. The client connects in the background, retries until the server is reachable, and then starts to replicate.
+
 
 ## Customize
 

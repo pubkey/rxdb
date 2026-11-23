@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `replicateWithWebsocketServer()` did not resolve while the websocket server was not reachable, so the app never got the `RxReplicationState` and could not observe `error$` or call `cancel()`. It now resolves without waiting for the first connection and the replication starts as soon as the server is reachable. Canceling the replication while the socket is still connecting no longer throws an uncaught `WebSocket was closed before the connection was established` error",
+    "links": [],
+    "priority": 5
+}
