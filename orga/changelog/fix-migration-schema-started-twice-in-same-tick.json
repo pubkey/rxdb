@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the schema migration ran twice with `multiInstance: false` when `startMigration()` and `migratePromise()`, or two `migratePromise()` calls, were called in the same tick. The migration strategies ran twice for each document, the migration status reported more handled documents than the total, and the memory storage threw an unhandled `removed already` rejection",
+    "links": [],
+    "priority": 5
+}

@@ -468,6 +468,86 @@ describe('migration-schema.test.ts', function () {
                     assert.strictEqual(docs.length, 5);
                     await col.database.remove();
                 });
+                describe('multiple calls in the same tick with multiInstance: false', () => {
+                    const docsAmount = 25;
+                    async function createCollectionWithCountedStrategyCalls() {
+                        const name = randomToken(10);
+                        const db = await createRxDatabase({
+                            name,
+                            storage: config.storage.getStorage(),
+                            multiInstance: false
+                        });
+                        const cols = await db.addCollections({
+                            human: {
+                                schema: schemas.simpleHuman
+                            }
+                        });
+                        await cols.human.bulkInsert(
+                            new Array(docsAmount).fill(0).map(() => schemaObjects.simpleHumanAge())
+                        );
+                        await db.close();
+
+                        const db2 = await createRxDatabase({
+                            name,
+                            storage: config.storage.getStorage(),
+                            multiInstance: false
+                        });
+                        const strategyCalls = { count: 0 };
+                        const cols2 = await db2.addCollections({
+                            human: {
+                                schema: schemas.simpleHumanV3,
+                                autoMigrate: false,
+                                migrationStrategies: {
+                                    1: (doc: any) => doc,
+                                    2: (doc: any) => doc,
+                                    3: async (doc: any) => {
+                                        strategyCalls.count = strategyCalls.count + 1;
+                                        await promiseWait(0);
+                                        doc.age = parseInt(doc.age, 10);
+                                        return doc;
+                                    }
+                                }
+                            }
+                        });
+                        return {
+                            collection: cols2.human,
+                            strategyCalls
+                        };
+                    }
+                    async function assertMigratedOnce(
+                        collection: RxCollection,
+                        strategyCalls: { count: number; },
+                        status: RxMigrationStatus
+                    ) {
+                        assert.strictEqual(strategyCalls.count, docsAmount);
+                        assert.strictEqual(status.status, 'DONE');
+                        assert.deepStrictEqual(status.count, {
+                            total: docsAmount,
+                            handled: docsAmount,
+                            percent: 100
+                        });
+                        const docs = await collection.find().exec();
+                        assert.strictEqual(docs.length, docsAmount);
+                    }
+                    it('should run the migration once on startMigration() followed by migratePromise()', async () => {
+                        const { collection, strategyCalls } = await createCollectionWithCountedStrategyCalls();
+                        const startPromise = collection.startMigration(10);
+                        const status = await collection.migratePromise(10);
+                        await startPromise;
+                        await assertMigratedOnce(collection, strategyCalls, status);
+                        await collection.database.remove();
+                    });
+                    it('should run the migration once on two migratePromise() calls', async () => {
+                        const { collection, strategyCalls } = await createCollectionWithCountedStrategyCalls();
+                        const [status1, status2] = await Promise.all([
+                            collection.migratePromise(10),
+                            collection.migratePromise(10)
+                        ]);
+                        await assertMigratedOnce(collection, strategyCalls, status1);
+                        assert.deepStrictEqual(status2, status1);
+                        await collection.database.remove();
+                    });
+                });
             });
             describe('negative', () => {
                 it('should reject when migration fails', async () => {

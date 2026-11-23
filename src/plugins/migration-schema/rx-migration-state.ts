@@ -250,6 +250,9 @@ export class RxMigrationState {
             this.collection.migrationInProgress = false;
             return;
         }
+        if (this.started) {
+            throw newRxError('DM1');
+        }
         this.started = true;
 
         try {
