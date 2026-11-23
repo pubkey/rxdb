@@ -98,7 +98,7 @@ Notice that on an `RxQuery`, each chained method takes exactly one argument and 
 
 ## Regex Queries
 
-`regex()` takes a regex string, or an object with `$regex` and `$options` when you need flags. Passing a `RegExp` instance throws an error, because a `RegExp` is not JSON-serializable and is mutable.
+`regex()` takes a regex string, or an object with `$regex` and an optional `$options` for flags. Passing a `RegExp` instance throws an error, because a `RegExp` is not JSON-serializable and is mutable.
 
 ```ts
 // sql equivalent of LIKE '%RxDB%'
