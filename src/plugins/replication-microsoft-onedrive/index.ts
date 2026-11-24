@@ -250,7 +250,12 @@ export async function replicateMicrosoftOneDrive<RxDocType>(
         ensureProcessNextTickIsSet();
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
+        let streamOpened = false;
         replicationState.start = () => {
+            if (streamOpened || replicationState.isStopped()) {
+                return startBefore();
+            }
+            streamOpened = true;
             replicationState.signalingState = new SignalingState(
                 replicationState.oneDrive,
                 replicationState.driveStructure,

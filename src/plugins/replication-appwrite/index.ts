@@ -240,7 +240,12 @@ export function replicateAppwrite<RxDocType>(
     if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
+        let streamOpened = false;
         replicationState.start = () => {
+            if (streamOpened || replicationState.isStopped()) {
+                return startBefore();
+            }
+            streamOpened = true;
             const channel = 'databases.' + options.databaseId + '.collections.' + options.collectionId + '.documents';
             const unsubscribe = options.client.subscribe(
                 channel,

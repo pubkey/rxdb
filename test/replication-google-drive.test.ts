@@ -1264,5 +1264,19 @@ describe('replication-google-drive.test.ts', function () {
             collectionA.database.close();
             collectionB.database.close();
         });
+        it('start() after pause() should not open a second signaling state', async () => {
+            const collection = await humansCollection.createHumanWithTimestamp(0, 'aa' + randomToken(10), false);
+            const replicationState = await sync(collection, options, options.signalingOptions);
+            const signalingState = ensureNotFalsy(replicationState.signalingState);
+
+            await replicationState.pause();
+            await replicationState.start();
+            assert.ok(replicationState.signalingState === signalingState);
+
+            await replicationState.cancel();
+            assert.strictEqual(signalingState.closed, true);
+
+            await collection.database.close();
+        });
     });
 });

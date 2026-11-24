@@ -351,7 +351,12 @@ export function replicateFirestore<RxDocType>(
     if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
+        let streamOpened = false;
         replicationState.start = () => {
+            if (streamOpened || replicationState.isStopped()) {
+                return startBefore();
+            }
+            streamOpened = true;
             const lastChangeQuery = query(
                 pullQuery,
                 orderBy(serverTimestampField, 'desc'),

@@ -261,7 +261,12 @@ export function replicateSupabase<RxDocType>(
     if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
+        let streamOpened = false;
         replicationState.start = async () => {
+            if (streamOpened || replicationState.isStopped()) {
+                return startBefore();
+            }
+            streamOpened = true;
             /**
              * Use a unique channel name per replication instance.
              * The supabase client reuses channels with the same topic, so

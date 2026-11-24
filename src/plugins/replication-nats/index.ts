@@ -300,7 +300,12 @@ export function replicateNats<RxDocType>(
     if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
+        let streamOpened = false;
         replicationState.start = async () => {
+            if (streamOpened || replicationState.isStopped()) {
+                return startBefore();
+            }
+            streamOpened = true;
             const cn = await connectionStatePromise;
 
             /**

@@ -256,7 +256,12 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
     if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
+        let streamOpened = false;
         replicationState.start = async () => {
+            if (streamOpened || replicationState.isStopped()) {
+                return startBefore();
+            }
+            streamOpened = true;
             const changestream = await startChangeStream(mongoCollection, undefined, replicationState.subjects.error);
             changestream.on('change', () => {
                 // TODO use the documents data of the change instead of emitting the RESYNC flag

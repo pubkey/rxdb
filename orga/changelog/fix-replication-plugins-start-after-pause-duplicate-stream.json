@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the Google Drive, Microsoft OneDrive, Appwrite, Firestore, MongoDB, NATS, and Supabase replication opened one more change stream on each `start()` after `pause()`, so that each server change was handled multiple times and `cancel()` only closed the newest stream",
+    "links": [],
+    "priority": 5
+}
