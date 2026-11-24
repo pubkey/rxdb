@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
     "text": "FIX documents whose primary key is the name of an `Object.prototype` member (`constructor`, `toString`, `hasOwnProperty`, `valueOf`, `__proto__`) are now replicated and migrated like any other document. Before, the replication never pushed or pulled such a document and emitted `TypeError: Cannot read properties of undefined (reading 'isResolvedConflict')` on `error$`, a schema migration failed with `DM4`, and a document with the primary key `__proto__` was skipped by the replication and lost in a schema migration without an error. The push of the Firestore, Google Drive, and Microsoft OneDrive replication had the same problem",
-    "links": [],
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9849",
+            "linkText": "#9849"
+        }
+    ],
     "priority": 6
 }
