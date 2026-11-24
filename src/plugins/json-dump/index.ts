@@ -9,6 +9,8 @@ import {
 import {
     newRxError
 } from '../../rx-error.ts';
+import { overwritable } from '../../overwritable.ts';
+import { getWrittenDocumentsFromBulkWriteResponse } from '../../rx-storage-helper.ts';
 import type {
     RxDatabase,
     RxCollection,
@@ -306,6 +308,11 @@ async function importDumpRxCollection<RxDocType>(
         rows,
         'json-dump-import'
     );
+    if (overwritable.isDevMode()) {
+        overwritable.deepFreezeWhenDevMode(
+            getWrittenDocumentsFromBulkWriteResponse(primaryPath, rows, writeResult)
+        );
+    }
     if (conflictMode === 'skip' && writeResult.error.length > 0) {
         /**
          * A document that was inserted by another write

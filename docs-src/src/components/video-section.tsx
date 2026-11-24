@@ -18,15 +18,6 @@ export const YOUTUBE_VIDEO_MAIN: Omit<VideoBoxProps, 'dark'> = {
 const YOUTUBE_VIDEOS: Omit<VideoBoxProps, 'dark'>[] = [
     YOUTUBE_VIDEO_MAIN,
     {
-        videoId: 'KevETd53nmc',
-        title: 'Offline-First vs Local-First: Where the Data Lives and Why It Matters',
-        duration: '09:26',
-        startAt: 0,
-        uploadDate: '2026-11-23',
-        language: 'en',
-        description: 'Gentleman Programming explains local-first with RxDB and shows why an app does not have to wait for the server on every click: same app, same server, same bad network, only the place where the data lives changes.'
-    },
-    {
         videoId: 'tDWmfenF2AM',
         title: 'The Easiest Way to Store Data',
         duration: '04:28',
@@ -58,6 +49,15 @@ const YOUTUBE_VIDEOS: Omit<VideoBoxProps, 'dark'>[] = [
         uploadDate: '2026-11-14',
         language: 'en',
         description: 'A full tutorial that builds a local-first React application with RxDB and explains how local storage, reactive queries, and replication make the app fast and offline-capable.'
+    },
+    {
+        videoId: 'KevETd53nmc',
+        title: 'Offline-First vs Local-First: Where the Data Lives and Why It Matters',
+        duration: '09:26',
+        startAt: 0,
+        uploadDate: '2026-11-23',
+        language: 'en',
+        description: 'Gentleman Programming explains local-first with RxDB and shows why an app does not have to wait for the server on every click: same app, same server, same bad network, only the place where the data lives changes.'
     },
     {
         videoId: 'm3T0gMuitbI',

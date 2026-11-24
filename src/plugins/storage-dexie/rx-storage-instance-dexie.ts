@@ -34,6 +34,7 @@ import { RxStorageDexie } from './rx-storage-dexie.ts';
 import {
     attachmentObjectId,
     closeDexieDb,
+    deleteDexieDb,
     fromStorageToDexie,
     getDexieDbWithTables,
     getDocsInDb,
@@ -316,8 +317,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
     async remove(): Promise<void> {
         ensureNotClosed(this);
-        const state = await this.internals;
-        await state.dexieTable.clear()
+        await deleteDexieDb(this.internals);
         return this.close();
     }
 
