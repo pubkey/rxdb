@@ -1126,13 +1126,13 @@ describe('other', () => {
                     const createStorages = () => {
                         getRxStorageRemoteWebsocket({
                             url: 'ws://example.com:8080',
-                            // @ts-expect-error not a known mode
+                            // @ts-expect-error
                             mode: 'foobar'
                         });
                         getRxStorageIpcRenderer({
                             key: 'main-storage',
                             ipcRenderer: {},
-                            // @ts-expect-error not a known mode
+                            // @ts-expect-error
                             mode: 'foobar'
                         });
                     };

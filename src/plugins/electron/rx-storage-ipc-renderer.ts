@@ -31,7 +31,7 @@ export function getRxStorageIpcRenderer(
     ].join('|');
 
     const storage = getRxStorageRemote({
-        identifier: 'electron-ipc-renderer',
+        identifier: 'electron-ipc-renderer|' + settings.key,
         mode: settings.mode,
         messageChannelCreator() {
             const messages$ = new Subject<MessageFromRemote>();

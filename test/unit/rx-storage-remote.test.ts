@@ -38,9 +38,13 @@ import type {
 } from '../../plugins/core/index.mjs';
 import {
     exposeIpcMainRxStorage,
-    getRxStorageIpcRenderer,
-    IPC_RENDERER_KEY_PREFIX
+    getRxStorageIpcRenderer
 } from '../../plugins/electron/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 describe('rx-storage-remote.test.ts', () => {
     /**
@@ -387,51 +391,9 @@ describe('rx-storage-remote.test.ts', () => {
             await server.serverState.close();
         });
     });
-    describe('without the mode setting', () => {
-        it('should use the mode storage with getRxStorageRemoteWebsocket()', async () => {
-            const port = await nextPort();
-            const server = startRxStorageRemoteWebsocketServer({
-                port,
-                storage: config.storage.getStorage()
-            });
-            const getInstanceParams = () => ({
-                databaseInstanceToken: randomToken(10),
-                databaseName: randomToken(10),
-                collectionName: randomToken(10),
-                devMode: true,
-                multiInstance: false,
-                options: {},
-                schema: fillWithDefaultSettings(schemas.human)
-            });
-
-            const storage = getRxStorageRemoteWebsocket({
-                url: 'ws://localhost:' + port
-            });
-            const storageInstanceA = await storage.createStorageInstance(getInstanceParams());
-            const storageInstanceB = await storage.createStorageInstance(getInstanceParams());
-            assert.strictEqual(server.serverState.server.clients.size, 1);
-
-            const otherStorage = getRxStorageRemoteWebsocket({
-                url: 'ws://localhost:' + port
-            });
-            const storageInstanceOther = await otherStorage.createStorageInstance(getInstanceParams());
-            assert.strictEqual(server.serverState.server.clients.size, 2);
-
-            const undefinedModeStorage = getRxStorageRemoteWebsocket({
-                url: 'ws://localhost:' + port,
-                mode: undefined
-            });
-            const storageInstanceUndefinedMode = await undefinedModeStorage.createStorageInstance(getInstanceParams());
-            assert.strictEqual(server.serverState.server.clients.size, 3);
-
-            await storageInstanceA.close();
-            await storageInstanceB.close();
-            await storageInstanceOther.close();
-            await storageInstanceUndefinedMode.close();
-            await server.serverState.close();
-        });
-        it('should not send to the ipc channel of another key with getRxStorageIpcRenderer()', async () => {
-            type IpcListener = (event: any, message: any) => void;
+    describe('electron storages with different keys', () => {
+        type IpcListener = (event: any, message: any) => void;
+        function getInProcessIpc() {
             const mainListeners = new Map<string, IpcListener>();
             const rendererListeners = new Map<string, Set<IpcListener>>();
             const sender = {
@@ -440,61 +402,85 @@ describe('rx-storage-remote.test.ts', () => {
                     (rendererListeners.get(channelId) || []).forEach(listener => listener({}, message));
                 }
             };
-            const ipcMain = {
-                on(channelId: string, listener: IpcListener) {
-                    mainListeners.set(channelId, listener);
-                }
-            };
-            const createCallsByChannelId: { [channelId: string]: number; } = {};
-            const ipcRenderer = {
-                on(channelId: string, listener: IpcListener) {
-                    const listeners = rendererListeners.get(channelId) || new Set<IpcListener>();
-                    rendererListeners.set(channelId, listeners);
-                    listeners.add(listener);
-                },
-                removeListener(channelId: string, listener: IpcListener) {
-                    (rendererListeners.get(channelId) || new Set<IpcListener>()).delete(listener);
-                },
-                postMessage(channelId: string, message: any) {
-                    if (message && message.method === 'create') {
-                        createCallsByChannelId[channelId] = (createCallsByChannelId[channelId] || 0) + 1;
+            return {
+                ipcMain: {
+                    on(channelId: string, listener: IpcListener) {
+                        mainListeners.set(channelId, listener);
                     }
-                    (mainListeners.get(channelId) as IpcListener)({ sender }, message);
+                },
+                ipcRenderer: {
+                    on(channelId: string, listener: IpcListener) {
+                        const listeners = rendererListeners.get(channelId) || new Set<IpcListener>();
+                        rendererListeners.set(channelId, listeners);
+                        listeners.add(listener);
+                    },
+                    removeListener(channelId: string, listener: IpcListener) {
+                        (rendererListeners.get(channelId) || new Set<IpcListener>()).delete(listener);
+                    },
+                    postMessage(channelId: string, message: any) {
+                        (mainListeners.get(channelId) as IpcListener)({ sender }, message);
+                    }
                 }
             };
-
-            const keys = [randomToken(10), randomToken(10)];
-            const storageInstances = await Promise.all(
-                keys.map(key => {
-                    exposeIpcMainRxStorage({
-                        key,
-                        storage: config.storage.getStorage(),
-                        ipcMain
-                    });
-                    return getRxStorageIpcRenderer({
-                        key,
-                        ipcRenderer
-                    }).createStorageInstance({
-                        databaseInstanceToken: randomToken(10),
-                        databaseName: randomToken(10),
-                        collectionName: 'human',
-                        devMode: true,
-                        multiInstance: false,
-                        options: {},
-                        schema: fillWithDefaultSettings(schemas.human)
-                    });
+        }
+        /**
+         * Two getRxStorageMemory() calls share their state,
+         * so the second key exposes another storage.
+         */
+        async function countDocumentOfSecondKeyInMainStorages(mode?: 'one'): Promise<number[]> {
+            const { ipcMain, ipcRenderer } = getInProcessIpc();
+            const mainStorages: RxStorage<any, any>[] = [
+                getRxStorageMemory(),
+                getRxStorageDexie({
+                    indexedDB: fakeIndexedDB,
+                    IDBKeyRange: fakeIDBKeyRange
+                })
+            ];
+            const collections = await Promise.all(
+                mainStorages.map(storage => {
+                    const key = randomToken(10);
+                    exposeIpcMainRxStorage({ key, storage, ipcMain });
+                    const rendererStorage = getRxStorageIpcRenderer(
+                        mode ? { key, ipcRenderer, mode } : { key, ipcRenderer }
+                    );
+                    return humansCollection.create(
+                        1, undefined, false, false,
+                        wrappedValidateAjvStorage({ storage: rendererStorage })
+                    );
                 })
             );
-
-            assert.deepStrictEqual(
-                createCallsByChannelId,
-                {
-                    [IPC_RENDERER_KEY_PREFIX + '|' + keys[0]]: 1,
-                    [IPC_RENDERER_KEY_PREFIX + '|' + keys[1]]: 1
-                }
+            const collection = collections[1];
+            const doc = await collection.findOne().exec(true);
+            const counts = await Promise.all(
+                mainStorages.map(async (storage) => {
+                    const storageInstance = await storage.createStorageInstance<HumanDocumentType>({
+                        databaseInstanceToken: collection.database.token,
+                        databaseName: collection.database.name,
+                        collectionName: collection.name,
+                        schema: collection.schema.jsonSchema,
+                        options: {},
+                        multiInstance: false,
+                        devMode: true
+                    });
+                    const docs = await storageInstance.findDocumentsById([doc.primary], false);
+                    await storageInstance.close();
+                    return docs.length;
+                })
             );
-
-            await Promise.all(storageInstances.map(storageInstance => storageInstance.close()));
+            await Promise.all(collections.map(col => col.database.close()));
+            return counts;
+        }
+        it('should store the document in the main storage of the same key', async () => {
+            assert.deepStrictEqual(
+                await countDocumentOfSecondKeyInMainStorages(),
+                [0, 1]
+            );
+        });
+        it('should store the document in the main storage of the same key with mode: one', async () => {
+            assert.deepStrictEqual(
+                await countDocumentOfSecondKeyInMainStorages('one'),
+                [0, 1]
+            );
         });
     });
     if (config.storage.name !== 'remote') {
