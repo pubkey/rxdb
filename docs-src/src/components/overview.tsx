@@ -87,6 +87,7 @@ const LINK_ICONS: Record<string, ReactNode> = {
     'key-compression': <IconCompression />,
     'rx-storage': <IconStorage />,
     'rx-storage-filesystem-node': '/files/icons/nodejs.svg',
+    'rx-storage-dexie': '/files/icons/dexie.svg',
     'rx-storage-mongodb': '/files/icons/mongodb-icon.svg',
     'replication': <IconReplication />,
     'rx-server': '/files/logo/logo.svg',
