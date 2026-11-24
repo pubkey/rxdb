@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX the Google Drive and the Microsoft OneDrive replication handed WebRTC signaling messages that were written for another session to their own peer connection, so that a device often could not connect to the other devices again after a restart or with more than two devices",
+    "links": [],
+    "priority": 5
+}
