@@ -52,6 +52,7 @@ import type {
 } from '../plugins/dbviewer/index.mjs';
 import type { AngularSignalReactivityLambda } from '../plugins/reactivity-angular/index.mjs';
 import type { Signal } from '@angular/core';
+import type { RxDBViewerHandle } from '../plugins/dbviewer/index.mjs';
 
 type DefaultDocType = {
     passportId: string;
@@ -111,6 +112,18 @@ describe('typings.test.ts', function () {
                 });
                 const col: RxCollection = db.hero;
                 await db.close();
+            });
+            it('should know the launchDbViewer() method of the dbviewer plugin', () => {
+                const db: RxDatabase = {} as RxDatabase;
+                const typedDb: RxDatabase<{
+                    foobar: RxCollection;
+                }> = {} as any;
+                const launch = () => {
+                    const viewer: RxDBViewerHandle = db.launchDbViewer({ parent: document.body, pageSize: 50 });
+                    const viewerOfTypedDb: RxDBViewerHandle = typedDb.launchDbViewer();
+                    // @ts-expect-error pageSize must be a number
+                    typedDb.launchDbViewer({ pageSize: 'fifty' });
+                };
             });
         });
         describe('negative', () => {
