@@ -1224,7 +1224,6 @@ body {
 
 .premium-blocks .premium-block {
     color: white;
-    border-radius: 6px;
     padding: 3px;
     height: 100%;
 }
@@ -1234,7 +1233,6 @@ body {
     height: calc(100% - 20px);
     background-color: var(--bg-color);
     padding: 10px;
-    border-radius: 4px;
     position: relative;
     color: white;
 }
@@ -2468,4 +2466,121 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     transform: translateY(-55%);
     line-height: 0;
     pointer-events: none;
+}
+
+/**
+ * Stack map on the docs overview page.
+ */
+.overview-stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
+    margin-bottom: 70px;
+}
+
+.overview-stack-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.overview-stack-layer {
+    border: 2px solid rgba(255, 255, 255, 0.14);
+    background-color: var(--bg-color-dark);
+    padding: 20px;
+}
+
+.overview-stack-layer.core {
+    border-color: var(--color-top);
+    background-color: var(--bg-color);
+}
+
+.overview-stack-layer.optional {
+    border-style: dashed;
+}
+
+.overview-stack-eyebrow {
+    font-size: var(--fontSizes-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fontColor-gray);
+    margin-bottom: 8px;
+}
+
+.overview-stack-title {
+    font-size: var(--fontSizes-l);
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.overview-stack-links a {
+    text-decoration: none;
+}
+
+.overview-stack-connector {
+    position: relative;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding-left: 44px;
+    font-size: var(--fontSizes-xs);
+    color: var(--fontColor-gray);
+}
+
+.overview-stack-connector::before {
+    content: "";
+    position: absolute;
+    left: 28px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--color-bottom);
+}
+
+.overview-stack-sync {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 250px;
+}
+
+.overview-stack-sync::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 260px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-top), var(--color-bottom));
+}
+
+.overview-stack-sync span {
+    position: relative;
+    background-color: var(--bg-color-dark);
+    padding: 0 4px;
+    font-size: var(--fontSizes-xs);
+    color: var(--fontColor-gray);
+}
+
+@media (max-width: 1200px) {
+    .overview-stack {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .overview-stack-sync {
+        height: 40px;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 0 0 0 44px;
+    }
+
+    .overview-stack-sync::before {
+        left: 28px;
+        right: auto;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        height: auto;
+        background: var(--color-bottom);
+    }
 }
