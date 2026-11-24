@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `getLocal$()` emitted the same state of a local document more than once when the document was written right after the subscription, or when another instance wrote the document several times in a row",
+    "links": [],
+    "priority": 4
+}
