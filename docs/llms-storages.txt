@@ -591,6 +591,7 @@ import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/compone
 
 import {Steps} from '@site/src/components/steps';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
 
 ## RxStorage Dexie.js
 
