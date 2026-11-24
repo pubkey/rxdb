@@ -12,6 +12,7 @@ import {
     RxReplicationState,
     startReplicationOnLeaderShip
 } from '../replication/index.ts';
+import { openStreamWhileStarted } from '../replication/replication-helper.ts';
 import {
     addRxPlugin
 } from '../../index.ts';
@@ -261,14 +262,7 @@ export async function replicateGoogleDrive<RxDocType>(
      */
     if (options.live && options.pull) {
         ensureProcessNextTickIsSet();
-        const startBefore = replicationState.start.bind(replicationState);
-        const cancelBefore = replicationState.cancel.bind(replicationState);
-        let streamOpened = false;
-        replicationState.start = () => {
-            if (streamOpened || replicationState.isStopped()) {
-                return startBefore();
-            }
-            streamOpened = true;
+        openStreamWhileStarted(replicationState, () => {
             replicationState.signalingState = new SignalingState(
                 replicationState.googleDrive,
                 replicationState.driveStructure,
@@ -279,13 +273,11 @@ export async function replicateGoogleDrive<RxDocType>(
                 replicationState.reSync();
             });
 
-            replicationState.cancel = () => {
+            return () => {
                 sub.unsubscribe();
                 replicationState.signalingState?.close();
-                return cancelBefore();
             };
-            return startBefore();
-        };
+        });
     }
 
     startReplicationOnLeaderShip(options.waitForLeadership, replicationState);

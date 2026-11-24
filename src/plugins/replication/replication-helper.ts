@@ -1,8 +1,9 @@
 import type {
+    MaybePromise,
     RxCollection,
     WithDeleted
 } from '../../types/index.d.ts';
-import { flatClone } from '../../plugins/utils/index.ts';
+import { flatClone, PROMISE_RESOLVE_VOID } from '../../plugins/utils/index.ts';
 import { getComposedPrimaryKeyOfDocumentData } from '../../rx-schema-helper.ts';
 import type { RxReplicationState } from './index.ts';
 
@@ -119,4 +120,42 @@ export function preventHibernateBrowserTab(replicationState: RxReplicationState<
 
     const intervalId = setInterval(simulateActivity, 20 * 1000); // Simulate activity every 20 seconds
     replicationState.onCancel.push(() => clearInterval(intervalId));
+}
+
+
+/**
+ * For replication plugins that have their own change stream.
+ * The stream is opened on start() and closed on pause() and cancel(),
+ * so that no stream is open while the replication does not run.
+ * All calls run in one queue, so that never two streams are open.
+ */
+export function openStreamWhileStarted(
+    replicationState: RxReplicationState<any, any>,
+    openStream: () => MaybePromise<() => any>
+) {
+    const startBefore = replicationState.start.bind(replicationState);
+    const pauseBefore = replicationState.pause.bind(replicationState);
+    const cancelBefore = replicationState.cancel.bind(replicationState);
+    let closeStream: (() => any) | undefined;
+    let queue: Promise<any> = PROMISE_RESOLVE_VOID;
+    function enqueue<T>(fn: () => Promise<T>): Promise<T> {
+        const ret = queue.then(fn);
+        queue = ret.catch(() => { });
+        return ret;
+    }
+    async function close() {
+        const closeFn = closeStream;
+        closeStream = undefined;
+        if (closeFn) {
+            await closeFn();
+        }
+    }
+    replicationState.start = () => enqueue(async () => {
+        if (!closeStream && !replicationState.isStopped()) {
+            closeStream = await openStream();
+        }
+        return startBefore();
+    });
+    replicationState.pause = () => enqueue(() => close().then(pauseBefore));
+    replicationState.cancel = () => enqueue(() => close().then(cancelBefore));
 }

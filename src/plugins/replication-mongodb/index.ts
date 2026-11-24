@@ -16,6 +16,7 @@ import {
     RxReplicationState,
     startReplicationOnLeaderShip
 } from '../replication/index.ts';
+import { openStreamWhileStarted } from '../replication/replication-helper.ts';
 import {
     addRxPlugin,
     WithDeleted
@@ -254,25 +255,14 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
      * Subscribe to changes for the pull.stream$
      */
     if (options.live && options.pull) {
-        const startBefore = replicationState.start.bind(replicationState);
-        const cancelBefore = replicationState.cancel.bind(replicationState);
-        let streamOpened = false;
-        replicationState.start = async () => {
-            if (streamOpened || replicationState.isStopped()) {
-                return startBefore();
-            }
-            streamOpened = true;
+        openStreamWhileStarted(replicationState, async () => {
             const changestream = await startChangeStream(mongoCollection, undefined, replicationState.subjects.error);
             changestream.on('change', () => {
                 // TODO use the documents data of the change instead of emitting the RESYNC flag
                 pullStream$.next('RESYNC');
             });
-            replicationState.cancel = async () => {
-                await changestream.close();
-                return cancelBefore();
-            };
-            return startBefore();
-        };
+            return () => changestream.close();
+        });
     }
 
     startReplicationOnLeaderShip(options.waitForLeadership, replicationState);

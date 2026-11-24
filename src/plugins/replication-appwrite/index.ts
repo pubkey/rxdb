@@ -6,6 +6,7 @@ import {
     RxReplicationState,
     startReplicationOnLeaderShip
 } from '../replication/index.ts';
+import { openStreamWhileStarted } from '../replication/replication-helper.ts';
 import type {
     ById,
     ReplicationPullOptions,
@@ -238,14 +239,7 @@ export function replicateAppwrite<RxDocType>(
      * Subscribe to changes for the pull.stream$
      */
     if (options.live && options.pull) {
-        const startBefore = replicationState.start.bind(replicationState);
-        const cancelBefore = replicationState.cancel.bind(replicationState);
-        let streamOpened = false;
-        replicationState.start = () => {
-            if (streamOpened || replicationState.isStopped()) {
-                return startBefore();
-            }
-            streamOpened = true;
+        openStreamWhileStarted(replicationState, () => {
             const channel = 'databases.' + options.databaseId + '.collections.' + options.collectionId + '.documents';
             const unsubscribe = options.client.subscribe(
                 channel,
@@ -261,12 +255,8 @@ export function replicateAppwrite<RxDocType>(
 
                 }
             );
-            replicationState.cancel = () => {
-                unsubscribe();
-                return cancelBefore();
-            };
-            return startBefore();
-        };
+            return unsubscribe;
+        });
     }
 
     startReplicationOnLeaderShip(options.waitForLeadership, replicationState);

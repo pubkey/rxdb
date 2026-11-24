@@ -34,7 +34,7 @@ import {
     getNatsServerDocumentState,
     moveNatsLegacyDocument
 } from './nats-helper.ts';
-import { awaitRetry } from '../replication/replication-helper.ts';
+import { awaitRetry, openStreamWhileStarted } from '../replication/replication-helper.ts';
 
 export * from './nats-types.ts';
 export * from './nats-helper.ts';
@@ -298,9 +298,7 @@ export function replicateNats<RxDocType>(
      * Use long polling to get live changes for the pull.stream$
      */
     if (options.live && options.pull) {
-        const startBefore = replicationState.start.bind(replicationState);
-        const cancelBefore = replicationState.cancel.bind(replicationState);
-        replicationState.start = async () => {
+        openStreamWhileStarted(replicationState, async () => {
             const cn = await connectionStatePromise;
 
             /**
@@ -335,12 +333,8 @@ export function replicateNats<RxDocType>(
                     m.ack();
                 }
             })();
-            replicationState.cancel = () => {
-                newMessages.close();
-                return cancelBefore();
-            };
-            return startBefore();
-        };
+            return () => newMessages.close();
+        });
     }
 
     startReplicationOnLeaderShip(options.waitForLeadership, replicationState);

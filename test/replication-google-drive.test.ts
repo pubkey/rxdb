@@ -1264,22 +1264,39 @@ describe('replication-google-drive.test.ts', function () {
             collectionA.database.close();
             collectionB.database.close();
         });
-        it('start() after pause() should not open a second signaling state', async () => {
-            const collection = await humansCollection.createHumanWithTimestamp(0, 'aa' + randomToken(10), false);
-            const replicationState = await sync(collection, options, options.signalingOptions);
-            const signalingState = ensureNotFalsy(replicationState.signalingState);
+        it('pause() should close the signaling state and start() should open a new one', async () => {
+            const collectionA = await humansCollection.createHumanWithTimestamp(0, 'aa' + randomToken(10), false);
+            const collectionB = await humansCollection.createHumanWithTimestamp(0, 'bb' + randomToken(10), false);
+            const collectionC = await humansCollection.createHumanWithTimestamp(0, 'cc' + randomToken(10), false);
+            const replicationState = await sync(collectionA, options, options.signalingOptions);
+            const firstSignalingState = ensureNotFalsy(replicationState.signalingState);
+            assert.strictEqual(firstSignalingState.closed, false);
 
             await replicationState.pause();
+            assert.strictEqual(firstSignalingState.closed, true);
+
+            await collectionC.insert(schemaObjects.humanWithTimestampData({ id: 'during-pause' }));
+            await syncOnce(collectionC, options);
+
             await replicationState.start();
-            assert.ok(replicationState.signalingState === signalingState);
+            const secondSignalingState = ensureNotFalsy(replicationState.signalingState);
+            assert.ok(secondSignalingState !== firstSignalingState);
+            assert.strictEqual(secondSignalingState.closed, false);
+            await waitUntil(async () => !!(await collectionA.findOne('during-pause').exec()));
+
+            await sync(collectionB, options, options.signalingOptions);
+            await collectionB.insert(schemaObjects.humanWithTimestampData({ id: 'after-resume' }));
+            await waitUntil(async () => !!(await collectionA.findOne('after-resume').exec()));
 
             await replicationState.cancel();
-            assert.strictEqual(signalingState.closed, true);
+            assert.strictEqual(secondSignalingState.closed, true);
 
             await assertThrows(() => replicationState.start(), 'RxError', 'RC_START_CANCELED');
-            assert.ok(replicationState.signalingState === signalingState);
+            assert.ok(replicationState.signalingState === secondSignalingState);
 
-            await collection.database.close();
+            await collectionA.database.close();
+            await collectionB.database.close();
+            await collectionC.database.close();
         });
     });
 });
