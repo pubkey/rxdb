@@ -5,11 +5,13 @@ import { Block } from '../components/block';
 import { Button } from '../components/button';
 import { HeadlineWithIcon } from '../components/headline-with-icon';
 import { IconCode } from '../components/icons/code';
+import { IconCompression } from '../components/icons/compression';
 import { IconDeviceDesktop } from '../components/icons/device-desktop';
 import { IconEncryption } from '../components/icons/encryption';
 import { IconGear } from '../components/icons/gear';
 import { IconReplication } from '../components/icons/replication';
 import { IconStorage } from '../components/icons/storage';
+import { replicationLinks } from '../components/replication-links';
 import { Tabs } from '../components/tabs';
 import { Tag } from '../components/tag';
 
@@ -74,6 +76,26 @@ function StartButtons() {
     </div>;
 }
 
+/**
+ * Icons of the tags in the stack map, by the sidebar id of the linked page.
+ * The replication icons are the same ones that the landingpage shows.
+ */
+const LINK_ICONS: Record<string, ReactNode> = {
+    'react': '/files/icons/react.svg',
+    'articles/tanstack-db/rxdb-collection-for-tanstack-db': '/files/icons/tanstack.svg',
+    'encryption': <IconEncryption />,
+    'key-compression': <IconCompression />,
+    'rx-storage': <IconStorage />,
+    'rx-storage-filesystem-node': '/files/icons/nodejs.svg',
+    'rx-storage-mongodb': '/files/icons/mongodb-icon.svg',
+    'replication': <IconReplication />,
+    'rx-server': '/files/logo/logo.svg',
+    'rx-server-scaling': '/files/logo/logo.svg'
+};
+replicationLinks.forEach(link => {
+    LINK_ICONS[link.url.replace(/^\//, '').replace(/\.html$/, '')] = link.iconUrl;
+});
+
 function StackLayer(props: {
     category: OverviewCategory;
     eyebrow: string;
@@ -90,7 +112,7 @@ function StackLayer(props: {
                 key={link.key}
                 href={link.href}
                 target={link.target}
-            ><Tag dark={props.variant !== 'core'}>{layerLinkTitle(link.title, props.category.label)}</Tag></a>)}
+            ><Tag img={LINK_ICONS[link.key]} dark={props.variant !== 'core'}>{layerLinkTitle(link.title, props.category.label)}</Tag></a>)}
         </div>
     </div>;
 }
