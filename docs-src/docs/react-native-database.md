@@ -120,28 +120,27 @@ export default function App() {
 ```
 
 ### 2. Observe Data
-Use the `useRxQuery` hook (or `useLiveRxQuery` shortcut) to fetch data. The component will **automatically re-render** whenever the data in the database changes. You do not have to manage subscriptions or event listeners manually.
+Use the `useLiveRxQuery` hook to fetch data. The component will **automatically re-render** whenever the data in the database changes. You do not have to manage subscriptions or event listeners manually.
 
 ```tsx
-import { useRxCollection, useLiveRxQuery } from 'rxdb/plugins/react';
+import type { MangoQuery } from 'rxdb';
+import { useLiveRxQuery } from 'rxdb/plugins/react';
 
-function TaskList() {
-  const collection = useRxCollection('tasks');
-  
-  // This hook automatically updates 'tasks' whenever the query result changes
-  const { result: tasks } = useLiveRxQuery(
-    collection.find({
-        selector: {
-            done: { $eq: false }
-        },
-        sort: [{ createdAt: 'asc' }]
-    })
-  );
+const query: MangoQuery = {
+  selector: {
+    done: { $eq: false }
+  },
+  sort: [{ dueAt: 'asc' }]
+};
+
+function TodoList() {
+  // This hook automatically updates 'todos' whenever the query result changes
+  const { results: todos } = useLiveRxQuery({ collection: 'todos', query });
 
   return (
     <FlatList
-      data={tasks}
-      renderItem={({ item }) => <Text>{item.title}</Text>}
+      data={todos}
+      renderItem={({ item }) => <Text>{item.name}</Text>}
       keyExtractor={item => item.id}
     />
   );
@@ -165,7 +164,7 @@ const db = await createRxDatabase({
 });
 
 // ... in your component
-const signals = collection.find().$$; // Returns a Signal<Doc[]>
+const signals = db.todos.find().$$; // Returns a Signal<Doc[]>
 ```
 
 Using signals allows you to update only the specific text node that changed, keeping your UI running at 60fps even with massive data flux.
@@ -193,8 +192,9 @@ import { replicateSupabase } from 'rxdb/plugins/replication-supabase';
 
 const replicationState = replicateSupabase({
     replicationIdentifier: 'my-sync',
-    collection: db.tasks,
-    supabaseClient: supabase,
+    collection: db.todos,
+    client: supabase,
+    tableName: 'todos',
     pull: {},
     push: {},
 });

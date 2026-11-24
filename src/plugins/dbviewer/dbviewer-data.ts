@@ -1,6 +1,6 @@
 import type {
     RxCollection,
-    RxDatabase
+    RxDatabaseBase
 } from '../../index.d.ts';
 import { INTERNAL_STORE_SCHEMA } from '../../rx-database-internal-store.ts';
 import { newRxError } from '../../rx-error.ts';
@@ -56,7 +56,7 @@ export type ViewerDataSource = {
     storageName: string;
     dumpFilename?: string;
     dumpTime?: number;
-    rawDatabase?: RxDatabase;
+    rawDatabase?: RxDatabaseBase<any, any, any, any>;
     listCollections(): ViewerCollectionInfo[];
     count(collectionName: string, selector?: any): Promise<number | null>;
     query(collectionName: string, selector: any, skip: number, limit: number, sort?: ViewerSortPart[]): Promise<ViewerQueryResult>;
@@ -83,7 +83,7 @@ export function stripInternalFields(doc: any): any {
     return result;
 }
 
-function getLiveCollection(database: RxDatabase, collectionName: string): RxCollection<any> {
+function getLiveCollection(database: RxDatabaseBase<any, any, any, any>, collectionName: string): RxCollection<any> {
     return (database.collections as any)[collectionName];
 }
 
@@ -102,7 +102,7 @@ type ViewerSystemCollection = {
  * and the local document stores of the database and of each
  * collection. They are browsable but never editable.
  */
-function listSystemCollections(database: RxDatabase): ViewerSystemCollection[] {
+function listSystemCollections(database: RxDatabaseBase<any, any, any, any>): ViewerSystemCollection[] {
     const result: ViewerSystemCollection[] = [{
         name: '.internal',
         primaryPath: 'id',
@@ -143,7 +143,7 @@ async function readAllSystemDocs(system: ViewerSystemCollection): Promise<any[]>
     return result.documents;
 }
 
-export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
+export function createLiveDataSource(database: RxDatabaseBase<any, any, any, any>): ViewerDataSource {
     const findSystemCollection = (collectionName: string) =>
         listSystemCollections(database).find(system => system.name === collectionName);
     /**

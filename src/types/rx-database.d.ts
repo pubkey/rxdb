@@ -12,6 +12,7 @@ import type { RxLocalDocument } from './plugins/local-documents.d.ts';
 import type { RxCleanupPolicy } from './plugins/cleanup.d.ts';
 import type { ById, HashFunction } from './util.d.ts';
 import type { RxReactivityFactory } from './plugins/reactivity.d.ts';
+import type { RxDBViewerHandle, RxDBViewerOptions } from '../plugins/dbviewer/dbviewer-types.ts';
 
 /**
  * Options for creating an RxDatabase instance.
@@ -195,7 +196,9 @@ export interface RxLocalDocumentMutation<StorageType, Reactivity = unknown> {
     >;
 }
 
-export interface RxDatabaseGenerated<Collections, Reactivity> extends RxLocalDocumentMutation<RxDatabase<Collections, any, any, Reactivity>, Reactivity> { }
+export interface RxDatabaseGenerated<Collections, Reactivity> extends RxLocalDocumentMutation<RxDatabase<Collections, any, any, Reactivity>, Reactivity> {
+    launchDbViewer(options?: RxDBViewerOptions): RxDBViewerHandle;
+}
 
 /**
  * Extract the **DocumentType** of a collection.

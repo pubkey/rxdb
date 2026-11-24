@@ -36,6 +36,15 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams
 } from '../../plugins/core/index.mjs';
+import {
+    exposeIpcMainRxStorage,
+    getRxStorageIpcRenderer
+} from '../../plugins/electron/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 describe('rx-storage-remote.test.ts', () => {
     /**
@@ -380,6 +389,98 @@ describe('rx-storage-remote.test.ts', () => {
 
             await droppedInstance.close().catch(() => { });
             await server.serverState.close();
+        });
+    });
+    describe('electron storages with different keys', () => {
+        type IpcListener = (event: any, message: any) => void;
+        function getInProcessIpc() {
+            const mainListeners = new Map<string, IpcListener>();
+            const rendererListeners = new Map<string, Set<IpcListener>>();
+            const sender = {
+                on() { },
+                send(channelId: string, message: any) {
+                    (rendererListeners.get(channelId) || []).forEach(listener => listener({}, message));
+                }
+            };
+            return {
+                ipcMain: {
+                    on(channelId: string, listener: IpcListener) {
+                        mainListeners.set(channelId, listener);
+                    }
+                },
+                ipcRenderer: {
+                    on(channelId: string, listener: IpcListener) {
+                        const listeners = rendererListeners.get(channelId) || new Set<IpcListener>();
+                        rendererListeners.set(channelId, listeners);
+                        listeners.add(listener);
+                    },
+                    removeListener(channelId: string, listener: IpcListener) {
+                        (rendererListeners.get(channelId) || new Set<IpcListener>()).delete(listener);
+                    },
+                    postMessage(channelId: string, message: any) {
+                        (mainListeners.get(channelId) as IpcListener)({ sender }, message);
+                    }
+                }
+            };
+        }
+        /**
+         * Two getRxStorageMemory() calls share their state,
+         * so the second key exposes another storage.
+         */
+        async function countDocumentOfSecondKeyInMainStorages(mode?: 'one'): Promise<number[]> {
+            const { ipcMain, ipcRenderer } = getInProcessIpc();
+            const mainStorages: RxStorage<any, any>[] = [
+                getRxStorageMemory(),
+                getRxStorageDexie({
+                    indexedDB: fakeIndexedDB,
+                    IDBKeyRange: fakeIDBKeyRange
+                })
+            ];
+            const collections = await Promise.all(
+                mainStorages.map(storage => {
+                    const key = randomToken(10);
+                    exposeIpcMainRxStorage({ key, storage, ipcMain });
+                    const rendererStorage = getRxStorageIpcRenderer(
+                        mode ? { key, ipcRenderer, mode } : { key, ipcRenderer }
+                    );
+                    return humansCollection.create(
+                        1, undefined, false, false,
+                        wrappedValidateAjvStorage({ storage: rendererStorage })
+                    );
+                })
+            );
+            const collection = collections[1];
+            const doc = await collection.findOne().exec(true);
+            const counts = await Promise.all(
+                mainStorages.map(async (storage) => {
+                    const storageInstance = await storage.createStorageInstance<HumanDocumentType>({
+                        databaseInstanceToken: collection.database.token,
+                        databaseName: collection.database.name,
+                        collectionName: collection.name,
+                        schema: collection.schema.jsonSchema,
+                        options: {},
+                        multiInstance: false,
+                        devMode: true
+                    });
+                    const docs = await storageInstance.findDocumentsById([doc.primary], false);
+                    await storageInstance.close();
+                    return docs.length;
+                })
+            );
+            await Promise.all(collections.map(col => col.database.close()));
+            return counts;
+        }
+        it('should store the document in the main storage of the same key', async () => {
+            assert.deepStrictEqual(
+                await countDocumentOfSecondKeyInMainStorages(),
+                [0, 1]
+            );
+        });
+        it('should store the document in the main storage of the same key with mode: one', async () => {
+            assert.deepStrictEqual(
+                await countDocumentOfSecondKeyInMainStorages('one'),
+                [0, 1]
+            );
         });
     });
     if (config.storage.name !== 'remote') {
