@@ -1014,6 +1014,24 @@ describe('other', () => {
                 // @ts-expect-error the query builder has no all() method
                 createQueryBuilder<DocType>().where('tags').all(['foo']);
             });
+            it('should know the documented call forms of the standalone query builder', () => {
+                type DocType = {
+                    passportId: string;
+                    firstName: string;
+                    age?: number;
+                    tags: string[];
+                };
+                const builder = createQueryBuilder<DocType>()
+                    .find()
+                    .where('age').exists(true)
+                    .where('age').exists(false)
+                    .where('tags').elemMatch({ $regex: '^foo' })
+                    .where('tags').elemMatch(elem => {
+                        elem.where({ firstName: 'foo' });
+                        elem.where('age').gte(5);
+                    })
+                    .where({ age: { $not: { $gt: 5 } } });
+            });
             describe('rx-error', () => {
                 it('should know the parameters of the error', async () => {
                     const myDb: any = {};
