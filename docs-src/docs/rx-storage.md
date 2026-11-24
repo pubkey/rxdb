@@ -7,6 +7,8 @@ image: /headers/rx-storage.jpg
 
 import { IconStorage } from '@site/src/components/icons/storage';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {StorageWrapperStack} from '@site/src/components/animations/storage-wrapper-stack';
 
 # <HeadlineWithIcon h1 icon={<IconStorage />}>RxStorage</HeadlineWithIcon>
 
@@ -29,6 +31,10 @@ The RxStorage layer of RxDB is very flexible. Here are some examples on how to c
 Lets say you build a browser app that needs to store a big amount of data as securely as possible. Here we can use a combination of the storages (encryption, IndexedDB, compression, schema-checks) that increase security and reduce the stored data size.
 
 We use the schema-validation on the top level to ensure schema-errors are clearly readable and do not contain [encrypted](./encryption.md)/[compressed](./key-compression.md) data. The encryption is used inside of the compression because encryption of compressed data is more efficient.
+
+<DocsAnimation subtitle="Schema validation, key compression and encryption wrapped around the IndexedDB RxStorage">
+<StorageWrapperStack />
+</DocsAnimation>
 
 ```ts
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';

@@ -9,6 +9,8 @@ import {Steps} from '@site/src/components/steps';
 import {TriggerEvent} from '@site/src/components/trigger-event';
 import {Tabs} from '@site/src/components/tabs';
 import {NavbarDropdownSyncList} from '@site/src/components/navbar-dropdowns';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ReactiveQuery} from '@site/src/components/animations/reactive-query';
 
 import { IconQuickstart } from '@site/src/components/icons/quickstart';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
@@ -270,6 +272,10 @@ await firstDocument.remove();
 ### Observe a Query
 
 Subscribe to data changes so that your UI is always up-to-date with the data stored on disk. RxDB allows you to subscribe to data changes even when the change happens in another part of your application, another browser tab, or during database [replication/synchronization](./replication.md):
+
+<DocsAnimation subtitle="A reactive query emits a new result on every change">
+<ReactiveQuery />
+</DocsAnimation>
 
 ```ts
 const observable = myDatabase.todos.find({

@@ -5,6 +5,20 @@
 
 We use Icons from the [lucide library](https://lucide.dev/icons/)
 
+## No round borders
+
+The docs use square corners. Do not round the corners of boxes, cards, panels,
+buttons, or images in new components and animations: no `border-radius` in CSS
+or inline styles, and no `rx`/`ry` on SVG `<rect>` elements. The docs CSS
+already sets `border-radius: 0` on code blocks, inline code, `<details>`,
+alerts, and the modal content. Round shapes are fine only where the shape
+itself is a circle, for example a moving dot or a status marker in an
+animation.
+
+Some older components still have rounded corners. Do not copy their radius
+values. Use square corners when you build something new, and remove the radius
+when you change an old component anyway.
+
 ## Relative dates
 
 Never write a relative time span into the prose. A sentence that says "no
