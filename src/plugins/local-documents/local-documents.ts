@@ -15,6 +15,7 @@ import type {
 } from '../../types/index.d.ts';
 
 import {
+    distinctUntilChanged,
     filter,
     map,
     startWith,
@@ -215,6 +216,12 @@ export function getLocal$<DocData = any, Reactivity = unknown>(this: RxCollectio
         filter((filterFlagged: { use: boolean; doc?: any }) => filterFlagged.use),
         map((filterFlagged: { use: boolean; doc?: any }) => {
             return filterFlagged.doc as any;
+        }),
+        distinctUntilChanged((
+            prev: RxLocalDocument<DocData, any, Reactivity> | null,
+            curr: RxLocalDocument<DocData, any, Reactivity> | null
+        ) => {
+            return (prev ? prev.revision : '') === (curr ? curr.revision : '');
         })
     );
 }
