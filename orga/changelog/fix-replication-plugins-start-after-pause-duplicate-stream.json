@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX the GraphQL, CouchDB, Google Drive, Microsoft OneDrive, Appwrite, Firestore, MongoDB, NATS, and Supabase replication now close their change stream on `pause()` and open a new one on `start()`. Before, the stream stayed open while the replication was paused, each `start()` after `pause()` opened one more stream that `cancel()` did not close, and in the Supabase replication `start()` after `pause()` rejected",
+    "text": "FIX the GraphQL, CouchDB, Google Drive, Microsoft OneDrive, Appwrite, Firestore, MongoDB, NATS, and Supabase replication now close their change stream on `pause()` and open a new one on `start()`. Before, the stream stayed open while the replication was paused. In all of them except GraphQL and Supabase, each `start()` after `pause()` also opened one more stream or long polling loop next to the open one. In the Supabase replication `start()` after `pause()` rejected",
     "links": [
         {
             "url": "https://github.com/pubkey/rxdb/pull/9842",

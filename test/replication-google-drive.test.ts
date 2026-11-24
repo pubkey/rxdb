@@ -1282,6 +1282,37 @@ describe('replication-google-drive.test.ts', function () {
             collectionA.database.close();
             collectionB.database.close();
         });
+        it('pause() directly after the creation should pause the started replication', async () => {
+            const collection = await humansCollection.createHumanWithTimestamp(0, 'aa' + randomToken(10), false);
+            const replicationState = await replicateGoogleDrive<any>({
+                replicationIdentifier: 'foobar',
+                collection,
+                googleDrive: options,
+                signalingOptions: options.signalingOptions,
+                live: true,
+                pull: {},
+                push: {}
+            });
+            const signalingState = ensureNotFalsy(replicationState.signalingState);
+
+            await replicationState.pause();
+            assert.strictEqual(replicationState.isPaused(), true);
+            assert.strictEqual(signalingState.closed, true);
+
+            const startPromise = replicationState.start();
+            await replicationState.pause();
+            await startPromise;
+            assert.strictEqual(replicationState.isPaused(), true);
+            assert.strictEqual(ensureNotFalsy(replicationState.signalingState).closed, true);
+
+            await replicationState.start();
+            assert.strictEqual(replicationState.isPaused(), false);
+            assert.strictEqual(ensureNotFalsy(replicationState.signalingState).closed, false);
+            await replicationState.awaitInitialReplication();
+
+            await replicationState.cancel();
+            await collection.database.close();
+        });
         it('pause() should close the signaling state and start() should open a new one', async () => {
             const collectionA = await humansCollection.createHumanWithTimestamp(0, 'aa' + randomToken(10), false);
             const collectionB = await humansCollection.createHumanWithTimestamp(0, 'bb' + randomToken(10), false);

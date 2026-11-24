@@ -352,6 +352,7 @@ function openEventSource() {
             checkpoint: eventData.checkpoint
         });
     };
+    eventSource.onopen = () => myPullStream$.next('RESYNC');
     eventSource.onerror = () => myPullStream$.next('RESYNC');
     return eventSource;
 }
@@ -365,12 +366,12 @@ await replicationState.pause();
 eventSource = openEventSource();
 await replicationState.start();
 
-// cancel: close the connection, it is not needed any more
+// cancel: close the connection, it is no longer needed
 eventSource.close();
 await replicationState.cancel();
 ```
 
-You do not have to emit a `RESYNC` flag after `start()`. When a replication is started after a pause, it runs one resync cycle by itself, which fetches the changes that happened on the server during the pause with the [checkpoint iteration](./replication.md#checkpoint-iteration). The `RESYNC` flag is only needed when the connection was lost while the replication was running.
+When a replication is started after a pause, it runs one resync cycle by itself, which fetches the changes that happened on the server during the pause with the [checkpoint iteration](./replication.md#checkpoint-iteration). But the new connection is not open at that moment. A write that happens on the server after the pull of that resync cycle and before the connection is open is in neither of them, and the next event of the stream moves the checkpoint past it. Therefore the example emits the `RESYNC` flag in `onopen`, each time a connection is open, also after an automatic reconnect.
 
 </Steps>
 

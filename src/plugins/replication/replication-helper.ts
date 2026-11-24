@@ -3,7 +3,7 @@ import type {
     RxCollection,
     WithDeleted
 } from '../../types/index.d.ts';
-import { flatClone, PROMISE_RESOLVE_VOID } from '../../plugins/utils/index.ts';
+import { flatClone, isPromise, PROMISE_RESOLVE_VOID } from '../../plugins/utils/index.ts';
 import { getComposedPrimaryKeyOfDocumentData } from '../../rx-schema-helper.ts';
 import type { RxReplicationState } from './index.ts';
 
@@ -137,48 +137,79 @@ export function openStreamWhileStarted(
     let closeStream: (() => any) | undefined;
     let streamWanted = false;
     let canceled = false;
-    let pendingStarts = 0;
-    let queue: Promise<any> = PROMISE_RESOLVE_VOID;
-    function updateStream(): Promise<void> {
-        const ret = queue.then(async () => {
-            if (streamWanted && !closeStream) {
-                closeStream = await openStream();
-            } else if (!streamWanted && closeStream) {
-                const closeFn = closeStream;
-                closeStream = undefined;
-                await closeFn();
+    let openInFlight = false;
+    let pending: Promise<any> | undefined;
+    function openOrClose(): MaybePromise<any> {
+        if (streamWanted && !closeStream) {
+            const opened = openStream();
+            if (!isPromise(opened)) {
+                closeStream = opened as () => any;
+                return;
             }
-        });
-        queue = ret.catch(() => { });
-        return ret;
+            openInFlight = true;
+            return (opened as Promise<() => any>).then(
+                closeFn => {
+                    openInFlight = false;
+                    closeStream = closeFn;
+                },
+                err => {
+                    openInFlight = false;
+                    throw err;
+                }
+            );
+        } else if (!streamWanted && closeStream) {
+            const closeFn = closeStream;
+            closeStream = undefined;
+            return closeFn();
+        }
+    }
+    function updateStream(): MaybePromise<any> {
+        const result = pending ? pending.catch(() => { }).then(openOrClose) : openOrClose();
+        if (!isPromise(result)) {
+            return;
+        }
+        pending = result;
+        const unsetPending = () => {
+            if (pending === result) {
+                pending = undefined;
+            }
+        };
+        result.then(unsetPending, unsetPending);
+        return result;
     }
     function stop<T>(baseFn: () => Promise<T>): Promise<T> {
         streamWanted = false;
         const ret = baseFn();
-        const closed = updateStream().catch(() => { });
-        return pendingStarts > 0 ? ret : Promise.all([ret, closed]).then(r => r[0]);
+        let closed: MaybePromise<any>;
+        try {
+            closed = updateStream();
+        } catch (err) { }
+        if (!isPromise(closed)) {
+            return ret;
+        }
+        const closedWithoutError = (closed as Promise<any>).catch(() => { });
+        return openInFlight ? ret : Promise.all([ret, closedWithoutError]).then(r => r[0]);
     }
-    replicationState.start = async () => {
+    replicationState.start = () => {
         if (replicationState.isStopped()) {
             return startBefore();
         }
         if (canceled) {
-            return;
+            return PROMISE_RESOLVE_VOID;
         }
         streamWanted = true;
-        pendingStarts = pendingStarts + 1;
-        try {
-            await updateStream();
-        } catch (err) {
-            if (streamWanted) {
-                throw err;
-            }
-        } finally {
-            pendingStarts = pendingStarts - 1;
-        }
-        if (streamWanted) {
+        const updated = updateStream();
+        if (!isPromise(updated)) {
             return startBefore();
         }
+        return (updated as Promise<any>).then(
+            () => streamWanted ? startBefore() : undefined,
+            err => {
+                if (streamWanted) {
+                    throw err;
+                }
+            }
+        );
     };
     replicationState.pause = () => stop(pauseBefore);
     replicationState.cancel = () => {
