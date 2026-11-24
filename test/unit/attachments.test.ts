@@ -1612,7 +1612,7 @@ describe('attachments.test.ts', () => {
 
             assert.strictEqual(Object.isFrozen(testBlob), false);
             assert.strictEqual(await blobToString(testBlob), 'hello inline');
-            col.database.close();
+            await col.database.close();
         });
         it('upsert with inline attachments on new document', async () => {
             const col = await humansCollection.createAttachments(0);

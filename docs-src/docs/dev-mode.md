@@ -15,7 +15,7 @@ using RxDB in development mode.
 
 - Adds readable error messages.
 - Ensures that `readonly` JavaScript objects are not accidentally mutated.
-  - RxDB does not clone the data that you write, so the stored document shares its nested objects with your input. The dev-mode plugin deep-freezes these nested objects of each document that was written, after a write like `insert()`, [bulkInsert()](./rx-collection.md#bulkinsert), `upsert()`, or [importJSON()](./rx-collection.md#importjson). When you mutate them afterwards, JavaScript throws a `TypeError` in strict mode instead of silently changing the stored document.
+  - RxDB does not clone the data that you write, so the stored document shares its nested objects with your input. The dev-mode plugin deep-freezes these nested objects of each document that was written, after a write like [insert()](./rx-collection.md#insert), [bulkInsert()](./rx-collection.md#bulkinsert), [upsert()](./rx-collection.md#upsert), or [importJSON()](./rx-collection.md#importjson). When you mutate them afterwards, JavaScript throws a `TypeError` in strict mode instead of silently changing the stored document.
 - Adds validation check for validity of schemas, queries, [ORM](./orm.md) methods and document fields.
   - Notice that the `dev-mode` plugin does not perform schema checks against the data see [schema validation](./schema-validation.md) for that.
 

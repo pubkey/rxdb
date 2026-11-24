@@ -110,39 +110,34 @@ describe('import-export.test.js', () => {
                     const doc = await col.findOne(docData.passportId).exec(true);
                     assert.strictEqual(doc.mainSkill.level, 5);
 
-                    col.database.close();
+                    await col.database.close();
                 });
                 it('should not freeze the dump of a document that was not written', async () => {
                     const col = await humansCollection.createNested(0);
-                    const passportId = randomToken(12);
                     const schemaHash = await col.schema.hash;
-                    const docsData = [1, 2].map(level => schemaObjects.nestedHumanData({
-                        passportId,
-                        mainSkill: { name: 'foobar', level }
-                    }));
-                    await Promise.all(
-                        docsData.map(docData => col.importJSON({
-                            name: col.name,
-                            schemaHash,
-                            docs: [docData]
-                        }, 'merge'))
-                    );
-                    const writtenDoc = await col.findOne(passportId).exec(true);
-                    const written = docsData[writtenDoc.mainSkill.level - 1];
-                    const rejected = docsData[2 - writtenDoc.mainSkill.level];
+                    const rejected = schemaObjects.nestedHumanData({
+                        mainSkill: { name: 'foobar', level: 11 }
+                    });
+                    const written = schemaObjects.nestedHumanData();
+                    await col.importJSON({
+                        name: col.name,
+                        schemaHash,
+                        docs: [rejected, written]
+                    });
                     assert.strictEqual(Object.isFrozen(rejected.mainSkill), false);
                     assert.ok(Object.isFrozen(written.mainSkill));
+                    assert.strictEqual(await col.findOne(rejected.passportId).exec(), null);
 
                     rejected.mainSkill.level = 3;
                     await col.importJSON({
                         name: col.name,
                         schemaHash,
                         docs: [rejected]
-                    }, 'merge');
-                    const doc = await col.findOne(passportId).exec(true);
+                    });
+                    const doc = await col.findOne(rejected.passportId).exec(true);
                     assert.strictEqual(doc.mainSkill.level, 3);
 
-                    col.database.close();
+                    await col.database.close();
                 });
             });
             describe('negative', () => {
@@ -486,8 +481,8 @@ describe('import-export.test.js', () => {
                     const doc = await col2.findOne(docData.passportId).exec(true);
                     assert.strictEqual(doc.mainSkill.level, 5);
 
-                    col.database.close();
-                    col2.database.close();
+                    await col.database.close();
+                    await col2.database.close();
                 });
             });
             describe('negative', () => {

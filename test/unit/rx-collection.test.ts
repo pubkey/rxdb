@@ -779,7 +779,7 @@ describe('rx-collection.test.ts', () => {
                     const doc = await col.findOne(docData.passportId).exec(true);
                     assert.strictEqual(doc.mainSkill.level, 5);
 
-                    col.database.close();
+                    await col.database.close();
                 });
                 it('should not freeze the input of a document that was not written', async () => {
                     const col = await humansCollection.createNested(0);
@@ -801,7 +801,7 @@ describe('rx-collection.test.ts', () => {
                     const doc = await col.findOne(rejected.passportId).exec(true);
                     assert.strictEqual(doc.mainSkill.level, 3);
 
-                    col.database.close();
+                    await col.database.close();
                 });
                 /**
                  * @link https://github.com/pubkey/rxdb/issues/7984
