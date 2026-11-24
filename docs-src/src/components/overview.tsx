@@ -1,8 +1,15 @@
-import { lastOfArray } from '../../../plugins/core';
+import type { ReactNode } from 'react';
+import { lastOfArray, ucfirst } from '../../../plugins/core';
 import sidebars from '../../sidebars';
 import { Block } from '../components/block';
 import { Button } from '../components/button';
-import { Steps } from '../components/steps';
+import { HeadlineWithIcon } from '../components/headline-with-icon';
+import { IconCode } from '../components/icons/code';
+import { IconDeviceDesktop } from '../components/icons/device-desktop';
+import { IconEncryption } from '../components/icons/encryption';
+import { IconGear } from '../components/icons/gear';
+import { IconReplication } from '../components/icons/replication';
+import { IconStorage } from '../components/icons/storage';
 import { Tabs } from '../components/tabs';
 
 type OverviewLink = {
@@ -60,69 +67,81 @@ function CategoryTabs(props: { categories: OverviewCategory[]; }) {
 }
 
 function StartButtons() {
-    return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 60 }}>
+    return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 50 }}>
         <Button primary href="./quickstart.html">Quickstart</Button>
-        <Button href="./rx-storage.html">Pick a Storage</Button>
-        <Button href="./replication.html">Sync your Data</Button>
+        <Button href="./install.html">Installation</Button>
+    </div>;
+}
+
+function StackLayer(props: {
+    category: OverviewCategory;
+    eyebrow: string;
+    icon: ReactNode;
+    variant?: 'core' | 'optional';
+}) {
+    return <div className={'overview-stack-layer' + (props.variant ? ' ' + props.variant : '')}>
+        <div className="overview-stack-eyebrow">{props.eyebrow}</div>
+        <div className="overview-stack-title">
+            <HeadlineWithIcon h3 icon={props.icon}>{props.category.label}</HeadlineWithIcon>
+        </div>
+        <div className="overview-stack-links">
+            {props.category.links.map(link => <a
+                key={link.key}
+                href={link.href}
+                target={link.target}
+            >{layerLinkTitle(link.title)}</a>)}
+        </div>
     </div>;
 }
 
 /**
- * Variant A: three start buttons, then one tab per category.
+ * Strips the runtime list like "(Browser, Capacitor)" from the sidebar label.
+ * Function names like replicateRxCollection() keep their casing.
  */
-export function OverviewTabs() {
-    return <>
-        <StartButtons />
-        <CategoryTabs categories={getCategories()} />
-    </>;
+function layerLinkTitle(title: string): string {
+    if (title.endsWith('()')) {
+        return title;
+    }
+    return ucfirst(title.replace(/ \(.+\)$/, ''));
 }
 
 /**
- * Variant B: one block per category that links to the first page of it.
+ * Categories that are drawn as a layer of the stack map.
+ * All other categories are listed in the tabs below the map.
  */
-export function OverviewCategories() {
-    return <>
-        <StartButtons />
-        <BlockGrid links={getCategories().map(category => ({
-            key: category.label,
-            title: category.label,
-            href: category.links[0].href,
-            target: category.links[0].target
-        }))} />
-    </>;
-}
-
-/**
- * Variant C: the first steps as a numbered path, then one tab per category.
- */
-export function OverviewSteps() {
-    const stepButton = (href: string, text: string) => <p><Button href={href}>{text}</Button></p>;
-    return <>
-        <Steps name="Get started with RxDB">
-            <h3 id="overview-step-install">Install RxDB</h3>
-            {stepButton('./install.html', 'Installation')}
-            <h3 id="overview-step-quickstart">Create a Database</h3>
-            {stepButton('./quickstart.html', 'Quickstart')}
-            <h3 id="overview-step-storage">Pick a Storage</h3>
-            {stepButton('./rx-storage.html', 'Storages')}
-            <h3 id="overview-step-sync">Sync your Data</h3>
-            {stepButton('./replication.html', 'Sync Engine')}
-        </Steps>
-        <br />
-        <br />
-        <CategoryTabs categories={getCategories().slice(1)} />
-    </>;
-}
+const STACK_CATEGORIES = [
+    'Integrations',
+    'Core Entities',
+    'Storage Wrappers',
+    'Storages',
+    'Replication',
+    'Server'
+];
 
 export function Overview() {
-    const variant = typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('v');
-    if (variant === 'b') {
-        return <OverviewCategories />;
-    }
-    if (variant === 'c') {
-        return <OverviewSteps />;
-    }
-    return <OverviewTabs />;
+    const categories = getCategories();
+    const byLabel = (label: string) => categories.find(category => category.label === label);
+    return <>
+        <StartButtons />
+        <div className="overview-stack">
+            <div className="overview-stack-column">
+                <StackLayer category={byLabel('Integrations')} eyebrow="Your App" icon={<IconCode />} />
+                <div className="overview-stack-connector">queries and writes</div>
+                <StackLayer category={byLabel('Core Entities')} eyebrow="RxDB Core" icon={<IconGear />} variant="core" />
+                <div className="overview-stack-connector">optional</div>
+                <StackLayer category={byLabel('Storage Wrappers')} eyebrow="Wrappers" icon={<IconEncryption />} variant="optional" />
+                <div className="overview-stack-connector">reads and writes documents</div>
+                <StackLayer category={byLabel('Storages')} eyebrow="On Disk" icon={<IconStorage />} />
+            </div>
+            <div className="overview-stack-sync"><span>sync</span></div>
+            <div className="overview-stack-column">
+                <StackLayer category={byLabel('Replication')} eyebrow="Sync Engine" icon={<IconReplication />} />
+                <div className="overview-stack-connector">pull, push, and event stream</div>
+                <StackLayer category={byLabel('Server')} eyebrow="Backend" icon={<IconDeviceDesktop />} />
+            </div>
+        </div>
+        <CategoryTabs categories={categories.filter(category => !STACK_CATEGORIES.includes(category.label))} />
+    </>;
 }
 
 
