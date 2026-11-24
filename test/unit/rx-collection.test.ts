@@ -2627,6 +2627,44 @@ describe('rx-collection.test.ts', () => {
                     });
                     db.close();
                 });
+                it('should be possible to re-create the collection with another primary key', async () => {
+                    type DocType = { id: string; name: string; };
+                    const schemaWithId: RxJsonSchema<DocType> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', maxLength: 100 },
+                            name: { type: 'string', maxLength: 100 }
+                        },
+                        required: ['id', 'name']
+                    };
+                    const schemaWithName: RxJsonSchema<DocType> = {
+                        ...schemaWithId,
+                        primaryKey: 'name'
+                    };
+                    const db = await createRxDatabase<{ human: RxCollection<DocType>; }>({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage()
+                    });
+                    const collections = await db.addCollections({
+                        human: { schema: schemaWithId }
+                    });
+                    await collections.human.insert({ id: 'a', name: 'x' });
+                    await collections.human.remove();
+
+                    const collections2 = await db.addCollections({
+                        human: { schema: schemaWithName }
+                    });
+                    await collections2.human.insert({ id: 'b', name: 'y' });
+                    const docs = await collections2.human.find({
+                        selector: { name: { $gt: 'a' } }
+                    }).exec();
+                    assert.deepStrictEqual(docs.map(d => d.toJSON()), [{ id: 'b', name: 'y' }]);
+                    const byPrimary = await collections2.human.findOne('y').exec(true);
+                    assert.strictEqual(byPrimary.id, 'b');
+                    await db.close();
+                });
                 it('should not contain document when re-creating', async () => {
                     const db = await createRxDatabase({
                         name: randomToken(10),
