@@ -28,6 +28,7 @@ import {
     map
 } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
+import type { Subscription } from 'rxjs';
 
 declare type TestDocType = {
     foo: string;
@@ -865,12 +866,15 @@ describe('local-documents.test.ts', () => {
                     localDocuments: true
                 });
 
+                const emittedPerRun: number[][] = [];
+                const subs: Subscription[] = [];
                 for (let i = 0; i < runs; i++) {
                     const id = 'foobar' + i;
                     const emitted: number[] = [];
-                    const sub = db2.getLocal$<{ nr: number; }>(id).subscribe(doc => {
+                    emittedPerRun.push(emitted);
+                    subs.push(db2.getLocal$<{ nr: number; }>(id).subscribe(doc => {
                         emitted.push(doc ? doc.toJSON().data.nr : 0);
-                    });
+                    }));
                     await waitUntil(() => emitted.length === 1);
 
                     await db.insertLocal(id, { nr: 1 });
@@ -878,16 +882,18 @@ describe('local-documents.test.ts', () => {
                     await db.upsertLocal(id, { nr: 3 });
 
                     await waitUntil(() => emitted[emitted.length - 1] === 3);
-                    await wait(isFastMode() ? 50 : 150);
+                }
+
+                await wait(isFastMode() ? 50 : 150);
+                emittedPerRun.forEach(emitted => {
                     emitted.forEach((nr, idx) => {
                         assert.ok(
                             idx === 0 || nr > emitted[idx - 1],
                             'must emit each state only once and not an older state after a newer one: ' + JSON.stringify(emitted)
                         );
                     });
-
-                    sub.unsubscribe();
-                }
+                });
+                subs.forEach(sub => sub.unsubscribe());
 
                 await db.close();
                 await db2.close();
