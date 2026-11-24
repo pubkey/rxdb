@@ -7,6 +7,7 @@
  */
 import * as assert from 'assert';
 import * as React from 'react';
+import type { Observable } from 'rxjs';
 import {
     HumanCompositePrimaryDocType,
     schemas
@@ -316,6 +317,59 @@ describe('typings.test.ts', function () {
             // top level
             const observable = oneDoc.age$;
             observable.subscribe();
+        });
+        it('should know the observable getters of optional fields', () => {
+            type DocType = {
+                id: string;
+                name: string;
+                note?: string;
+            };
+            const oneDoc: RxDocument<DocType> = {} as any;
+
+            oneDoc.note$.subscribe();
+            const observable: Observable<string | undefined> = oneDoc.note$;
+
+            // @ts-expect-error the observable emits undefined while the field is not set
+            const observableWrong: Observable<string> = oneDoc.note$;
+        });
+        it('should keep the observable getter of a readonly field readonly', () => {
+            type DocType = {
+                id: string;
+                readonly createdAt: number;
+                readonly note?: string;
+            };
+            const oneDoc: RxDocument<DocType> = {} as any;
+            const anyObservable: Observable<any> = {} as any;
+
+            // @ts-expect-error the getter of a readonly field is readonly
+            oneDoc.createdAt$ = anyObservable;
+            // @ts-expect-error the getter of an optional readonly field is readonly
+            oneDoc.note$ = anyObservable;
+        });
+        it('should know the observable getters of a union document type', () => {
+            type DocType = {
+                id: string;
+                kind: 'a';
+                note?: string;
+            } | {
+                id: string;
+                kind: 'b';
+                note?: number;
+            };
+            const oneDoc: RxDocument<DocType> = {} as any;
+
+            const kindObservable: Observable<'a'> | Observable<'b'> = oneDoc.kind$;
+            const noteObservable: Observable<string | undefined> | Observable<number | undefined> = oneDoc.note$;
+        });
+        it('should know the type of a known field when the document type has an index signature', () => {
+            type DocType = {
+                id: string;
+                [k: string]: string | number | undefined;
+            };
+            const oneDoc: RxDocument<DocType> = {} as any;
+
+            const idObservable: Observable<string> = oneDoc.id$;
+            const otherObservable: Observable<string | number | undefined> = oneDoc.other$;
         });
         it('should know the populate getters with the underscore suffix', async () => {
             type DocType = {
@@ -959,6 +1013,24 @@ describe('other', () => {
                 myCollection.find().where('tags').all(['foo']);
                 // @ts-expect-error the query builder has no all() method
                 createQueryBuilder<DocType>().where('tags').all(['foo']);
+            });
+            it('should know the documented call forms of the standalone query builder', () => {
+                type DocType = {
+                    passportId: string;
+                    firstName: string;
+                    age?: number;
+                    tags: string[];
+                };
+                const builder = createQueryBuilder<DocType>()
+                    .find()
+                    .where('age').exists(true)
+                    .where('age').exists(false)
+                    .where('tags').elemMatch({ $regex: '^foo' })
+                    .where('tags').elemMatch(elem => {
+                        elem.where({ firstName: 'foo' });
+                        elem.where('age').gte(5);
+                    })
+                    .where({ age: { $not: { $gt: 5 } } });
             });
             describe('rx-error', () => {
                 it('should know the parameters of the error', async () => {

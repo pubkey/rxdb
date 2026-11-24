@@ -85,7 +85,7 @@ export class RxMigrationState {
     public database: RxDatabase;
 
 
-    private started: boolean = false;
+    private startedMigration?: Promise<void>;
     /**
      * Resolves when the stored error of a previous migration run
      * has been removed from the status document.
@@ -219,7 +219,7 @@ export class RxMigrationState {
      * is run on a different browser tab.
      */
     async startMigration(batchSize: number = MIGRATION_DEFAULT_BATCH_SIZE): Promise<void> {
-        if (this.started) {
+        if (this.startedMigration) {
             throw newRxError('DM1');
         }
         /**
@@ -250,8 +250,13 @@ export class RxMigrationState {
             this.collection.migrationInProgress = false;
             return;
         }
-        this.started = true;
+        if (!this.startedMigration) {
+            this.startedMigration = this.runStartedMigration(batchSize);
+        }
+        return this.startedMigration;
+    }
 
+    private async runStartedMigration(batchSize: number): Promise<void> {
         try {
             this.errorStatusReset = this.resetErrorStatus();
             await this.errorStatusReset;

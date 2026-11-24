@@ -64,7 +64,7 @@ export class NoSqlQueryBuilderClass<DocType> {
     /**
      * Specifies a `path` for use with chaining.
      */
-    where(_path: string, _val?: MangoQuerySelector<DocType>): NoSqlQueryBuilder<DocType> {
+    where(_path: string | MangoQuerySelector<DocType>, _val?: MangoQuerySelector<DocType>): NoSqlQueryBuilder<DocType> {
         if (!arguments.length) return this as any;
         const type = typeof arguments[0];
         if ('string' === type) {
@@ -188,7 +188,9 @@ export class NoSqlQueryBuilderClass<DocType> {
      *     Thing.where('name').exists(true)
      *     Thing.find().exists('name')
      */
-    exists(_path: string, _val: number): NoSqlQueryBuilder<DocType> {
+    exists(_val: boolean): NoSqlQueryBuilder<DocType>;
+    exists(_path: string, _val: number): NoSqlQueryBuilder<DocType>;
+    exists(_pathOrVal: string | boolean, _val?: number): NoSqlQueryBuilder<DocType> {
         let path;
         let val;
         if (0 === arguments.length) {
@@ -228,7 +230,9 @@ export class NoSqlQueryBuilderClass<DocType> {
      *       elem.where('votes').gte(5);
      *     })
      */
-    elemMatch(_path: string, _criteria: any): NoSqlQueryBuilder<DocType> {
+    elemMatch(_criteria: MangoQuerySelector<any> | ((elem: NoSqlQueryBuilder) => void)): NoSqlQueryBuilder<DocType>;
+    elemMatch(_path: string, _criteria: any): NoSqlQueryBuilder<DocType>;
+    elemMatch(_pathOrCriteria: any, _criteria?: any): NoSqlQueryBuilder<DocType> {
         if (null === arguments[0])
             throw newRxTypeError('MQ2');
 
@@ -367,7 +371,7 @@ export class NoSqlQueryBuilderClass<DocType> {
      *     query.find()
      *     query.find({ name: 'Burning Lights' })
      */
-    find(criteria: any): NoSqlQueryBuilder<DocType> {
+    find(criteria?: any): NoSqlQueryBuilder<DocType> {
         if (canMerge(criteria)) {
             this.merge(criteria);
         }
