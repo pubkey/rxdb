@@ -775,11 +775,31 @@ describe('rx-collection.test.ts', () => {
                     await col.bulkInsert([docData]);
 
                     assert.ok(Object.isFrozen(docData.mainSkill));
-                    try {
-                        docData.mainSkill.level = 999;
-                    } catch (err) { }
+                    assert.strictEqual(Reflect.set(docData.mainSkill, 'level', 999), false);
                     const doc = await col.findOne(docData.passportId).exec(true);
                     assert.strictEqual(doc.mainSkill.level, 5);
+
+                    col.database.close();
+                });
+                it('should not freeze the input of a document that was not written', async () => {
+                    const col = await humansCollection.createNested(0);
+                    const existing = schemaObjects.nestedHumanData();
+                    await col.insert(existing);
+
+                    const rejected = schemaObjects.nestedHumanData({ passportId: existing.passportId });
+                    const written = schemaObjects.nestedHumanData();
+                    const result = await col.bulkInsert([rejected, written]);
+                    assert.strictEqual(result.error.length, 1);
+                    assert.strictEqual(result.error[0].status, 409);
+                    assert.strictEqual(Object.isFrozen(rejected.mainSkill), false);
+                    assert.ok(Object.isFrozen(written.mainSkill));
+
+                    rejected.passportId = randomToken(12);
+                    rejected.mainSkill.level = 3;
+                    const retryResult = await col.bulkInsert([rejected]);
+                    assert.strictEqual(retryResult.error.length, 0);
+                    const doc = await col.findOne(rejected.passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 3);
 
                     col.database.close();
                 });

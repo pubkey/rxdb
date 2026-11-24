@@ -106,11 +106,41 @@ describe('import-export.test.js', () => {
                     });
 
                     assert.ok(Object.isFrozen(docData.mainSkill));
-                    try {
-                        docData.mainSkill.level = 999;
-                    } catch (err) { }
+                    assert.strictEqual(Reflect.set(docData.mainSkill, 'level', 999), false);
                     const doc = await col.findOne(docData.passportId).exec(true);
                     assert.strictEqual(doc.mainSkill.level, 5);
+
+                    col.database.close();
+                });
+                it('should not freeze the dump of a document that was not written', async () => {
+                    const col = await humansCollection.createNested(0);
+                    const passportId = randomToken(12);
+                    const schemaHash = await col.schema.hash;
+                    const docsData = [1, 2].map(level => schemaObjects.nestedHumanData({
+                        passportId,
+                        mainSkill: { name: 'foobar', level }
+                    }));
+                    await Promise.all(
+                        docsData.map(docData => col.importJSON({
+                            name: col.name,
+                            schemaHash,
+                            docs: [docData]
+                        }, 'merge'))
+                    );
+                    const writtenDoc = await col.findOne(passportId).exec(true);
+                    const written = docsData[writtenDoc.mainSkill.level - 1];
+                    const rejected = docsData[2 - writtenDoc.mainSkill.level];
+                    assert.strictEqual(Object.isFrozen(rejected.mainSkill), false);
+                    assert.ok(Object.isFrozen(written.mainSkill));
+
+                    rejected.mainSkill.level = 3;
+                    await col.importJSON({
+                        name: col.name,
+                        schemaHash,
+                        docs: [rejected]
+                    }, 'merge');
+                    const doc = await col.findOne(passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 3);
 
                     col.database.close();
                 });
@@ -452,9 +482,7 @@ describe('import-export.test.js', () => {
 
                     const docData = json.collections[0].docs[0];
                     assert.ok(Object.isFrozen(docData.mainSkill));
-                    try {
-                        docData.mainSkill.level = 999;
-                    } catch (err) { }
+                    assert.strictEqual(Reflect.set(docData.mainSkill, 'level', 999), false);
                     const doc = await col2.findOne(docData.passportId).exec(true);
                     assert.strictEqual(doc.mainSkill.level, 5);
 

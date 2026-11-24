@@ -533,7 +533,11 @@ export class RxCollectionBase<
             insertRows,
             RX_COLLECTION_BULK_INSERT_CONTEXT
         );
-        overwritable.deepFreezeWhenDevMode(insertRows);
+        if (overwritable.isDevMode()) {
+            overwritable.deepFreezeWhenDevMode(
+                getWrittenDocumentsFromBulkWriteResponse(primaryPath, insertRows, results)
+            );
+        }
 
 
         /**

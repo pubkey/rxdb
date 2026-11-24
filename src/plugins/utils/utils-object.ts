@@ -13,8 +13,7 @@ export function deepFreeze<T>(o: T): T {
                 ||
                 typeof (o as any)[prop] === 'function'
             ) &&
-            !Object.isFrozen((o as any)[prop]) &&
-            !(typeof Blob !== 'undefined' && (o as any)[prop] instanceof Blob)
+            !Object.isFrozen((o as any)[prop])
         ) {
             deepFreeze((o as any)[prop]);
         }
