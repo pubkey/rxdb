@@ -1884,8 +1884,12 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(countWSState('connected'), 2);
                 assert.strictEqual(countWSState('closed'), 1);
 
-                await replicationState.cancel();
+                const cancelPromise = replicationState.cancel();
+                await replicationState.start();
+                await cancelPromise;
                 await waitUntil(() => countWSState('closed') === 2, 2000);
+                await assertThrows(() => replicationState.start(), 'RxError', 'RC_START_CANCELED');
+                assert.strictEqual(countWSState('connected'), 2);
 
                 server.close();
                 c.database.close();

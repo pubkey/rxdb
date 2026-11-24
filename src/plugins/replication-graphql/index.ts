@@ -251,7 +251,9 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                         }
                     },
                     error: (error: any) => {
-                        pullStream$.error(error);
+                        if (!closed) {
+                            pullStream$.error(error);
+                        }
                     },
                     complete: () => {
                         if (!closed) {

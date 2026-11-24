@@ -171,6 +171,8 @@ const replicationState = replicateCouchDB(
 
 ## Limitations
 
+The long polling request of a live replication is aborted when you call [`pause()`](./rx-replication-state.md#pause) or `cancel()`, and `start()` after a pause sends a new one. A custom `fetch` method has to pass the `signal` of its second parameter on to the original `fetch()`, otherwise the running request cannot be aborted.
+
 Since CouchDB only allows synchronization through HTTP/1.1 long polling requests there is a limitation of 6 active synchronization connections before the browser prevents sending any further request. This limitation is at the level of browser per tab per domain (some browser, especially older ones, might have a different limit, [see here](https://docs.pushtechnology.com/cloud/latest/manual/html/designguide/solution/support/connection_limitations.html)).
 
 Since this limitation is at the **browser** level there are several solutions:

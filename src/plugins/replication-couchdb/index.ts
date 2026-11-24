@@ -47,7 +47,7 @@ import {
     getCouchDBResponseJson,
     removeCredentialsFromUrl
 } from './couchdb-helper.ts';
-import { awaitRetry } from '../replication/replication-helper.ts';
+import { awaitRetry, openStreamWhileStarted } from '../replication/replication-helper.ts';
 
 export * from './couchdb-helper.ts';
 export * from './couchdb-types.ts';
@@ -294,14 +294,14 @@ export function replicateCouchDB<RxDocType>(
      * Use long polling to get live changes for the pull.stream$
      */
     if (options.live && options.pull) {
-        const startBefore = replicationState.start.bind(replicationState);
-        replicationState.start = () => {
+        openStreamWhileStarted(replicationState, () => {
+            const abortController = new AbortController();
             let since: string | number = 'now';
             const batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
 
             (async () => {
                 let lastRequestStartTime = now();
-                while (!replicationState.isStopped()) {
+                while (!abortController.signal.aborted) {
                     const url = options.url + '_changes?' + mergeUrlQueryParams({
                         style: 'all_docs',
                         feed: 'longpoll',
@@ -316,11 +316,14 @@ export function replicateCouchDB<RxDocType>(
                     try {
                         lastRequestStartTime = now();
                         jsonResponse = await getCouchDBResponseJson<CouchdbChangesResult>(
-                            await replicationState.fetch(url),
+                            await replicationState.fetch(url, { signal: abortController.signal }),
                             url,
                             json => !!json && Array.isArray(json.results)
                         );
                     } catch (err: any) {
+                        if (abortController.signal.aborted) {
+                            return;
+                        }
                         replicationState.subjects.error.next(
                             newRxError('RC_STREAM', {
                                 args: { url },
@@ -379,8 +382,8 @@ export function replicateCouchDB<RxDocType>(
                     });
                 }
             })();
-            return startBefore();
-        };
+            return () => abortController.abort();
+        });
     }
 
     startReplicationOnLeaderShip(options.waitForLeadership, replicationState);

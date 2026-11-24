@@ -212,6 +212,8 @@ observing errors or doing start/stop
 operations.
 :::
 
+The MongoDB change stream of a live replication is closed on [`pause()`](./rx-replication-state.md#pause) and on `cancel()`, and `start()` after a pause opens a new one.
+
 
 ### Start a RxServer
 

@@ -124,10 +124,8 @@ export function preventHibernateBrowserTab(replicationState: RxReplicationState<
 
 
 /**
- * For replication plugins that have their own change stream.
- * The stream is opened on start() and closed on pause() and cancel(),
- * so that no stream is open while the replication does not run.
- * All calls run in one queue, so that never two streams are open.
+ * start(), pause(), and cancel() can be called without awaiting the call before,
+ * so the stream is opened and closed in a queue to never have two open streams.
  */
 export function openStreamWhileStarted(
     replicationState: RxReplicationState<any, any>,
@@ -137,25 +135,54 @@ export function openStreamWhileStarted(
     const pauseBefore = replicationState.pause.bind(replicationState);
     const cancelBefore = replicationState.cancel.bind(replicationState);
     let closeStream: (() => any) | undefined;
+    let streamWanted = false;
+    let canceled = false;
+    let pendingStarts = 0;
     let queue: Promise<any> = PROMISE_RESOLVE_VOID;
-    function enqueue<T>(fn: () => Promise<T>): Promise<T> {
-        const ret = queue.then(fn);
+    function updateStream(): Promise<void> {
+        const ret = queue.then(async () => {
+            if (streamWanted && !closeStream) {
+                closeStream = await openStream();
+            } else if (!streamWanted && closeStream) {
+                const closeFn = closeStream;
+                closeStream = undefined;
+                await closeFn();
+            }
+        });
         queue = ret.catch(() => { });
         return ret;
     }
-    async function close() {
-        const closeFn = closeStream;
-        closeStream = undefined;
-        if (closeFn) {
-            await closeFn();
-        }
+    function stop<T>(baseFn: () => Promise<T>): Promise<T> {
+        streamWanted = false;
+        const ret = baseFn();
+        const closed = updateStream().catch(() => { });
+        return pendingStarts > 0 ? ret : Promise.all([ret, closed]).then(r => r[0]);
     }
-    replicationState.start = () => enqueue(async () => {
-        if (!closeStream && !replicationState.isStopped()) {
-            closeStream = await openStream();
+    replicationState.start = async () => {
+        if (replicationState.isStopped()) {
+            return startBefore();
         }
-        return startBefore();
-    });
-    replicationState.pause = () => enqueue(() => close().then(pauseBefore));
-    replicationState.cancel = () => enqueue(() => close().then(cancelBefore));
+        if (canceled) {
+            return;
+        }
+        streamWanted = true;
+        pendingStarts = pendingStarts + 1;
+        try {
+            await updateStream();
+        } catch (err) {
+            if (streamWanted) {
+                throw err;
+            }
+        } finally {
+            pendingStarts = pendingStarts - 1;
+        }
+        if (streamWanted) {
+            return startBefore();
+        }
+    };
+    replicationState.pause = () => stop(pauseBefore);
+    replicationState.cancel = () => {
+        canceled = true;
+        return stop(cancelBefore);
+    };
 }

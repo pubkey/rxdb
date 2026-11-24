@@ -162,6 +162,72 @@ describe('replication-couchdb.test.ts (custom fetch, changes feed sequence)', ()
             await replicationState.cancel();
             await collection.database.close();
         });
+        it('should abort the long polling on pause() and run one new loop after start()', async () => {
+            const collection = await humansCollection.create(0);
+            const server = createChangesFeedServer();
+            let longpollRequests = 0;
+            let openLongpollRequests = 0;
+            let maxOpenLongpollRequests = 0;
+            const customFetch: FetchMethodType = async (input, init) => {
+                const requestUrl = getRequestUrl(input);
+                if (!requestUrl.includes('feed=longpoll')) {
+                    return server.handleRequest(requestUrl);
+                }
+                longpollRequests = longpollRequests + 1;
+                openLongpollRequests = openLongpollRequests + 1;
+                maxOpenLongpollRequests = Math.max(maxOpenLongpollRequests, openLongpollRequests);
+                try {
+                    return await new Promise<Response>((res, rej) => {
+                        const signal = init && init.signal;
+                        if (signal) {
+                            signal.addEventListener('abort', () => rej(new Error('aborted')));
+                        }
+                        server.handleRequest(requestUrl).then(res);
+                    });
+                } finally {
+                    openLongpollRequests = openLongpollRequests - 1;
+                }
+            };
+            const replicationState = replicateCouchDB({
+                replicationIdentifier: randomToken(10),
+                collection,
+                url: SERVER_URL,
+                fetch: customFetch,
+                waitForLeadership: false,
+                live: true,
+                pull: {}
+            });
+            const errors: any[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInitialReplication();
+            await waitUntil(() => openLongpollRequests === 1);
+
+            await replicationState.pause();
+            assert.strictEqual(openLongpollRequests, 0);
+            const requestsAtPause = longpollRequests;
+            server.write('during-pause');
+            await wait(250);
+            assert.strictEqual(longpollRequests, requestsAtPause);
+            assert.strictEqual(await collection.findOne('during-pause').exec(), null);
+
+            await replicationState.start();
+            await waitUntil(async () => !!(await collection.findOne('during-pause').exec()), 2000);
+            await waitUntil(() => openLongpollRequests === 1);
+            server.write('after-resume');
+            await waitUntil(async () => !!(await collection.findOne('after-resume').exec()), 2000);
+            await replicationState.start();
+            await wait(250);
+            assert.strictEqual(maxOpenLongpollRequests, 1);
+
+            await replicationState.cancel();
+            assert.strictEqual(openLongpollRequests, 0);
+            const requestsAtCancel = longpollRequests;
+            await wait(250);
+            assert.strictEqual(longpollRequests, requestsAtCancel);
+            assert.deepStrictEqual(errors, []);
+
+            await collection.database.close();
+        });
     });
 });
 

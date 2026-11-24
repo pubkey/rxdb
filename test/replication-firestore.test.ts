@@ -27,6 +27,7 @@ import {
 } from '../plugins/test-utils/index.mjs';
 
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
+import { waitUntil } from 'async-test-util';
 
 import {
     CollectionReference,
@@ -244,6 +245,40 @@ describe('replication-firestore.test.ts', function () {
             assert.strictEqual(docsOnServer[0].id, 'replicated');
 
             collection.database.close();
+        });
+    });
+    describe('pause', () => {
+        it('should get the server changes that were made during and after a pause', async () => {
+            const firestoreState = getFirestoreState();
+            const collectionA = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            const collectionB = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            const collectionC = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            const replicationState = replicateFirestore({
+                replicationIdentifier: firestoreState.projectId,
+                firestore: firestoreState,
+                collection: collectionA,
+                pull: {},
+                push: {},
+                live: true
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            await replicationState.pause();
+            await collectionB.insert(schemaObjects.humanWithTimestampData({ id: 'during-pause' }));
+            await syncOnce(collectionB, firestoreState);
+
+            await replicationState.start();
+            await waitUntil(async () => !!(await collectionA.findOne('during-pause').exec()), 10000);
+
+            await collectionC.insert(schemaObjects.humanWithTimestampData({ id: 'after-resume' }));
+            await syncOnce(collectionC, firestoreState);
+            await waitUntil(async () => !!(await collectionA.findOne('after-resume').exec()), 10000);
+
+            await replicationState.cancel();
+            await collectionA.database.close();
+            await collectionB.database.close();
+            await collectionC.database.close();
         });
     });
     describe('issues', () => {

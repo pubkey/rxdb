@@ -1125,6 +1125,7 @@ describe('replication-microsoft-onedrive.test.ts', function () {
             const collectionA = await humansCollection.createHumanWithTimestamp(0, 'aa' + randomToken(10), false);
             const collectionB = await humansCollection.createHumanWithTimestamp(0, 'bb' + randomToken(10), false);
             const collectionC = await humansCollection.createHumanWithTimestamp(0, 'cc' + randomToken(10), false);
+            const collectionD = await humansCollection.createHumanWithTimestamp(0, 'dd' + randomToken(10), false);
             const replicationState = await sync(collectionA, options, options.signalingOptions);
             const firstSignalingState = ensureNotFalsy(replicationState.signalingState);
             assert.strictEqual(firstSignalingState.closed, false);
@@ -1139,11 +1140,12 @@ describe('replication-microsoft-onedrive.test.ts', function () {
             const secondSignalingState = ensureNotFalsy(replicationState.signalingState);
             assert.ok(secondSignalingState !== firstSignalingState);
             assert.strictEqual(secondSignalingState.closed, false);
-            await waitUntil(async () => !!(await collectionA.findOne('during-pause').exec()));
+            await waitUntil(async () => !!(await collectionA.findOne('during-pause').exec()), 20000);
 
+            await collectionD.insert(schemaObjects.humanWithTimestampData({ id: 'after-resume' }));
+            await syncOnce(collectionD, options);
             await sync(collectionB, options, options.signalingOptions);
-            await collectionB.insert(schemaObjects.humanWithTimestampData({ id: 'after-resume' }));
-            await waitUntil(async () => !!(await collectionA.findOne('after-resume').exec()));
+            await waitUntil(async () => !!(await collectionA.findOne('after-resume').exec()), 20000);
 
             await replicationState.cancel();
             assert.strictEqual(secondSignalingState.closed, true);
@@ -1154,6 +1156,7 @@ describe('replication-microsoft-onedrive.test.ts', function () {
             await collectionA.database.close();
             await collectionB.database.close();
             await collectionC.database.close();
+            await collectionD.database.close();
         });
     });
 });

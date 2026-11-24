@@ -319,7 +319,7 @@ const pullStreamQueryBuilder = (headers) => {
 };
 ```
 
-With the `pullStreamQueryBuilder` you can then start a realtime replication.
+With the `pullStreamQueryBuilder` you can then start a realtime replication. The websocket subscription of the pull stream is closed when you call [`pause()`](./rx-replication-state.md#pause) or `cancel()`, and `start()` after a pause opens a new one.
 
 ```js
 const replicationState = replicateGraphQL(
