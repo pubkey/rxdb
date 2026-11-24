@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
     "text": "FIX on the Dexie.js RxStorage, `collection.remove()` and `resetCollectionOnSchemaChange` only cleared the documents and kept the IndexedDB database with its old object stores. When the collection was added again with a schema of the same version that has another primary key, queries threw a `NotFoundError`. The attachment data of the removed collection also stayed on disk. `remove()` of the Dexie.js storage instance now deletes the whole IndexedDB database",
-    "links": [],
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9843",
+            "linkText": "#9843"
+        }
+    ],
     "priority": 5
 }
