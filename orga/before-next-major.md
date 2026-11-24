@@ -787,3 +787,14 @@ A `bulkWrite()` with a new attachment that has no data rejects the whole write w
 Todo:
 - Remove `RxStorageWriteErrorAttachment` from `src/types/rx-error.d.ts`, from the `RxStorageWriteError` union, and the `510` from `RxStorageWriteErrorBase.status`.
 - Breaking: TypeScript code that imports the type or narrows a write error on `status === 510` no longer compiles.
+
+## Remote storages must use the default mode `storage` when `mode` is left out
+
+`RxStorageRemoteSettings.mode` is documented as `[default='storage']`, which is one message channel per `getRxStorage...()` call. `getRxStorageRemoteWebsocket()` and `getRxStorageIpcRenderer()` pass `mode: undefined` on to `getRxStorageRemote()` when the setting is left out, and that overwrites the default. The storage then runs without a mode, so all storages with the same websocket url, or the same Electron key, share one message channel.
+
+Todo:
+- Use `'storage'` in `getRxStorageRemote()` when `mode` is `undefined`.
+- Check the premium worker and shared-worker storages. When they pass `mode` on the same way, they start one worker per `getRxStorage...()` call afterwards.
+- Breaking: one message channel per `getRxStorage...()` call instead of one per url or key, which means more websocket connections.
+
+An implementation with tests is in the pull request [#9837](https://github.com/pubkey/rxdb/pull/9837) (first commit).
