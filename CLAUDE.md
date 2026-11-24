@@ -293,6 +293,7 @@ Do not reproduce (authentic errors in old pages; write the correct form):
 - `<RxdbLogo alt="..." />` is global and needs no import.
 - `<PremiumIcon />` is global and needs no import. It renders the inline crown that marks RxDB Premium features.
 - **No round borders**: new components and animations use square corners, so no `border-radius` and no `rx`/`ry` on SVG rects. Only shapes that are circles by nature (dots, markers) are round. See `docs-src/AGENTS.md`.
+- **Borders are 2px**: boxes, cards, panels, and buttons in the docs use a `2px` border. Use `border: 2px solid ...` (or `2px dashed`) in new components and animations, not `1px`. Some older components still have `1px` borders; do not copy them.
 
 ### Terminology and spelling
 - US English ("behavior", "optimize", "synchronize"). The corpus has rare UK slips ("initialisation", "realised", "optimisation"); do not copy them. Oxford comma throughout.

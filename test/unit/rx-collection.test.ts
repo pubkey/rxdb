@@ -769,6 +769,40 @@ describe('rx-collection.test.ts', () => {
                     await col.bulkInsert([]);
                     col.database.close();
                 });
+                it('should deep-freeze the nested objects of the input in dev-mode', async () => {
+                    const col = await humansCollection.createNested(0);
+                    const docData = schemaObjects.nestedHumanData();
+                    await col.bulkInsert([docData]);
+
+                    assert.ok(Object.isFrozen(docData.mainSkill));
+                    assert.strictEqual(Reflect.set(docData.mainSkill, 'level', 999), false);
+                    const doc = await col.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 5);
+
+                    await col.database.close();
+                });
+                it('should not freeze the input of a document that was not written', async () => {
+                    const col = await humansCollection.createNested(0);
+                    const existing = schemaObjects.nestedHumanData();
+                    await col.insert(existing);
+
+                    const rejected = schemaObjects.nestedHumanData({ passportId: existing.passportId });
+                    const written = schemaObjects.nestedHumanData();
+                    const result = await col.bulkInsert([rejected, written]);
+                    assert.strictEqual(result.error.length, 1);
+                    assert.strictEqual(result.error[0].status, 409);
+                    assert.strictEqual(Object.isFrozen(rejected.mainSkill), false);
+                    assert.ok(Object.isFrozen(written.mainSkill));
+
+                    rejected.passportId = randomToken(12);
+                    rejected.mainSkill.level = 3;
+                    const retryResult = await col.bulkInsert([rejected]);
+                    assert.strictEqual(retryResult.error.length, 0);
+                    const doc = await col.findOne(rejected.passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 3);
+
+                    await col.database.close();
+                });
                 /**
                  * @link https://github.com/pubkey/rxdb/issues/7984
                  */
@@ -2626,6 +2660,44 @@ describe('rx-collection.test.ts', () => {
                         }
                     });
                     db.close();
+                });
+                it('should be possible to re-create the collection with another primary key', async () => {
+                    type DocType = { id: string; name: string; };
+                    const schemaWithId: RxJsonSchema<DocType> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', maxLength: 100 },
+                            name: { type: 'string', maxLength: 100 }
+                        },
+                        required: ['id', 'name']
+                    };
+                    const schemaWithName: RxJsonSchema<DocType> = {
+                        ...schemaWithId,
+                        primaryKey: 'name'
+                    };
+                    const db = await createRxDatabase<{ human: RxCollection<DocType>; }>({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage()
+                    });
+                    const collections = await db.addCollections({
+                        human: { schema: schemaWithId }
+                    });
+                    await collections.human.insert({ id: 'a', name: 'x' });
+                    await collections.human.remove();
+
+                    const collections2 = await db.addCollections({
+                        human: { schema: schemaWithName }
+                    });
+                    await collections2.human.insert({ id: 'b', name: 'y' });
+                    const docs = await collections2.human.find({
+                        selector: { name: { $gt: 'a' } }
+                    }).exec();
+                    assert.deepStrictEqual(docs.map(d => d.toJSON()), [{ id: 'b', name: 'y' }]);
+                    const byPrimary = await collections2.human.findOne('y').exec(true);
+                    assert.strictEqual(byPrimary.id, 'b');
+                    await db.close();
                 });
                 it('should not contain document when re-creating', async () => {
                     const db = await createRxDatabase({

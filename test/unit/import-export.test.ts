@@ -96,6 +96,49 @@ describe('import-export.test.js', () => {
                     col.database.remove();
                     emptyCol.database.remove();
                 });
+                it('should deep-freeze the nested objects of the dump in dev-mode', async () => {
+                    const col = await humansCollection.createNested(0);
+                    const docData = schemaObjects.nestedHumanData();
+                    await col.importJSON({
+                        name: col.name,
+                        schemaHash: await col.schema.hash,
+                        docs: [docData]
+                    });
+
+                    assert.ok(Object.isFrozen(docData.mainSkill));
+                    assert.strictEqual(Reflect.set(docData.mainSkill, 'level', 999), false);
+                    const doc = await col.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 5);
+
+                    await col.database.close();
+                });
+                it('should not freeze the dump of a document that was not written', async () => {
+                    const col = await humansCollection.createNested(0);
+                    const schemaHash = await col.schema.hash;
+                    const rejected = schemaObjects.nestedHumanData({
+                        mainSkill: { name: 'foobar', level: 11 }
+                    });
+                    const written = schemaObjects.nestedHumanData();
+                    await col.importJSON({
+                        name: col.name,
+                        schemaHash,
+                        docs: [rejected, written]
+                    });
+                    assert.strictEqual(Object.isFrozen(rejected.mainSkill), false);
+                    assert.ok(Object.isFrozen(written.mainSkill));
+                    assert.strictEqual(await col.findOne(rejected.passportId).exec(), null);
+
+                    rejected.mainSkill.level = 3;
+                    await col.importJSON({
+                        name: col.name,
+                        schemaHash,
+                        docs: [rejected]
+                    });
+                    const doc = await col.findOne(rejected.passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 3);
+
+                    await col.database.close();
+                });
             });
             describe('negative', () => {
                 it('should not import if schema is different', async () => {
@@ -424,6 +467,22 @@ describe('import-export.test.js', () => {
                     assert.strictEqual(docs.length, 5);
                     db.remove();
                     db2.remove();
+                });
+                it('should deep-freeze the nested objects of the dump in dev-mode', async () => {
+                    const col = await humansCollection.createNested(1);
+                    const exported = await col.database.exportJSON();
+                    const json: typeof exported = JSON.parse(JSON.stringify(exported));
+                    const col2 = await humansCollection.createNested(0);
+                    await col2.database.importJSON(json);
+
+                    const docData = json.collections[0].docs[0];
+                    assert.ok(Object.isFrozen(docData.mainSkill));
+                    assert.strictEqual(Reflect.set(docData.mainSkill, 'level', 999), false);
+                    const doc = await col2.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 5);
+
+                    await col.database.close();
+                    await col2.database.close();
                 });
             });
             describe('negative', () => {

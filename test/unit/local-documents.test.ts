@@ -28,6 +28,7 @@ import {
     map
 } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
+import type { Subscription } from 'rxjs';
 
 declare type TestDocType = {
     foo: string;
@@ -396,6 +397,31 @@ describe('local-documents.test.ts', () => {
             );
 
             sub.unsubscribe();
+            c.database.close();
+        });
+        it('should not emit the same state twice when the document is written right after the subscription', async () => {
+            const c = await humansCollection.create(0);
+            const parents = [c, c.database];
+            for (const parent of parents) {
+                const emitted: number[] = [];
+                const sub = parent.getLocal$<{ nr: number; }>(id).subscribe(doc => {
+                    emitted.push(doc ? doc.toJSON().data.nr : 0);
+                });
+                await parent.insertLocal(id, { nr: 1 });
+                await parent.upsertLocal(id, { nr: 2 });
+
+                await waitUntil(() => emitted[emitted.length - 1] === 2);
+                await wait(isFastMode() ? 50 : 150);
+
+                emitted.forEach((nr, idx) => {
+                    assert.ok(
+                        idx === 0 || nr > emitted[idx - 1],
+                        'must emit each state only once and in order: ' + JSON.stringify(emitted)
+                    );
+                });
+
+                sub.unsubscribe();
+            }
             c.database.close();
         });
     });
@@ -840,32 +866,34 @@ describe('local-documents.test.ts', () => {
                     localDocuments: true
                 });
 
+                const emittedPerRun: number[][] = [];
+                const subs: Subscription[] = [];
                 for (let i = 0; i < runs; i++) {
                     const id = 'foobar' + i;
                     const emitted: number[] = [];
-                    const sub = db2.getLocal$<{ nr: number; }>(id).subscribe(doc => {
+                    emittedPerRun.push(emitted);
+                    subs.push(db2.getLocal$<{ nr: number; }>(id).subscribe(doc => {
                         emitted.push(doc ? doc.toJSON().data.nr : 0);
-                    });
+                    }));
                     await waitUntil(() => emitted.length === 1);
 
                     await db.insertLocal(id, { nr: 1 });
                     await db.upsertLocal(id, { nr: 2 });
                     await db.upsertLocal(id, { nr: 3 });
 
-                    /**
-                     * One emit for the initial state
-                     * and one for each of the three writes.
-                     */
-                    await waitUntil(() => emitted.length === 4);
-                    assert.deepStrictEqual(
-                        emitted,
-                        emitted.slice(0).sort((a, b) => a - b),
-                        'must not emit an older state after a newer one: ' + JSON.stringify(emitted)
-                    );
-                    assert.strictEqual(emitted[3], 3);
-
-                    sub.unsubscribe();
+                    await waitUntil(() => emitted[emitted.length - 1] === 3);
                 }
+
+                await wait(isFastMode() ? 50 : 150);
+                emittedPerRun.forEach(emitted => {
+                    emitted.forEach((nr, idx) => {
+                        assert.ok(
+                            idx === 0 || nr > emitted[idx - 1],
+                            'must emit each state only once and not an older state after a newer one: ' + JSON.stringify(emitted)
+                        );
+                    });
+                });
+                subs.forEach(sub => sub.unsubscribe());
 
                 await db.close();
                 await db2.close();
