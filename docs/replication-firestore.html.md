@@ -109,11 +109,12 @@ import {
     getDocs,
     query,
     where,
-    serverTimestamp
+    serverTimestamp,
+    updateDoc
 } from 'firebase/firestore';
 const allDocsResult = await getDocs(query(firestoreCollection));
 allDocsResult.forEach(doc => {
-    doc.update({
+    updateDoc(doc.ref, {
         _deleted: false,
         serverTimestamp: serverTimestamp()
     })
@@ -129,6 +130,7 @@ You might need to replicate only a subset of your collection, either to or from 
 ```ts
 const replicationState = replicateFirestore(
     {
+        replicationIdentifier: `https://firestore.googleapis.com/${projectId}`,
         collection: myRxCollection,
         firestore: {
             projectId,

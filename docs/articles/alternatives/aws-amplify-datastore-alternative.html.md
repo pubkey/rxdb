@@ -143,8 +143,8 @@ const replicationState = await replicateRxCollection({
 // Monitor everything
 replicationState.active$.subscribe(active => console.log('Syncing:', active));
 replicationState.error$.subscribe(err => console.error('Sync error:', err));
-replicationState.sent$.subscribe(docs => console.log('Pushed:', docs.length));
-replicationState.received$.subscribe(docs => console.log('Pulled:', docs.length));
+replicationState.sent$.subscribe(doc => console.log('Pushed:', doc));
+replicationState.received$.subscribe(doc => console.log('Pulled:', doc));
 ```
 
 Nothing is hidden. If sync is failing, you see exactly why.
@@ -219,6 +219,7 @@ import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 const replicationState = await replicateGraphQL({
     collection: db.todos,
+    replicationIdentifier: 'todos-appsync',
     url: {
         http:
             'https://your-appsync-endpoint.appsync-api.us-east-1.amazonaws.com' +
@@ -334,7 +335,6 @@ const todoSchema = {
         crdts: getCRDTSchemaPart()
     },
     crdt: { field: 'crdts' }
-};
 };
 ```
 

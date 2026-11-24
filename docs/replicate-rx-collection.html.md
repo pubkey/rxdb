@@ -54,6 +54,15 @@ import { replicateRxCollection } from 'rxdb/plugins/replication';
 import {
     lastOfArray
 } from 'rxdb';
+import type { RxReplicationPullStreamItem } from 'rxdb';
+import { Subject } from 'rxjs';
+
+/**
+ * The pull stream for realtime replication.
+ * It is filled by the websocket below.
+ */
+const pullStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
+
 const replicationState = await replicateRxCollection({
     collection: myDatabase.todos,
     /**
@@ -244,12 +253,11 @@ const replicationState = await replicateRxCollection({
 
 
 /**
- * Creating the pull stream for realtime replication.
+ * Filling the pull stream for realtime replication.
  * Here we use a websocket but any other way of
  * sending data to the client can be used,
  * like long polling or server-sent events.
  */
-const pullStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 let firstOpen = true;
 function connectSocket() {
     const socket = new WebSocket('wss://example.com/api/sync/stream');
@@ -257,7 +265,7 @@ function connectSocket() {
      * When the backend sends a new batch of documents+checkpoint,
      * emit it into the stream$.
      * 
-     * event.data must look like this
+     * The parsed event.data must look like this
      * {
      *     documents: [
      *        {
@@ -272,7 +280,7 @@ function connectSocket() {
      *     }
      * }
      */
-    socket.onmessage = event => pullStream$.next(event.data);
+    socket.onmessage = event => pullStream$.next(JSON.parse(event.data));
     /**
      * Automatically reconnect the socket on close and error.
      */
@@ -294,7 +302,7 @@ function connectSocket() {
         }
     }
 }
-
+connectSocket();
 ```
 
 The two modes `Checkpoint iteration` and `Event observation` that are mentioned in the comments are explained on the [Sync Engine](./replication.md#the-sync-engine-on-the-transfer-level) page.

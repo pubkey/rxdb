@@ -321,14 +321,17 @@ replicateRxCollection({
 
 ##### GraphQL
 
+The `queryBuilder` functions create the GraphQL queries for your endpoint. The [GraphQL replication](./replication-graphql.md) page shows how to write them.
+
 ```ts
 import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 replicateGraphQL({
     collection: myDatabase.todos,
-    url: 'https://example.com/graphql',
-    push: { batchSize: 50 },
-    pull: { batchSize: 50 }
+    replicationIdentifier: 'my-graphql-replication',
+    url: { http: 'https://example.com/graphql' },
+    push: { queryBuilder: pushQueryBuilder, batchSize: 50 },
+    pull: { queryBuilder: pullQueryBuilder, batchSize: 50 }
 });
 ```
 
@@ -345,7 +348,6 @@ replicateWebRTC({
     collection: myDatabase.todos,
     connectionHandlerCreator: getConnectionHandlerSimplePeer({}),
     topic: '', // <- set any app-specific room id here.
-    secret: 'mysecret',
     pull: {},
     push: {}
 })
@@ -358,6 +360,7 @@ import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 replicateCouchDB({
     collection: myDatabase.todos,
+    replicationIdentifier: 'my-couchdb-replication',
     url: 'http://example.com/todos/',
     push: {},
     pull: {}
@@ -5547,6 +5550,9 @@ const storage = getRxStorageRemote({
         messages$: new Subject(),
         send(msg) {
             // send to remote storage
+        },
+        async close() {
+            // close the connection to the remote storage
         }
     })
 });
@@ -6235,7 +6241,7 @@ const storage = getMemorySyncedRxStorage({
      * 
      * (optional)
      */
-    waitBeforePersist: () => requestIdlePromise();
+    waitBeforePersist: () => requestIdlePromise()
 });
 ```
 
@@ -7237,6 +7243,7 @@ import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 const replicationState = replicateGraphQL(
     {
         collection: myRxCollection,
+        replicationIdentifier: 'my-graphql-replication',
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql'
@@ -7312,6 +7319,7 @@ With the queryBuilder, you can then setup the push-replication.
 const replicationState = replicateGraphQL(
     {
         collection: myRxCollection,
+        replicationIdentifier: 'my-graphql-replication',
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql'
@@ -7380,6 +7388,7 @@ With the `pullStreamQueryBuilder` you can then start a realtime replication.
 const replicationState = replicateGraphQL(
     {
         collection: myRxCollection,
+        replicationIdentifier: 'my-graphql-replication',
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql',
@@ -7641,6 +7650,7 @@ import {
 
 // start the replication
 const replicationState = await replicateWithWebsocketServer({
+    replicationIdentifier: 'my-websocket-replication',
     /**
      * To make the replication work,
      * the client collection name must be equal
@@ -8422,11 +8432,12 @@ import {
     getDocs,
     query,
     where,
-    serverTimestamp
+    serverTimestamp,
+    updateDoc
 } from 'firebase/firestore';
 const allDocsResult = await getDocs(query(firestoreCollection));
 allDocsResult.forEach(doc => {
-    doc.update({
+    updateDoc(doc.ref, {
         _deleted: false,
         serverTimestamp: serverTimestamp()
     })
@@ -8442,6 +8453,7 @@ You might need to replicate only a subset of your collection, either to or from 
 ```ts
 const replicationState = replicateFirestore(
     {
+        replicationIdentifier: `https://firestore.googleapis.com/${projectId}`,
         collection: myRxCollection,
         firestore: {
             projectId,
@@ -13347,7 +13359,7 @@ const flexSearch = await addFulltextSearch({
      * Amount of documents to index at once.
      * See https://rxdb.info/rx-pipeline.html
      */
-    batchSize: number;
+    batchSize: 10,
     /**
      * (Optional)
      * lazy: Initialize the in memory fulltext index at the first search query.
@@ -15242,8 +15254,8 @@ const replicationState = await replicateRxCollection({
 // Monitor everything
 replicationState.active$.subscribe(active => console.log('Syncing:', active));
 replicationState.error$.subscribe(err => console.error('Sync error:', err));
-replicationState.sent$.subscribe(docs => console.log('Pushed:', docs.length));
-replicationState.received$.subscribe(docs => console.log('Pulled:', docs.length));
+replicationState.sent$.subscribe(doc => console.log('Pushed:', doc));
+replicationState.received$.subscribe(doc => console.log('Pulled:', doc));
 ```
 
 Nothing is hidden. If sync is failing, you see exactly why.
@@ -15318,6 +15330,7 @@ import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 const replicationState = await replicateGraphQL({
     collection: db.todos,
+    replicationIdentifier: 'todos-appsync',
     url: {
         http:
             'https://your-appsync-endpoint.appsync-api.us-east-1.amazonaws.com' +
@@ -15433,7 +15446,6 @@ const todoSchema = {
         crdts: getCRDTSchemaPart()
     },
     crdt: { field: 'crdts' }
-};
 };
 ```
 
@@ -36997,6 +37009,7 @@ import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 const replicationState = replicateGraphQL({
     collection: db.todos,
+    replicationIdentifier: 'todos-graphql-example-com',
     // urls to the GraphQL endpoints
     url: {
         http: 'https://example.com/graphql',
@@ -42099,28 +42112,27 @@ export default function App() {
 ```
 
 #### 2. Observe Data
-Use the `useRxQuery` hook (or `useLiveRxQuery` shortcut) to fetch data. The component will **automatically re-render** whenever the data in the database changes. You do not have to manage subscriptions or event listeners manually.
+Use the `useLiveRxQuery` hook to fetch data. The component will **automatically re-render** whenever the data in the database changes. You do not have to manage subscriptions or event listeners manually.
 
 ```tsx
-import { useRxCollection, useLiveRxQuery } from 'rxdb/plugins/react';
+import type { MangoQuery } from 'rxdb';
+import { useLiveRxQuery } from 'rxdb/plugins/react';
 
-function TaskList() {
-  const collection = useRxCollection('tasks');
-  
-  // This hook automatically updates 'tasks' whenever the query result changes
-  const { result: tasks } = useLiveRxQuery(
-    collection.find({
-        selector: {
-            done: { $eq: false }
-        },
-        sort: [{ createdAt: 'asc' }]
-    })
-  );
+const query: MangoQuery = {
+  selector: {
+    done: { $eq: false }
+  },
+  sort: [{ dueAt: 'asc' }]
+};
+
+function TodoList() {
+  // This hook automatically updates 'todos' whenever the query result changes
+  const { results: todos } = useLiveRxQuery({ collection: 'todos', query });
 
   return (
     <FlatList
-      data={tasks}
-      renderItem={({ item }) => <Text>{item.title}</Text>}
+      data={todos}
+      renderItem={({ item }) => <Text>{item.name}</Text>}
       keyExtractor={item => item.id}
     />
   );
@@ -42144,7 +42156,7 @@ const db = await createRxDatabase({
 });
 
 // ... in your component
-const signals = collection.find().$$; // Returns a Signal<Doc[]>
+const signals = db.todos.find().$$; // Returns a Signal<Doc[]>
 ```
 
 Using signals allows you to update only the specific text node that changed, keeping your UI running at 60fps even with massive data flux.
@@ -42170,8 +42182,9 @@ import { replicateSupabase } from 'rxdb/plugins/replication-supabase';
 
 const replicationState = replicateSupabase({
     replicationIdentifier: 'my-sync',
-    collection: db.tasks,
-    supabaseClient: supabase,
+    collection: db.todos,
+    client: supabase,
+    tableName: 'todos',
     pull: {},
     push: {},
 });
@@ -44118,6 +44131,15 @@ import { replicateRxCollection } from 'rxdb/plugins/replication';
 import {
     lastOfArray
 } from 'rxdb';
+import type { RxReplicationPullStreamItem } from 'rxdb';
+import { Subject } from 'rxjs';
+
+/**
+ * The pull stream for realtime replication.
+ * It is filled by the websocket below.
+ */
+const pullStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
+
 const replicationState = await replicateRxCollection({
     collection: myDatabase.todos,
     /**
@@ -44308,12 +44330,11 @@ const replicationState = await replicateRxCollection({
 
 
 /**
- * Creating the pull stream for realtime replication.
+ * Filling the pull stream for realtime replication.
  * Here we use a websocket but any other way of
  * sending data to the client can be used,
  * like long polling or server-sent events.
  */
-const pullStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 let firstOpen = true;
 function connectSocket() {
     const socket = new WebSocket('wss://example.com/api/sync/stream');
@@ -44321,7 +44342,7 @@ function connectSocket() {
      * When the backend sends a new batch of documents+checkpoint,
      * emit it into the stream$.
      * 
-     * event.data must look like this
+     * The parsed event.data must look like this
      * {
      *     documents: [
      *        {
@@ -44336,7 +44357,7 @@ function connectSocket() {
      *     }
      * }
      */
-    socket.onmessage = event => pullStream$.next(event.data);
+    socket.onmessage = event => pullStream$.next(JSON.parse(event.data));
     /**
      * Automatically reconnect the socket on close and error.
      */
@@ -44358,7 +44379,7 @@ function connectSocket() {
         }
     }
 }
-
+connectSocket();
 ```
 
 The two modes `Checkpoint iteration` and `Event observation` that are mentioned in the comments are explained on the [Sync Engine](./replication.md#the-sync-engine-on-the-transfer-level) page.

@@ -309,14 +309,17 @@ replicateRxCollection({
 
 #### GraphQL
 
+The `queryBuilder` functions create the GraphQL queries for your endpoint. The [GraphQL replication](./replication-graphql.md) page shows how to write them.
+
 ```ts
 import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 replicateGraphQL({
     collection: myDatabase.todos,
-    url: 'https://example.com/graphql',
-    push: { batchSize: 50 },
-    pull: { batchSize: 50 }
+    replicationIdentifier: 'my-graphql-replication',
+    url: { http: 'https://example.com/graphql' },
+    push: { queryBuilder: pushQueryBuilder, batchSize: 50 },
+    pull: { queryBuilder: pullQueryBuilder, batchSize: 50 }
 });
 ```
 
@@ -333,7 +336,6 @@ replicateWebRTC({
     collection: myDatabase.todos,
     connectionHandlerCreator: getConnectionHandlerSimplePeer({}),
     topic: '', // <- set any app-specific room id here.
-    secret: 'mysecret',
     pull: {},
     push: {}
 })
@@ -346,6 +348,7 @@ import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 replicateCouchDB({
     collection: myDatabase.todos,
+    replicationIdentifier: 'my-couchdb-replication',
     url: 'http://example.com/todos/',
     push: {},
     pull: {}

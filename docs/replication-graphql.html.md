@@ -176,6 +176,7 @@ import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 const replicationState = replicateGraphQL(
     {
         collection: myRxCollection,
+        replicationIdentifier: 'my-graphql-replication',
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql'
@@ -251,6 +252,7 @@ With the queryBuilder, you can then setup the push-replication.
 const replicationState = replicateGraphQL(
     {
         collection: myRxCollection,
+        replicationIdentifier: 'my-graphql-replication',
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql'
@@ -319,6 +321,7 @@ With the `pullStreamQueryBuilder` you can then start a realtime replication.
 const replicationState = replicateGraphQL(
     {
         collection: myRxCollection,
+        replicationIdentifier: 'my-graphql-replication',
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql',

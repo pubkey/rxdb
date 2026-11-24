@@ -70,7 +70,7 @@ const flexSearch = await addFulltextSearch({
      * Amount of documents to index at once.
      * See https://rxdb.info/rx-pipeline.html
      */
-    batchSize: number;
+    batchSize: 10,
     /**
      * (Optional)
      * lazy: Initialize the in memory fulltext index at the first search query.

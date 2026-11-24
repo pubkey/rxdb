@@ -45,6 +45,7 @@ import {
 
 // start the replication
 const replicationState = await replicateWithWebsocketServer({
+    replicationIdentifier: 'my-websocket-replication',
     /**
      * To make the replication work,
      * the client collection name must be equal

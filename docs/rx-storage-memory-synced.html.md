@@ -116,7 +116,7 @@ const storage = getMemorySyncedRxStorage({
      * 
      * (optional)
      */
-    waitBeforePersist: () => requestIdlePromise();
+    waitBeforePersist: () => requestIdlePromise()
 });
 ```
 
