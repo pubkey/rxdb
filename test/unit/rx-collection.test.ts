@@ -2661,8 +2661,8 @@ describe('rx-collection.test.ts', () => {
                         selector: { name: { $gt: 'a' } }
                     }).exec();
                     assert.deepStrictEqual(docs.map(d => d.toJSON()), [{ id: 'b', name: 'y' }]);
-                    const byId = await collections2.human.findOne('y').exec(true);
-                    assert.strictEqual(byId.id, 'b');
+                    const byPrimary = await collections2.human.findOne('y').exec(true);
+                    assert.strictEqual(byPrimary.id, 'b');
                     await db.close();
                 });
                 it('should not contain document when re-creating', async () => {
