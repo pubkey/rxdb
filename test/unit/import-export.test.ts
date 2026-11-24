@@ -96,6 +96,24 @@ describe('import-export.test.js', () => {
                     col.database.remove();
                     emptyCol.database.remove();
                 });
+                it('should deep-freeze the nested objects of the dump in dev-mode', async () => {
+                    const col = await humansCollection.createNested(0);
+                    const docData = schemaObjects.nestedHumanData();
+                    await col.importJSON({
+                        name: col.name,
+                        schemaHash: await col.schema.hash,
+                        docs: [docData]
+                    });
+
+                    assert.ok(Object.isFrozen(docData.mainSkill));
+                    try {
+                        docData.mainSkill.level = 999;
+                    } catch (err) { }
+                    const doc = await col.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 5);
+
+                    col.database.close();
+                });
             });
             describe('negative', () => {
                 it('should not import if schema is different', async () => {
@@ -424,6 +442,24 @@ describe('import-export.test.js', () => {
                     assert.strictEqual(docs.length, 5);
                     db.remove();
                     db2.remove();
+                });
+                it('should deep-freeze the nested objects of the dump in dev-mode', async () => {
+                    const col = await humansCollection.createNested(1);
+                    const exported = await col.database.exportJSON();
+                    const json: typeof exported = JSON.parse(JSON.stringify(exported));
+                    const col2 = await humansCollection.createNested(0);
+                    await col2.database.importJSON(json);
+
+                    const docData = json.collections[0].docs[0];
+                    assert.ok(Object.isFrozen(docData.mainSkill));
+                    try {
+                        docData.mainSkill.level = 999;
+                    } catch (err) { }
+                    const doc = await col2.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 5);
+
+                    col.database.close();
+                    col2.database.close();
                 });
             });
             describe('negative', () => {

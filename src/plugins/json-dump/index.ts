@@ -9,6 +9,7 @@ import {
 import {
     newRxError
 } from '../../rx-error.ts';
+import { overwritable } from '../../overwritable.ts';
 import type {
     RxDatabase,
     RxCollection,
@@ -306,6 +307,7 @@ async function importDumpRxCollection<RxDocType>(
         rows,
         'json-dump-import'
     );
+    overwritable.deepFreezeWhenDevMode(rows);
     if (conflictMode === 'skip' && writeResult.error.length > 0) {
         /**
          * A document that was inserted by another write

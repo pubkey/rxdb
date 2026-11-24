@@ -533,6 +533,7 @@ export class RxCollectionBase<
             insertRows,
             RX_COLLECTION_BULK_INSERT_CONTEXT
         );
+        overwritable.deepFreezeWhenDevMode(insertRows);
 
 
         /**

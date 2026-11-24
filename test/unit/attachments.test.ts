@@ -1597,6 +1597,23 @@ describe('attachments.test.ts', () => {
             }
             col.database.close();
         });
+        it('bulkInsert with inline attachments must not freeze the Blob of the caller', async () => {
+            const col = await humansCollection.createAttachments(0);
+            const testBlob = createBlob('hello inline', 'text/plain');
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                {
+                    id: 'inline.txt',
+                    type: 'text/plain',
+                    data: testBlob
+                }
+            ];
+            await col.bulkInsert([docData]);
+
+            assert.strictEqual(Object.isFrozen(testBlob), false);
+            assert.strictEqual(await blobToString(testBlob), 'hello inline');
+            col.database.close();
+        });
         it('upsert with inline attachments on new document', async () => {
             const col = await humansCollection.createAttachments(0);
             const docData = schemaObjects.humanData();

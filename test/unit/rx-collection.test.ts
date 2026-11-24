@@ -769,6 +769,20 @@ describe('rx-collection.test.ts', () => {
                     await col.bulkInsert([]);
                     col.database.close();
                 });
+                it('should deep-freeze the nested objects of the input in dev-mode', async () => {
+                    const col = await humansCollection.createNested(0);
+                    const docData = schemaObjects.nestedHumanData();
+                    await col.bulkInsert([docData]);
+
+                    assert.ok(Object.isFrozen(docData.mainSkill));
+                    try {
+                        docData.mainSkill.level = 999;
+                    } catch (err) { }
+                    const doc = await col.findOne(docData.passportId).exec(true);
+                    assert.strictEqual(doc.mainSkill.level, 5);
+
+                    col.database.close();
+                });
                 /**
                  * @link https://github.com/pubkey/rxdb/issues/7984
                  */
