@@ -98,7 +98,7 @@ function StackLayer(props: {
 /**
  * Shortens the sidebar label so that it fits into a tag:
  * The runtime list like "(Browser, Capacitor)" is stripped and also
- * the name of the category, so "HTTP Replication" becomes "HTTP".
+ * the name of the category or "Replication", so "HTTP Replication" becomes "HTTP".
  * Function names like replicateRxCollection() keep their casing.
  */
 function layerLinkTitle(title: string, categoryLabel: string): string {
@@ -106,9 +106,11 @@ function layerLinkTitle(title: string, categoryLabel: string): string {
         return title;
     }
     title = title.replace(/ \(.+\)$/, '');
-    if (title.endsWith(' ' + categoryLabel)) {
-        title = title.slice(0, -1 * (categoryLabel.length + 1));
-    }
+    [categoryLabel, 'Replication'].forEach(suffix => {
+        if (title.endsWith(' ' + suffix)) {
+            title = title.slice(0, -1 * (suffix.length + 1));
+        }
+    });
     return ucfirst(title);
 }
 
@@ -125,9 +127,33 @@ const STACK_CATEGORIES = [
     'Server'
 ];
 
+/**
+ * Replication plugins that sync with a third party backend.
+ * They are shown in the backend layer instead of the replication layer.
+ */
+const THIRD_PARTY_REPLICATIONS = [
+    'replication-couchdb',
+    'replication-firestore',
+    'replication-mongodb',
+    'replication-supabase',
+    'replication-google-drive',
+    'replication-microsoft-onedrive',
+    'replication-nats',
+    'replication-appwrite'
+];
+
 export function Overview() {
     const categories = getCategories();
     const byLabel = (label: string) => categories.find(category => category.label === label);
+    const isThirdParty = (link: OverviewLink) => THIRD_PARTY_REPLICATIONS.includes(link.key);
+    const replication: OverviewCategory = {
+        label: 'Replication',
+        links: byLabel('Replication').links.filter(link => !isThirdParty(link))
+    };
+    const server: OverviewCategory = {
+        label: 'Server',
+        links: byLabel('Server').links.concat(byLabel('Replication').links.filter(isThirdParty))
+    };
     return <>
         <StartButtons />
         <div className="overview-stack">
@@ -142,9 +168,9 @@ export function Overview() {
             </div>
             <div className="overview-stack-sync"><span>sync</span></div>
             <div className="overview-stack-column">
-                <StackLayer category={byLabel('Replication')} eyebrow="Sync Engine" icon={<IconReplication />} />
+                <StackLayer category={replication} eyebrow="Sync Engine" icon={<IconReplication />} />
                 <div className="overview-stack-connector">pull, push, and event stream</div>
-                <StackLayer category={byLabel('Server')} eyebrow="Backend" icon={<IconDeviceDesktop />} />
+                <StackLayer category={server} eyebrow="Backend" icon={<IconDeviceDesktop />} />
             </div>
         </div>
         <CategoryTabs categories={categories.filter(category => !STACK_CATEGORIES.includes(category.label))} />
