@@ -1,6 +1,0 @@
-{
-    "$schema": "./schema.json",
-    "text": "FIX the Google Drive replication handed WebRTC signaling messages that were written for another session to its own peer connection, so that a device often could not connect to the other devices again after a restart or with more than two devices",
-    "links": [],
-    "priority": 5
-}
