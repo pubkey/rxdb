@@ -1207,6 +1207,27 @@ describe('other', () => {
             mountRxDBViewer({ database: myDatabase });
             connectRxDBViewer({ database: myDatabase });
         });
+        it('should not accept something that is not a database', () => {
+            const myDatabase: TodoDatabase = {} as any;
+            // @ts-expect-error a string is not a database
+            mountRxDBViewer({ database: 'myDatabase' });
+            // @ts-expect-error a collection is not a database
+            mountRxDBViewer({ database: myDatabase.todos });
+            // @ts-expect-error a string is not a database
+            connectRxDBViewer({ database: 'myDatabase' });
+            // @ts-expect-error a collection is not a database
+            connectRxDBViewer({ database: myDatabase.todos });
+            // @ts-expect-error a string is not a database
+            createLiveDataSource('myDatabase');
+            // @ts-expect-error a collection is not a database
+            createLiveDataSource(myDatabase.todos);
+            // @ts-expect-error a plain object is not a database
+            createViewerEventHub({ foo: 'bar' });
+            // @ts-expect-error a collection is not a database
+            collectViewerStorageStats(myDatabase.todos);
+            // @ts-expect-error an element is not a database
+            runViewerCleanup(document.body);
+        });
         it('should accept the result of document.getElementById() as parent', () => {
             const myDatabase: RxDatabase = {} as any;
             mountRxDBViewer({

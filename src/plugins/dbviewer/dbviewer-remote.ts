@@ -1,5 +1,5 @@
 import type {
-    RxDatabase
+    RxDatabaseBase
 } from '../../index.d.ts';
 import {
     collectViewerStorageStats,
@@ -20,7 +20,7 @@ import type {
 } from './dbviewer-types.ts';
 
 export type ViewerBridgeOptions = {
-    database: RxDatabase<any>;
+    database: RxDatabaseBase<any, any, any, any>;
     source: ViewerDataSource;
     hub: ViewerEventHub;
     info: ViewerInfo;

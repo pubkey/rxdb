@@ -1,6 +1,6 @@
 import type {
     RxCollection,
-    RxDatabase
+    RxDatabaseBase
 } from '../../index.d.ts';
 import {
     normalizeMangoQuery,
@@ -83,7 +83,7 @@ async function countIndexBounds(storageInstance: any, queryPlan: any): Promise<n
  * to the rxdb internals, the result is a serializable summary.
  */
 export async function explainViewerQuery(
-    database: RxDatabase<any>,
+    database: RxDatabaseBase<any, any, any, any>,
     collectionName: string,
     selector: any
 ): Promise<ViewerExplainResult> {
@@ -145,7 +145,7 @@ export async function explainViewerQuery(
  * Per-collection document counts, tombstones and attachment
  * bytes, read through the storage instances on the host side.
  */
-export async function collectViewerStorageStats(database: RxDatabase<any>): Promise<ViewerStorageStats> {
+export async function collectViewerStorageStats(database: RxDatabaseBase<any, any, any, any>): Promise<ViewerStorageStats> {
     const collections = Object.entries(database.collections)
         .filter(([name]) => !name.startsWith('_'));
     const rows: ViewerStorageStatsRow[] = await Promise.all(collections.map(async ([name, untypedCollection]) => {
@@ -203,7 +203,7 @@ export async function collectViewerStorageStats(database: RxDatabase<any>): Prom
  * plugin the method stub throws synchronously, which surfaces
  * as a normal rejected promise here.
  */
-export async function runViewerCleanup(database: RxDatabase<any>): Promise<void> {
+export async function runViewerCleanup(database: RxDatabaseBase<any, any, any, any>): Promise<void> {
     const collections = Object.entries(database.collections)
         .filter(([name]) => !name.startsWith('_'));
     await Promise.all(

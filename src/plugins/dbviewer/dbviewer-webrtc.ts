@@ -1,5 +1,5 @@
 import type {
-    RxDatabase
+    RxDatabaseBase
 } from '../../index.d.ts';
 import { newRxError } from '../../rx-error.ts';
 import { getConnectionHandlerSimplePeer } from '../replication-webrtc/index.ts';
@@ -20,7 +20,7 @@ export type RxDBViewerConnectOptions = {
     /**
      * The live database to expose.
      */
-    database: RxDatabase<any>;
+    database: RxDatabaseBase<any, any, any, any>;
     /**
      * The pairing room id. Everyone who knows the room id
      * and can reach the signaling server gets FULL read and

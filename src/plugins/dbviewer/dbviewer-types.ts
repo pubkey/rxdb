@@ -2,7 +2,7 @@ import type {
     Observable
 } from 'rxjs';
 import type {
-    RxDatabase
+    RxDatabaseBase
 } from '../../index.d.ts';
 
 /**
@@ -25,7 +25,7 @@ export type RxDBViewerOptions = {
      * The live database to inspect.
      * Either database or dump must be given.
      */
-    database?: RxDatabase<any>;
+    database?: RxDatabaseBase<any, any, any, any>;
     /**
      * A static export created with db.exportJSON().
      * Opens the viewer in read-only dump mode.
