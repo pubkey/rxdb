@@ -125,7 +125,7 @@ export function preventHibernateBrowserTab(replicationState: RxReplicationState<
 
 /**
  * start(), pause(), and cancel() can be called without awaiting the call before,
- * so the stream is opened and closed in a queue to never have two open streams.
+ * so an asynchronous open or close is queued to never have two open streams.
  */
 export function openStreamWhileStarted(
     replicationState: RxReplicationState<any, any>,
