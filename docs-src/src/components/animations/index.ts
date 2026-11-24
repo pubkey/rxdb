@@ -4,6 +4,7 @@ import { BackupCopy } from './backup-copy';
 import { CleanupSweep } from './cleanup-sweep';
 import { ConflictHandling } from './conflict-handling';
 import { CrdtMerge } from './crdt-merge';
+import { DataModel } from './data-model';
 import { DocumentSwarm } from './document-swarm';
 import { EncryptionLogo } from './encryption-logo';
 import { FulltextSearchLens } from './fulltext-search-lens';
@@ -21,6 +22,7 @@ import { P2pReplicationMesh } from './p2p-replication-mesh';
 import { PartialSyncChunks } from './partial-sync-chunks';
 import { Population } from './population';
 import { QueryCacheScan } from './query-cache-scan';
+import { ReactiveQuery } from './reactive-query';
 import { ReactiveStream } from './reactive-stream';
 import { ReplicationPushPull } from './replication-push-pull';
 import { RevisionsLogo } from './revisions-logo';
@@ -32,6 +34,7 @@ import { SchemaMigrationLogo } from './schema-migration-logo';
 import { SchemaValidationLogo } from './schema-validation-logo';
 import { ShardingSplit } from './sharding-split';
 import { StorageSwap } from './storage-swap';
+import { StorageWrapperStack } from './storage-wrapper-stack';
 import { VectorDatabase } from './vector-database';
 import { WordmarkColorSweep } from './wordmark-color-sweep';
 import { WordmarkReactiveX } from './wordmark-reactive-x';
@@ -93,6 +96,9 @@ export const ANIMATION_GROUPS: AnimationGroup[] = [
     {
         title: 'One Animation per Core Feature',
         animations: [
+            { title: 'Data Model', name: 'DataModel', file: 'data-model', component: DataModel, description: 'An RxDatabase contains RxCollections, which contain RxDocuments, stored in the RxStorage.' },
+            { title: 'Reactive Query', name: 'ReactiveQuery', file: 'reactive-query', component: ReactiveQuery, description: 'A change from the same tab, another tab or the replication re-emits the query result to the UI.' },
+            { title: 'Storage Wrapper Stack', name: 'StorageWrapperStack', file: 'storage-wrapper-stack', component: StorageWrapperStack, description: 'A document passes validation, key compression and encryption before it is stored.' },
             { title: 'Schema Validation', name: 'SchemaValidationLogo', file: 'schema-validation-logo', component: SchemaValidationLogo, description: 'An invalid document is rejected by the schema.' },
             { title: 'Schema Migration', name: 'SchemaMigrationLogo', file: 'schema-migration-logo', component: SchemaMigrationLogo, description: 'Stored documents are migrated to a new schema version.' },
             { title: 'RxQuery', name: 'RxQueryLogo', file: 'rx-query-logo', component: RxQueryLogo, description: 'MongoDB-style queries highlight the matching parts of the logo.' },
