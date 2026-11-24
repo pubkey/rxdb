@@ -56,7 +56,8 @@ export function DataModel() {
                 .data-model .dm-more-text { fill: #A29DB6; font-size: 6.2px; letter-spacing: .04em; }
                 .data-model .dm-doc .dm-id { fill: #ED168F; }
                 .data-model .dm-doc { animation: data-model-doc 4.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-                .data-model .dm-storage { fill: #ED168F; animation: data-model-storage 4.8s ease-out infinite; }
+                .data-model .dm-storage { fill: #B2218B; }
+                .data-model .dm-flash { fill: #ED168F; opacity: 0; animation: data-model-flash 4.8s linear infinite; }
                 .data-model .dm-storage-text { fill: #FFFFFF; font-size: 8px; letter-spacing: .04em; }
                 .data-model .dm-pulse { fill: #ED168F; opacity: 0; animation: data-model-pulse 4.8s ease-in infinite; }
                 @keyframes data-model-doc {
@@ -70,13 +71,13 @@ export function DataModel() {
                     24% { opacity: 1; transform: translateY(var(--dm-fall)); }
                     26%, 100% { opacity: 0; transform: translateY(var(--dm-fall)); }
                 }
-                @keyframes data-model-storage {
-                    0%, 22% { fill: #B2218B; }
-                    30% { fill: #ED168F; }
-                    100% { fill: #B2218B; }
+                @keyframes data-model-flash {
+                    0%, 23.5% { opacity: 0; }
+                    24.5% { opacity: 1; }
+                    31%, 100% { opacity: 0; }
                 }
                 @media (prefers-reduced-motion: reduce) {
-                    .data-model .dm-doc, .data-model .dm-storage { animation: none; }
+                    .data-model .dm-doc, .data-model .dm-flash { animation: none; }
                     .data-model .dm-pulse { animation: none; opacity: 0; }
                 }
             `}</style>
@@ -136,6 +137,17 @@ export function DataModel() {
                 ))}
 
                 <rect className="dm-storage" x="8" y={STORAGE_Y} width="284" height="30" />
+                {DOCS.map((d, i) => (
+                    <rect
+                        key={d.id}
+                        className="dm-flash"
+                        x="8"
+                        y={STORAGE_Y}
+                        width="284"
+                        height="30"
+                        style={{ animationDelay: (i * 0.4) + 's' }}
+                    />
+                ))}
                 <text className="dm-storage-text" x="150" y={STORAGE_Y + 18.5} textAnchor="middle">RxStorage: IndexedDB</text>
             </svg>
         </div>
