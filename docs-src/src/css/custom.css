@@ -2484,14 +2484,15 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 }
 
 .overview-stack-layer {
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     background-color: var(--bg-color-dark);
     padding: 20px;
 }
 
 .overview-stack-layer.core {
-    border-color: var(--color-top);
+    border: 2px solid var(--color-top);
     background-color: var(--bg-color);
+    padding: 19px;
 }
 
 .overview-stack-layer.optional {
