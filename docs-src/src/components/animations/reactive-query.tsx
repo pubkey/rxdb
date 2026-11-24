@@ -7,6 +7,8 @@ const SOURCES = [
 ];
 const ROWS = [62, 92, 122];
 const COLORS = ['#ED168F', '#B2218B', '#752A8A'];
+const UI_ROWS = [78, 102, 126];
+const UI_LINE_WIDTHS = [40, 30, 46];
 
 /**
  * A query observable re-emits whenever a matching document changes.
@@ -30,6 +32,12 @@ export function ReactiveQuery() {
                 .reactive-query .rq-code { fill: #FFFFFF; font-size: 8px; }
                 .reactive-query .rq-row { fill: #20243A; stroke: #262B40; stroke-width: 1; animation: reactive-query-row 6s ease-out infinite; }
                 .reactive-query .rq-track { fill: #262B40; }
+                .reactive-query .rq-titlebar { fill: #1A1E30; stroke: #262B40; stroke-width: 1.2; }
+                .reactive-query .rq-win-dot { fill: #3A3F5A; }
+                .reactive-query .rq-address { fill: #0D0F18; stroke: #262B40; stroke-width: .8; }
+                .reactive-query .rq-address-text { fill: #A29DB6; font-size: 5.5px; }
+                .reactive-query .rq-check { fill: none; stroke: #A29DB6; stroke-width: .8; }
+                .reactive-query .rq-text-line { fill: #A29DB6; opacity: .7; }
                 .reactive-query .rq-marble { opacity: 0; animation: reactive-query-marble 6s linear infinite; }
                 .reactive-query .rq-s1, .reactive-query .rq-r1, .reactive-query .rq-m1 { animation-delay: 0s; }
                 .reactive-query .rq-s2, .reactive-query .rq-r2, .reactive-query .rq-m2 { animation-delay: 2s; }
@@ -66,7 +74,7 @@ export function ReactiveQuery() {
             <svg
                 viewBox="0 0 300 225"
                 role="img"
-                aria-label="A reactive RxDB query: a change from insert(), from another browser tab or from the replication updates the todos collection, the query observable emits the new result and the UI renders it."
+                aria-label="A reactive RxDB query: a change from insert(), from another browser tab or from the replication updates the todos collection, the query observable emits the new result and the UI in the browser window renders it."
             >
                 {SOURCES.map((s, i) => (
                     <g key={s.label} className={'rq-pill rq-s' + (i + 1)}>
@@ -91,9 +99,19 @@ export function ReactiveQuery() {
 
                 <g className="rq-ui">
                     <rect className="rq-box" x="208" y="40" width="84" height="116" />
-                    <text className="rq-label" x="216" y="54">UI</text>
-                    {ROWS.map((y, i) => (
-                        <rect key={y} className={'rq-row rq-r' + (i + 1)} x="216" y={y} width="68" height="20" style={{ ['--rq-c' as string]: COLORS[i] } as React.CSSProperties} />
+                    <rect className="rq-titlebar" x="208" y="40" width="84" height="16" />
+                    {[215, 222, 229].map(cx => (
+                        <circle key={cx} className="rq-win-dot" cx={cx} cy="48" r="2" />
+                    ))}
+                    <rect className="rq-address" x="236" y="44" width="51" height="8" />
+                    <text className="rq-address-text" x="240" y="50">localhost</text>
+                    <text className="rq-label" x="216" y="70">Todos</text>
+                    {UI_ROWS.map((y, i) => (
+                        <g key={y}>
+                            <rect className={'rq-row rq-r' + (i + 1)} x="216" y={y} width="68" height="18" style={{ ['--rq-c' as string]: COLORS[i] } as React.CSSProperties} />
+                            <rect className="rq-check" x="221" y={y + 6} width="6" height="6" />
+                            <rect className="rq-text-line" x="232" y={y + 8} width={UI_LINE_WIDTHS[i]} height="2" />
+                        </g>
                     ))}
                 </g>
 
