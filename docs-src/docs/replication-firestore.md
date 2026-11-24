@@ -140,6 +140,7 @@ You might need to replicate only a subset of your collection, either to or from 
 ```ts
 const replicationState = replicateFirestore(
     {
+        replicationIdentifier: `https://firestore.googleapis.com/${projectId}`,
         collection: myRxCollection,
         firestore: {
             projectId,

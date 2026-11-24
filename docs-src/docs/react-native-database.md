@@ -164,7 +164,7 @@ const db = await createRxDatabase({
 });
 
 // ... in your component
-const signals = collection.find().$$; // Returns a Signal<Doc[]>
+const signals = db.todos.find().$$; // Returns a Signal<Doc[]>
 ```
 
 Using signals allows you to update only the specific text node that changed, keeping your UI running at 60fps even with massive data flux.

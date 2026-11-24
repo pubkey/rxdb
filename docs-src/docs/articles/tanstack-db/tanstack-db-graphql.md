@@ -231,6 +231,7 @@ import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 
 const replicationState = replicateGraphQL({
     collection: db.todos,
+    replicationIdentifier: 'todos-graphql-example-com',
     // urls to the GraphQL endpoints
     url: {
         http: 'https://example.com/graphql',
