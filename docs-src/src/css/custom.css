@@ -1224,7 +1224,6 @@ body {
 
 .premium-blocks .premium-block {
     color: white;
-    border-radius: 6px;
     padding: 3px;
     height: 100%;
 }
@@ -1234,7 +1233,6 @@ body {
     height: calc(100% - 20px);
     background-color: var(--bg-color);
     padding: 10px;
-    border-radius: 4px;
     position: relative;
     color: white;
 }
