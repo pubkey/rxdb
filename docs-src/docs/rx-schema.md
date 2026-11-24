@@ -510,7 +510,7 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     RxDB automatically sets `additionalProperties: false` at the top level of a schema to ensure that all top-level fields are known in advance. This design choice offers several benefits:
 
 - Prevents collisions with [RxDocument](./rx-document.md) class properties:
-RxDB documents have built-in class methods (e.g., .toJSON, .save) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
+RxDB documents have built-in class methods (e.g., .toJSON, .patch) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
 
 - Avoids conflicts with user-defined ORM functions:
 Developers can add custom [ORM methods](./orm.md) to RxDocuments. If top-level properties were unbounded, a property name could accidentally conflict with a method name, leading to unexpected behavior.
