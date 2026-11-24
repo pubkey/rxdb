@@ -63,7 +63,7 @@ RxDB takes the opposite approach: the local database is the primary data store, 
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const myDatabase = await createRxDatabase({
     name: 'myapp',
@@ -97,6 +97,8 @@ await myDatabase.addCollections({
     }
 });
 ```
+
+The IndexedDB RxStorage is part of [RxDB Premium ](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 When this database is created, data is stored in IndexedDB on the user's device. If the user closes the browser and reopens the app with no internet connection, the app can read all locally stored data immediately. No server round-trip is required to render the interface.
 
@@ -210,25 +212,27 @@ RxDB has a modular storage system. You choose the storage engine that fits your 
 
 | Environment | Recommended Storage |
 |---|---|
-| Browser (general) | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (high performance) | [OPFS](../../rx-storage-opfs.md) |
-| React Native | [SQLite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [Filesystem / SQLite](../../rx-storage-sqlite.md) |
+| Browser (general) | [IndexedDB](../../rx-storage-indexeddb.md)  |
+| Browser (high performance) | [OPFS](../../rx-storage-opfs.md)  |
+| React Native | [SQLite](../../rx-storage-sqlite.md)  |
+| Node.js / Electron | [Filesystem / SQLite](../../rx-storage-sqlite.md)  |
 | Memory (testing) | [Memory](../../rx-storage-memory.md) |
-| Multi-tab browser apps | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Multi-tab browser apps | [SharedWorker](../../rx-storage-shared-worker.md)  |
+
+The storages marked with  are part of [RxDB Premium](/premium/).
 
 Switching storage engines typically requires only changing the `storage` parameter when creating the database:
 
 ```ts
 // Browser with IndexedDB
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageIndexedDB()
 });
 
 // React Native with SQLite
-import { getRxStorageSQLite } from 'rxdb/plugins/storage-sqlite';
+import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';
 const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSQLite({ sqliteBasics })
@@ -303,18 +307,16 @@ RxDB also supports [CRDTs (Conflict-free Replicated Data Types)](../../crdt.md) 
 
 Meteor apps run one WebSocket connection per browser tab, with each tab having its own Minimongo instance. There is no built-in coordination between multiple tabs of the same app.
 
-RxDB includes built-in [multi-tab support](../../rx-storage-shared-worker.md). When using the SharedWorker storage, all open tabs share a single database instance running in a shared worker. Changes made in one tab are immediately visible in all other open tabs without additional configuration:
+RxDB includes built-in [multi-tab support](../../rx-storage-shared-worker.md) . When using the SharedWorker storage, all open tabs share a single database instance running in a shared worker. Changes made in one tab are immediately visible in all other open tabs without additional configuration:
 
 ```ts
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const myDatabase = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```
@@ -373,11 +375,11 @@ Create a database and a collection:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 const myDatabase = await createRxDatabase({
     name: 'my-local-app',
-    storage: getRxStorageIndexedDB()
+    storage: getRxStorageDexie()
 });
 
 await myDatabase.addCollections({

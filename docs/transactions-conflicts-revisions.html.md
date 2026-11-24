@@ -59,7 +59,21 @@ A replication conflict appears when multiple clients write to the same documents
 
 When you replicate with the [GraphQL replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that conflicts are **detected** and **resolved** at the client side.
 
-When a document is sent to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again. You can read more about the replication conflicts [here](./replication.md#conflict-handling).
+When a document is sent to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again.
+
+When multiple clients (or the server) modify the same document at the same time (or when they are offline), it can happen that a conflict arises during the replication.
+
+![RxDB replication conflict](./files/replication-conflict.svg)
+
+In the case above, the client would tell the master to move the document state from `B1` to `C2` by calling `pushHandler()`. But because the actual master state is `C1` and not `B1`, the master would reject the write by sending back the actual master state `C1`. 
+**RxDB resolves all conflicts on the client** so it would call the conflict handler of the [RxCollection](./rx-collection.md) and create a new document state `D` that can then be written to the master.
+
+![RxDB replication conflict resolved on the client](./files/replication-conflict-resolved.svg)
+
+The default conflict handler will always drop the fork state and use the master state. This ensures that clients that are offline for a very long time, do not accidentally overwrite other people's changes when they go online again.
+You can specify a custom conflict handler by setting the property `conflictHandler` when calling `addCollection()`, like shown in the next section.
+
+Each conflict that the remote reports in the response of the push handler is also emitted on the [`conflict$` observable of the RxReplicationState](./rx-replication-state.md#observable), together with the resolved document state.
 
 ## Custom conflict handler
 

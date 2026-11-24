@@ -235,6 +235,8 @@ import {Steps} from '@site/src/components/steps';
 import {TriggerEvent} from '@site/src/components/trigger-event';
 import {Tabs} from '@site/src/components/tabs';
 import {NavbarDropdownSyncList} from '@site/src/components/navbar-dropdowns';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ReactiveQuery} from '@site/src/components/animations/reactive-query';
 
 import { IconQuickstart } from '@site/src/components/icons/quickstart';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
@@ -506,13 +508,11 @@ RxDB has multiple [replication plugins](./replication.md) to replicate database 
 ##### HTTP
 
 ```ts
-import {
-  replicateHTTP,
-  pullQueryBuilderFromRxSchema,
-} from "rxdb/plugins/replication-http";
+import { replicateRxCollection } from "rxdb/plugins/replication";
 
-replicateHTTP({
+replicateRxCollection({
   collection: myDatabase.todos,
+  replicationIdentifier: "my-http-replication",
   push: {
     handler: async (rows) => {
       return fetch("https://example.com/api/todos/push", {
@@ -917,6 +917,24 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 ## RxCollection
 A collection stores documents of the same type.
 
+### Add a Collection
+
+Add a collection with a name and a [schema](./rx-schema.md) to the database. The collection is then available as a property of the database, so you can insert and query documents right away.
+
+```ts
+await myDatabase.addCollections({
+    todos: { schema: todoSchema }
+});
+
+await myDatabase.todos.insert({
+    id: 'todo4',
+    name: 'Clean the kitchen',
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
+});
+const allTodos = await myDatabase.todos.find().exec();
+```
+
 ### Creating a Collection
 To create one or more collections you need an [RxDatabase](./rx-database.md) object which has the `.addCollections()` method. Every collection needs a collection name and a valid [RxJsonSchema](./rx-schema.md). Other attributes are optional.
 
@@ -959,10 +977,6 @@ The schema defines how the documents of the collection are structured. RxDB uses
 
 #### ORM-functions
 With the parameters `statics`, `methods` and `attachments`, you can define ORM functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).
-
-#### liveQueryUpdateThrottleTime
-
-Overrides `liveQueryUpdateThrottleTime` set at the database level for this specific collection. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime).
 
 #### Migration
 With the parameters `migrationStrategies` and `autoMigrate` you can specify how migration between different schema-versions should be done. [See Migration](./migration-schema.md).
@@ -1138,33 +1152,6 @@ const docs = await myDatabase.todos.bulkUpsert([
  */
 ```
 
-#### incrementalUpsert()
-
-When you run many `.upsert()` operations on the same RxDocument in parallel, they do not throw a [`409 CONFLICT`](./errors.md#CONFLICT) error. When the document already exists, the `.upsert()` writes on top of the current document state.
-`incrementalUpsert()` runs the operations for the same primary key one after another, in the order in which they were called.
-The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incrementalModify).
-
-```js
-const docData = {
-    id: 'todo4', // primary
-    name: 'Clean the kitchen',
-    dueAt: '2026-01-04T18:00:00.000Z',
-    priority: 1
-};
-
-myDatabase.todos.upsert(docData);
-myDatabase.todos.upsert(docData);
-// -> both calls resolve
-
-myDatabase.todos.incrementalUpsert(docData);
-myDatabase.todos.incrementalUpsert(docData);
-myDatabase.todos.incrementalUpsert(docData);
-
-// wait until last upsert finished
-await myDatabase.todos.incrementalUpsert(docData);
-// -> the document has the data of the last call
-```
-
 #### find()
 To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#find). Queries are written in the [Mango query syntax](./rx-query-examples.md) or with the chained methods of the [query builder](./query-builder.md).
 
@@ -1249,21 +1236,59 @@ Removes the collection's object instance from the [RxDatabase](./rx-database.md)
 await myDatabase.todos.close();
 ```
 
-#### onClose / onRemove()
-With these you can add a function that is run when the collection was closed or removed.
-This works even across multiple browser tabs so you can detect when another tab removes the collection
-and your application can behave accordingly.
-
-```js
-await myDatabase.todos.onClose(() => console.log('I am closed'));
-await myDatabase.todos.onRemove(() => console.log('I am removed'));
-```
-
 #### isRxCollection
 Returns true if the given object is an instance of RxCollection. Returns false if not.
 ```js
 const is = isRxCollection(myObj);
 ```
+
+### Advanced Options
+
+The following option and functions are only needed for live queries with many writes, for many parallel upserts on the same document, and to react to a collection that gets closed or removed.
+
+#### liveQueryUpdateThrottleTime
+
+Overrides `liveQueryUpdateThrottleTime` set at the database level for this specific collection. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime).
+
+#### incrementalUpsert()
+
+When you run many `.upsert()` operations on the same RxDocument in parallel, they do not throw a [`409 CONFLICT`](./errors.md#CONFLICT) error. When the document already exists, the `.upsert()` writes on top of the current document state.
+`incrementalUpsert()` runs the operations for the same primary key one after another, in the order in which they were called.
+The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incrementalModify).
+
+```js
+const docData = {
+    id: 'todo4', // primary
+    name: 'Clean the kitchen',
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
+};
+
+myDatabase.todos.upsert(docData);
+myDatabase.todos.upsert(docData);
+// -> both calls resolve
+
+myDatabase.todos.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
+
+// wait until last upsert finished
+await myDatabase.todos.incrementalUpsert(docData);
+// -> the document has the data of the last call
+```
+
+#### onClose / onRemove
+`onClose` and `onRemove` are arrays of functions and not methods. To run a function when the collection is closed or removed, you have to `push()` it into the array. A function can return a `Promise`, which is awaited by `close()` and `remove()`.
+
+```js
+myDatabase.todos.onClose.push(() => console.log('I am closed'));
+myDatabase.todos.onRemove.push(() => console.log('I am removed'));
+```
+
+- **onClose**: The functions run when the collection is closed with `myDatabase.todos.close()` or `myDatabase.close()`. Because a collection is closed before it is removed, they also run on each removal.
+- **onRemove**: The functions run when the collection is removed with `myDatabase.todos.remove()` or `myDatabase.remove()`.
+
+A removal works across multiple browser tabs. When another tab calls `remove()` on the collection or on the database, the collection is also closed in the current tab and the functions of both arrays run, so your application can detect the removal and behave accordingly. A `close()` in another tab only closes the instance of that tab and does not run the functions of the current tab.
 
 ### FAQ
 
@@ -1292,13 +1317,32 @@ const is = isRxCollection(myObj);
 
 ## RxDatabase - The Core of Your Realtime Data
 
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {DataModel} from '@site/src/components/animations/data-model';
+
 ## RxDatabase
 
 An RxDatabase Object contains your [collections](./rx-collection.md) and handles the synchronization of change events.
 
+### Create a Database
+
+Call `createRxDatabase()` with a `name` and a [storage](./rx-storage.md). The storage decides where the data is stored, in this example in the browser's localStorage. All other parameters are optional.
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage()
+});
+```
+
+Next, add [collections](./rx-collection.md) to the database to store documents.
+
 ### Creation
 
-The database is created by the asynchronous `.createRxDatabase()` function of the core RxDB module. It has the following parameters:
+The database is created by the asynchronous `.createRxDatabase()` function of the core RxDB module. Besides `name` and `storage`, it has these common optional parameters:
 
 ```javascript
 import { createRxDatabase } from 'rxdb/plugins/core';
@@ -1384,83 +1428,13 @@ When you create more than one instance of the same database in a single javascri
 Optimizes observed and recurring queries with the [EventReduce algorithm](./event-reduce.md). `true` uses the default options. Set `eventReduce: false` to disable it,
 or pass an object to configure it, like the size of the result window buffer. See [EventReduce](./event-reduce.md) for all options.
 
-#### ignoreDuplicate
-`(optional=false)`
-If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
-To prevent this common mistake, RxDB will throw an error when you do this.
-In some rare cases like unit-tests, you want to do this intentionally by setting `ignoreDuplicate` to `true`. Because setting `ignoreDuplicate: true` in production will decrease the performance by having multiple instances of the same database, `ignoreDuplicate` is only allowed to be set in [dev-mode](./dev-mode.md).
-
-```js
-const db1 = await createRxDatabase({
-  name: 'mydatabase',
-  storage: getRxStorageLocalstorage(),
-  ignoreDuplicate: true
-});
-const db2 = await createRxDatabase({
-  name: 'mydatabase',
-  storage: getRxStorageLocalstorage(),
-  // this create-call will not throw because
-  // you explicitly allow it
-  ignoreDuplicate: true
-});
-```
-
-#### closeDuplicates
-`(optional=false)`
-
-Closes all other RxDatabase instances that have the same storage+name combination.
-
-```js
-const db1 = await createRxDatabase({
-  name: 'mydatabase',
-  storage: getRxStorageLocalstorage(),
-  closeDuplicates: true
-});
-const db2 = await createRxDatabase({
-  name: 'mydatabase',
-  storage: getRxStorageLocalstorage(),
-  closeDuplicates: true // this create-call will close db1
-});
-
-// db1 is now closed.
-```
-
-#### hashFunction
-
-By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide your own hash function instead. A hash function gets a `string`, `ArrayBuffer`, or `Blob` as input and returns a `Promise` that resolves a string. When a `Blob` is received (for attachment digest hashing), convert it to a string or ArrayBuffer before hashing.
-
-```ts
-// example hash function that runs in plain JavaScript
-import { sha256 } from 'ohash';
-import { blobToBase64String } from 'rxdb';
-async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
-    if (typeof Blob !== 'undefined' && input instanceof Blob) {
-        input = await blobToBase64String(input);
-    } else if (input instanceof ArrayBuffer) {
-        input = new TextDecoder().decode(new Uint8Array(input));
-    }
-    return sha256(input);
-}
-const myDatabase = await createRxDatabase({
-  hashFunction: myOwnHashFunction
-  /* ... */
-});
-```
-
-If you get the error message `TypeError: Cannot read properties of undefined (reading 'digest')` this likely means that you are neither running on `localhost` nor on `https` which is why your browser might not allow access to `crypto.subtle.digest`.
-
-#### liveQueryUpdateThrottleTime
-`(optional, default: 0 = disabled)`
-
-Groups write-triggered live query updates to limit how often RxDB re-evaluates queries during write bursts. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime) for full documentation.
-
 ### Methods
 
 #### Observe with $
 Calling this will return an [RxJS Observable](http://reactivex.io/documentation/observable.html) which streams all write events of the `RxDatabase`.
 
 ```javascript
-myDb.$.subscribe(changeEvent => console.dir(changeEvent));
+myDatabase.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 #### exportJSON()
@@ -1600,6 +1574,95 @@ await myDatabase.addCollections({
 sub.unsubscribe();
 ```
 
+### Advanced Options
+
+You only need these parameters of `createRxDatabase()` for special setups like unit tests, runtimes without `crypto.subtle`, or live queries with many writes.
+
+#### ignoreDuplicate
+`(optional=false)`
+If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
+To prevent this common mistake, RxDB will throw an error when you do this.
+In some rare cases like unit-tests, you want to do this intentionally by setting `ignoreDuplicate` to `true`. Because setting `ignoreDuplicate: true` in production will decrease the performance by having multiple instances of the same database, `ignoreDuplicate` is only allowed to be set in [dev-mode](./dev-mode.md).
+
+```js
+const db1 = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  ignoreDuplicate: true
+});
+const db2 = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  // this create-call will not throw because
+  // you explicitly allow it
+  ignoreDuplicate: true
+});
+```
+
+#### resetCollectionOnSchemaChange
+`(optional=false)`
+When you change the schema of a collection without increasing its `version`, `addCollections()` throws the error [`DB6`](./errors.md#DB6) because the stored documents might not match the new schema.
+During development this gets in the way, for example when you switch between git branches that use different schemas. With `resetCollectionOnSchemaChange: true`, RxDB deletes the whole stored state of that collection instead and creates the collection empty with the new schema. The deleted state includes the documents of all schema versions, the attachments, and the replication and migration states. Other collections are not touched, and each reset logs a `console.warn()` message.
+
+Because this deletes local data, `resetCollectionOnSchemaChange` is only allowed to be set in [dev-mode](./dev-mode.md). Without the dev-mode plugin, `createRxDatabase()` throws the error [`DB16`](./errors.md#DB16). In production, increase the schema `version` and add [migration strategies](./migration-schema.md) instead.
+
+```js
+const db = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  resetCollectionOnSchemaChange: true
+});
+```
+
+#### closeDuplicates
+`(optional=false)`
+
+Closes all other RxDatabase instances that have the same storage+name combination.
+
+```js
+const db1 = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  closeDuplicates: true
+});
+const db2 = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageLocalstorage(),
+  closeDuplicates: true // this create-call will close db1
+});
+
+// db1 is now closed.
+```
+
+#### hashFunction
+
+By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide your own hash function instead. A hash function gets a `string`, `ArrayBuffer`, or `Blob` as input and returns a `Promise` that resolves a string. When a `Blob` is received (for attachment digest hashing), convert it to a string or ArrayBuffer before hashing.
+
+```ts
+// example hash function that runs in plain JavaScript
+import { sha256 } from 'ohash';
+import { blobToBase64String } from 'rxdb';
+async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
+    if (typeof Blob !== 'undefined' && input instanceof Blob) {
+        input = await blobToBase64String(input);
+    } else if (input instanceof ArrayBuffer) {
+        input = new TextDecoder().decode(new Uint8Array(input));
+    }
+    return sha256(input);
+}
+const myDatabase = await createRxDatabase({
+  hashFunction: myOwnHashFunction
+  /* ... */
+});
+```
+
+If you get the error message `TypeError: Cannot read properties of undefined (reading 'digest')` this likely means that you are neither running on `localhost` nor on `https` which is why your browser might not allow access to `crypto.subtle.digest`.
+
+#### liveQueryUpdateThrottleTime
+`(optional, default: 0 = disabled)`
+
+Groups write-triggered live query updates to limit how often RxDB re-evaluates queries during write bursts. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime) for full documentation.
+
 ---
 
 ## RxDocument
@@ -1607,6 +1670,20 @@ sub.unsubscribe();
 An RxDocument is an object which represents the data of a single JSON document stored in a [collection](./rx-collection.md). It can be compared to a single record in a relational database table. You get an `RxDocument` either as return on inserts/updates, or as result-set of [queries](./rx-query.md).
 
 RxDB works on RxDocuments instead of plain JSON data to have more convenient operations on the documents. Also Documents that are fetched multiple times by different queries or operations are automatically de-duplicated by RxDB in memory.
+
+### Read and Change a Document
+
+Fetch a document, read its fields as properties, and write a change with `patch()`. An `RxDocument` instance does not change after a write. Instead `patch()` resolves with a new instance that has the new data. Read more in [Document Lifetime and Immutability](#document-lifetime-and-immutability).
+
+```ts
+const myDocument = await myDatabase.todos.findOne('todo1').exec(true);
+console.log(myDocument.name);
+// > 'Learn RxDB'
+
+const updatedDocument = await myDocument.patch({ done: true });
+console.log(updatedDocument.done);
+// > true
+```
 
 ### insert
 To insert a document into a collection, you have to call the collection's `.insert()` function.
@@ -1786,30 +1863,6 @@ To fully purge a document, use the [cleanup plugin](./cleanup.md).
 myDocument.remove();
 ```
 
-#### Remove and update in a single atomic operation
-
-Sometimes you want to change a document's value and also remove it in the same operation. For example this can be useful when you use [replication](./replication.md) and want to set a `deletedAt` timestamp. Then you might have to ensure that setting this timestamp and deleting the document happens in the same atomic operation.
-
-To do this the modifying operations of a document accept setting the `_deleted` field. For example:
-
-```ts
-
-// update() and remove()
-await doc.update({
-  $set: {
-    done: true,
-    _deleted: true
-  }
-});
-
-// modify() and remove()
-await doc.modify(data => {
-  data.done = true;
-  data._deleted = true;
-  return data;
-});
-```
-
 #### deleted$
 Emits a boolean value, depending on whether the RxDocument is deleted or not.
 
@@ -1917,6 +1970,34 @@ To avoid this, either:
 - Re-query the collection to get a fresh document.
 
 **How long to keep a reference to an `RxDocument`.** Treat an `RxDocument` like plain JSON data - it is a snapshot valid at the time of retrieval. RxDB manages query result caching internally via [event-reduce](./rx-query.md), so you do not need to cache documents yourself. For components that display document data and need live updates, subscribe to the document's `$` observable instead of holding a static reference.
+
+### Advanced Operations
+
+The following operation is mostly needed together with [replication](./replication.md), where a deleted document still has to carry a last change.
+
+#### Remove and update in a single atomic operation
+
+Sometimes you want to change a document's value and also remove it in the same operation. For example this can be useful when you use [replication](./replication.md) and want to set a `deletedAt` timestamp. Then you might have to ensure that setting this timestamp and deleting the document happens in the same atomic operation.
+
+To do this the modifying operations of a document accept setting the `_deleted` field. For example:
+
+```ts
+
+// update() and remove()
+await doc.update({
+  $set: {
+    done: true,
+    _deleted: true
+  }
+});
+
+// modify() and remove()
+await doc.modify(data => {
+  data.done = true;
+  data._deleted = true;
+  return data;
+});
+```
 
 ### Revisions (`_rev`)
 
@@ -2145,6 +2226,18 @@ await mySourceCollection.insert({/* ... */});
 const result = await myDestinationCollection.find().exec();
 ```
 
+### Installation
+
+To use `addPipeline()`, you have to add the `pipeline` plugin.
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBPipelinePlugin } from 'rxdb/plugins/pipeline';
+addRxPlugin(RxDBPipelinePlugin);
+```
+
+The pipeline plugin adds the [leader election plugin](./leader-election.md) by itself because a pipeline waits for the leadership before it starts. You do not have to add it on your own.
+
 ### Creating a RxPipeline
 
 Pipelines are created on top of a source [RxCollection](./rx-collection.md) and have another `RxCollection` as destination. An identifier is used to identify the state of the pipeline so that different pipelines have a different processing checkpoint state. A plain JavaScript function `handler` is used to process the data of the source collection writes.
@@ -2164,7 +2257,13 @@ const pipeline = await mySourceCollection.addPipeline({
                 category: doc.category
             });
         }
-    }
+    },
+    /**
+     * If true, the pipeline only starts
+     * when the current instance is the leader.
+     * (optional) [default=true]
+     */
+    waitForLeadership: true
 });
 ```
 
@@ -2287,9 +2386,9 @@ You can await the idleness of a pipeline with `await myRxPipeline.awaitIdle()`. 
 
 Because a JavaScript process can exit at any time, like when the user closes a browser tab, the pipeline handler function must be idempotent. This means when it only runs partially and is started again with the same input, it should still end up in the correct result.
 
-#### Pipeline handlers must not throw
-
+:::warning Pipeline handlers must not throw
 Pipeline handlers must never throw. If you run operations inside of the handler that might cause errors, you must wrap the handler's code with a `try-catch` by yourself and also handle retries. If your handler throws, your pipeline will be stuck and no longer be usable, which should never happen.
+:::
 
 #### Be careful when doing http requests in the handler
 
@@ -2348,10 +2447,30 @@ In engines that keep async stack traces, a read that the handler starts inside o
 
 import {BetaBlock} from '@site/src/components/beta-block';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ReactiveQuery} from '@site/src/components/animations/reactive-query';
 
 
 
 To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](./rx-query-examples.md), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
+
+What makes RxDB different from most other databases is that every query is reactive.
+
+### Run and Observe a Query
+
+Create a query with `find()` and a [Mango selector](./rx-query-examples.md). `exec()` returns the matching documents once. The `$` observable emits the current result and emits again whenever a write changes the result, also when the write happens in another browser tab or comes from [replication](./replication.md).
+
+```ts
+const query = myDatabase.todos.find({
+    selector: { done: false }
+});
+
+const openTodos = await query.exec();
+// > [RxDocument[todo1], RxDocument[todo3], RxDocument[todo4]]
+
+query.$.subscribe(results => console.log(results.length));
+// > 3
+```
 
 ### find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -2370,36 +2489,6 @@ const results = await query.exec();
 // > [RxDocument[todo1], RxDocument[todo3]]
 ```
 
-### findOne() {#findOne}
-A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
-
-```js
-// find the todo with the name 'Buy groceries'
-const query = myDatabase.todos
-    .findOne({
-      selector: {
-        name: 'Buy groceries'
-      }
-    });
-```
-
-```js
-// find the todo that is due first
-const query = myDatabase.todos
-    .findOne({
-      selector: {},
-      sort: [
-        {dueAt: 'asc'}
-      ]
-    });
-const doc = await query.exec();
-// > RxDocument[todo1]
-```
-
-```js
-// find one document by the primary key
-const query = myDatabase.todos.findOne('todo1');
-```
 ### exec()
 Returns a `Promise` that resolves with the result-set of the query.
 
@@ -2441,6 +2530,36 @@ querySub.unsubscribe()
 
 When the [RxCollection](./rx-collection.md) or the [RxDatabase](./rx-database.md) of the query gets closed or removed, the observable completes and emits no more results or errors.
 
+### findOne() {#findOne}
+A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
+
+```js
+// find the todo with the name 'Buy groceries'
+const query = myDatabase.todos
+    .findOne({
+      selector: {
+        name: 'Buy groceries'
+      }
+    });
+```
+
+```js
+// find the todo that is due first
+const query = myDatabase.todos
+    .findOne({
+      selector: {},
+      sort: [
+        {dueAt: 'asc'}
+      ]
+    });
+const doc = await query.exec();
+// > RxDocument[todo1]
+```
+
+```js
+// find one document by the primary key
+const query = myDatabase.todos.findOne('todo1');
+```
 ### update()
 Runs an [update](./rx-document.md#update) on every RxDocument of the query-result.
 
@@ -2587,38 +2706,9 @@ const result = await query.exec();
 :::note RxDB will always append the primary key to the sort parameters
 For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
 This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.
+
+A query without `sort` is NOT sorted by the primary key. RxDB sorts it by the fields of the [index](./rx-schema.md#indexes) that fits the selector best, so that the query can run over that index. When no index fits the selector, the first index of the schema is used, and the primary key only when the schema has no indexes. Set `sort` explicitly when your code depends on the order of the results.
 :::
-
-### Setting a specific index
-
-By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used. This is the step you would otherwise write by hand, as shown in [IndexedDB query](./articles/indexeddb/indexeddb-query.md).
-But the query planner cannot know everything and sometimes will not pick the most optimal index.
-To improve query performance, you can specify which index must be used, when running the query.
-
-```ts
-const query = myDatabase.todos
-    .findOne({
-      selector: {
-        done: {
-          $eq: false
-        },
-        dueAt: {
-          $gt: '2026-01-03T00:00:00.000Z'
-        }
-      },
-      /**
-       * Because the developer knows that 50% of the todos are not done,
-       * but only 10% are due after the given date,
-       * it makes sense to enforce using the
-       * 'dueAt' index to improve
-       * performance.
-       * This could not be known by the query
-       * planner which might have chosen
-       * ['done', 'priority'] instead.
-       */
-      index: ['dueAt']
-    });
-```
 
 ### Count
 
@@ -2721,10 +2811,7 @@ const database = await createRxDatabase({
 });
 ```
 
-#### `allowSlowCount`
-To allow non-fully-indexed count queries, you can also specify that by setting `allowSlowCount: true` when creating the database.
-Doing this is mostly not wanted, because it would run the counting on the storage without having the document stored in the RxDB document cache.
-This is only recommended if the RxStorage is running remotely like in a WebWorker and you do not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.
+Read [`allowSlowCount`](#allowslowcount) for the cases where a slow count query makes sense.
 
 ### RxQuery instances are immutable
 Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQueries have to be immutable.
@@ -2750,7 +2837,47 @@ Returns true if the given object is an instance of RxQuery. Returns false if not
 const is = isRxQuery(myObj);
 ```
 
-### Query the Storage Directly
+### Advanced Query Options
+
+The following options help with performance tuning in special cases: a query planner that picks a slow index, count queries without a fitting index, large exports, and live queries with many writes.
+
+#### Setting a specific index
+
+By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used. This is the step you would otherwise write by hand, as shown in [IndexedDB query](./articles/indexeddb/indexeddb-query.md).
+But the query planner cannot know everything and sometimes will not pick the most optimal index.
+To improve query performance, you can specify which index must be used, when running the query.
+
+```ts
+const query = myDatabase.todos
+    .findOne({
+      selector: {
+        done: {
+          $eq: false
+        },
+        dueAt: {
+          $gt: '2026-01-03T00:00:00.000Z'
+        }
+      },
+      /**
+       * Because the developer knows that 50% of the todos are not done,
+       * but only 10% are due after the given date,
+       * it makes sense to enforce using the
+       * 'dueAt' index to improve
+       * performance.
+       * This could not be known by the query
+       * planner which might have chosen
+       * ['done', 'priority'] instead.
+       */
+      index: ['dueAt']
+    });
+```
+
+#### `allowSlowCount`
+To allow non-fully-indexed count queries, you can also specify that by setting `allowSlowCount: true` when creating the database.
+Doing this is mostly not wanted, because it would run the counting on the storage without having the document stored in the RxDB document cache.
+This is only recommended if the RxStorage is running remotely like in a WebWorker and you do not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.
+
+#### Query the Storage Directly
 
 `exec()` returns `RxDocument` instances. RxDB creates and caches these instances, which costs time and memory when a query returns many documents that you only read once, for example for an export or a bulk computation. In that case you can skip the `RxDocument` layer and run the query against the [RxStorage](./rx-storage.md) instance of the collection with `collection.storageInstance.query()`.
 
@@ -2807,7 +2934,7 @@ Keep in mind what you lose when you query the storage directly:
 - The document cache of the collection is not used. Normally RxDB keeps one `RxDocument` instance per document revision and returns that same instance from every query. The storage returns new objects on every call instead, so when you run several raw queries, or mix them with normal queries, the same document can end up in memory multiple times.
 - [Middleware](./middleware.md) hooks like `postCreate` do not run. Storage wrappers like [encryption](./encryption.md), [key compression](./key-compression.md) and schema validation still apply, because `collection.storageInstance` is the wrapped storage instance.
 
-### liveQueryUpdateThrottleTime
+#### liveQueryUpdateThrottleTime
 
 When set to a positive number (milliseconds), write-triggered live query updates are grouped with [RxJS auditTime](https://rxjs.dev/api/operators/auditTime) before `_ensureEqual()` runs. This limits how often RxDB re-evaluates a live query during write bursts, which avoids repeated full-result rebuilds for queries with large result sets.
 
@@ -2880,6 +3007,30 @@ import { FIELD_NAME_REGEX_STRING } from '../../src/plugins/dev-mode/check-schema
 ## RxSchema
 
 Schemas define the structure of the documents of a collection. Which field should be used as the primary key, which fields should be used as indexes, and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [JSON Schema](https://json-schema.org/blog/posts/rxdb-case-study) standard which you might know from other projects.
+
+### A Minimal Schema
+
+A schema needs a `version`, the name of the `primaryKey` field, and the `properties` of the documents. The primary key is a `string` with a `maxLength`. Pass the schema to `addCollections()` to create a collection that stores documents of this shape.
+
+```ts
+const todoSchema = {
+    version: 0,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean' }
+    },
+    required: ['id', 'name']
+};
+
+await myDatabase.addCollections({
+    todos: { schema: todoSchema }
+});
+```
+
+This is a shorter version of the `todoSchema` that is used on all pages of the documentation. The full version below adds indexes, defaults, and nested fields.
 
 ### Example Schema
 
@@ -2984,67 +3135,7 @@ When the version is greater than 0, you have to provide the `migrationStrategies
 
 The `primaryKey` field contains the fieldname of the property that will be used as primary key for the whole collection.
 The value of the primary key of the document must be a `string`, unique, final and required.
-
-#### composite primary key
-
-You can define a composite primary key which is composed from multiple properties of the document data.
-
-```javascript
-const mySchema = {
-  keyCompression: true, // set this to true, to enable the keyCompression
-  version: 0,
-  title: 'human schema with composite primary',
-  primaryKey: {
-      // where should the composed string be stored
-      key: 'id',
-      // fields that will be used to create the composed key
-      fields: [
-          'firstName',
-          'lastName'
-      ],
-      // separator which is used to concat the fields values.
-      separator: '|'
-  },
-  type: 'object',
-  properties: {
-      id: {
-          type: 'string',
-          maxLength: 100 // <- the primary key must have set maxLength
-      },
-      firstName: {
-          type: 'string'
-      },
-      lastName: {
-          type: 'string'
-      }
-  },
-  required: [
-    'id', 
-    'firstName',
-    'lastName'
-  ]
-};
-```
-
-You can then find a document by using the relevant parts to create the composite primaryKey:
-
-```ts
-
-// inserting with composite primary
-await myRxCollection.insert({
-    // id, <- do not set the id, it will be filled by RxDB
-    firstName: 'foo',
-    lastName: 'bar'
-});
-
-// find by composite primary
-const id = myRxCollection.schema.getPrimaryOfDocumentData({
-    firstName: 'foo',
-    lastName: 'bar'
-});
-const myRxDocument = await myRxCollection.findOne(id).exec();
-
-```
+To build the primary key from several fields, use a [composite primary key](#composite-primary-key).
 
 ### Indexes
 RxDB supports secondary indexes which are defined at the schema-level of the collection.
@@ -3124,13 +3215,6 @@ const todoSchemaWithIndexes = {
 };
 ```
 
-### internalIndexes
-
-When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./rx-server.md#server-only-indexes)
-
-### attachments
-To use attachments in the collection, you have to add the `attachments`-attribute to the schema. [See RxAttachment](./rx-attachment.md).
-
 ### default
 Default values can only be defined for first-level fields.
 Whenever you insert a document unset fields will be filled with default-values.
@@ -3203,7 +3287,79 @@ const todoSchemaWithFinalName = {
 };
 ```
 
-### Non allowed properties
+### attachments
+To use attachments in the collection, you have to add the `attachments`-attribute to the schema. [See RxAttachment](./rx-attachment.md).
+
+### Advanced Schema Options
+
+Most apps do not need the following options. They cover keys that are composed of several fields, indexes for the server side, and the rules for field names.
+
+#### composite primary key
+
+You can define a composite primary key which is composed from multiple properties of the document data.
+
+```javascript
+const mySchema = {
+  keyCompression: true, // set this to true, to enable the keyCompression
+  version: 0,
+  title: 'human schema with composite primary',
+  primaryKey: {
+      // where should the composed string be stored
+      key: 'id',
+      // fields that will be used to create the composed key
+      fields: [
+          'firstName',
+          'lastName'
+      ],
+      // separator which is used to concat the fields values.
+      separator: '|'
+  },
+  type: 'object',
+  properties: {
+      id: {
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
+      },
+      firstName: {
+          type: 'string'
+      },
+      lastName: {
+          type: 'string'
+      }
+  },
+  required: [
+    'id', 
+    'firstName',
+    'lastName'
+  ]
+};
+```
+
+You can then find a document by using the relevant parts to create the composite primaryKey:
+
+```ts
+
+// inserting with composite primary
+await myRxCollection.insert({
+    // id, <- do not set the id, it will be filled by RxDB
+    firstName: 'foo',
+    lastName: 'bar'
+});
+
+// find by composite primary
+const id = myRxCollection.schema.getPrimaryOfDocumentData({
+    firstName: 'foo',
+    lastName: 'bar'
+});
+const myRxDocument = await myRxCollection.findOne(id).exec();
+
+```
+
+#### internalIndexes
+
+When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./rx-server.md#server-only-indexes)
+
+#### Non allowed properties
 
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, key compression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
 For example, fieldnames must match the regex <code>{FIELD_NAME_REGEX_STRING}</code> and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
@@ -3321,7 +3477,7 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     RxDB automatically sets `additionalProperties: false` at the top level of a schema to ensure that all top-level fields are known in advance. This design choice offers several benefits:
 
 - Prevents collisions with [RxDocument](./rx-document.md) class properties:
-RxDB documents have built-in class methods (e.g., .toJSON, .save) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
+RxDB documents have built-in class methods (e.g., .toJSON, .patch) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
 
 - Avoids conflicts with user-defined ORM functions:
 Developers can add custom [ORM methods](./orm.md) to RxDocuments. If top-level properties were unbounded, a property name could accidentally conflict with a method name, leading to unexpected behavior.
@@ -3350,6 +3506,7 @@ To change the schema in **production**-mode, do the following steps:
 
 In **development**-mode, the schema-change can be simplified by **one of these** strategies:
 
+-   Set [resetCollectionOnSchemaChange](./rx-database.md#resetcollectiononschemachange) to `true` when creating the database so that the stored data of a collection is deleted when its schema has changed
 -   Use the memory-storage so your db resets on restart and your schema is not saved permanently
 -   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
 -   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'mydatabase' + new Date().getTime()`
@@ -3562,6 +3719,8 @@ No, RxState is schema-less by default. Unlike standard RxDB collections, it acce
 
 import { IconStorage } from '@site/src/components/icons/storage';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {StorageWrapperStack} from '@site/src/components/animations/storage-wrapper-stack';
 
 ## RxStorage
 
@@ -3637,7 +3796,7 @@ import {
 import {
     getMemoryMappedRxStorage
 } from 'rxdb-premium/plugins/storage-memory-mapped';
-import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-worker';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 
 const myDatabase = await createRxDatabase({
@@ -3738,7 +3897,7 @@ import {Steps} from '@site/src/components/steps';
 In this tutorial you will learn how to use RxDB with TypeScript.
 We will create a basic database with one collection and several [ORM](../orm.md)-methods, fully typed!
 
-RxDB directly comes with its typings and you do not have to install anything else. The latest version of RxDB requires TypeScript v3.8 or newer. All types are exported from `rxdb`, see the [import reference](../install.md#import-reference) for the full list of type and plugin imports. How to type a replication is shown in [using the replication with TypeScript](../replication.md#using-the-replication-with-typescript).
+RxDB directly comes with its typings and you do not have to install anything else. The latest version of RxDB requires TypeScript v3.8 or newer. All types are exported from `rxdb`, see the [import reference](../install.md#import-reference) for the full list of type and plugin imports. How to type a replication is shown in [using the replication with TypeScript](../replicate-rx-collection.md#using-the-replication-with-typescript).
 Our way to go is
 
 - First define what the documents look like

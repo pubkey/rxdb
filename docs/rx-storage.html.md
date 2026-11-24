@@ -4,6 +4,8 @@
 
 import { IconStorage } from '@site/src/components/icons/storage';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {StorageWrapperStack} from '@site/src/components/animations/storage-wrapper-stack';
 
 # RxStorage
 
@@ -79,7 +81,7 @@ import {
 import {
     getMemoryMappedRxStorage
 } from 'rxdb-premium/plugins/storage-memory-mapped';
-import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-worker';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 
 const myDatabase = await createRxDatabase({

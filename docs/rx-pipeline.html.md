@@ -32,6 +32,18 @@ await mySourceCollection.insert({/* ... */});
 const result = await myDestinationCollection.find().exec();
 ```
 
+## Installation
+
+To use `addPipeline()`, you have to add the `pipeline` plugin.
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBPipelinePlugin } from 'rxdb/plugins/pipeline';
+addRxPlugin(RxDBPipelinePlugin);
+```
+
+The pipeline plugin adds the [leader election plugin](./leader-election.md) by itself because a pipeline waits for the leadership before it starts. You do not have to add it on your own.
+
 ## Creating a RxPipeline
 
 Pipelines are created on top of a source [RxCollection](./rx-collection.md) and have another `RxCollection` as destination. An identifier is used to identify the state of the pipeline so that different pipelines have a different processing checkpoint state. A plain JavaScript function `handler` is used to process the data of the source collection writes.
@@ -51,7 +63,13 @@ const pipeline = await mySourceCollection.addPipeline({
                 category: doc.category
             });
         }
-    }
+    },
+    /**
+     * If true, the pipeline only starts
+     * when the current instance is the leader.
+     * (optional) [default=true]
+     */
+    waitForLeadership: true
 });
 ```
 
@@ -174,9 +192,9 @@ You can await the idleness of a pipeline with `await myRxPipeline.awaitIdle()`. 
 
 Because a JavaScript process can exit at any time, like when the user closes a browser tab, the pipeline handler function must be idempotent. This means when it only runs partially and is started again with the same input, it should still end up in the correct result.
 
-### Pipeline handlers must not throw
-
+:::warning Pipeline handlers must not throw
 Pipeline handlers must never throw. If you run operations inside of the handler that might cause errors, you must wrap the handler's code with a `try-catch` by yourself and also handle retries. If your handler throws, your pipeline will be stuck and no longer be usable, which should never happen.
+:::
 
 ### Be careful when doing http requests in the handler
 

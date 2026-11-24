@@ -43,7 +43,7 @@ import {
     getRxStorageLocalstorage
 } from 'rxdb/plugins/storage-localstorage';
 
-async function getDatabase() {
+export async function getDatabase() {
     const db = await createRxDatabase({
         name: 'heroesreactdb',
         storage: getRxStorageLocalstorage()
@@ -73,11 +73,12 @@ The database itself is created outside of React, usually in a separate module. T
 ```tsx
 import React, { useEffect, useState } from 'react';
 import { RxDatabaseProvider } from 'rxdb/plugins/react';
+import type { RxDatabase } from 'rxdb';
 import { getDatabase } from './Database';
 
 
 const App = () => {
-    const [database, setDatabase] = useState();
+    const [database, setDatabase] = useState<RxDatabase>();
 
     useEffect(() => {
         const initDb = async () => {
@@ -95,7 +96,7 @@ const App = () => {
 
     return (
         <RxDatabaseProvider database={database}>
-            {/* your application */}
+            <div>{/* your application */}</div>
         </RxDatabaseProvider>
     );
 };
@@ -117,12 +118,13 @@ This hook does not subscribe to any data. It only provides access to the collect
 
 ### Queries
 
-To render query results in your component, use the `useRxQuery` hook. 
+To render query results in your component, use the `useRxQuery` hook. In TypeScript, a query object with a `sort` that is defined outside of the hook call has to be typed, for example as `UseRxQueryOptions`. Without the type, the sort direction `'asc'` is widened to `string` and the call does not compile.
 
 ```tsx
 import { useRxQuery } from 'rxdb/plugins/react';
+import type { UseRxQueryOptions } from 'rxdb/plugins/react';
 
-const query = {
+const query: UseRxQueryOptions = {
     collection: 'heroes',
     query: {
         selector: {},
@@ -153,8 +155,9 @@ The hook accepts a query description object and returns the current results toge
 
 ```tsx
 import { useLiveRxQuery } from 'rxdb/plugins/react';
+import type { UseRxQueryOptions } from 'rxdb/plugins/react';
 
-const query = {
+const query: UseRxQueryOptions = {
     collection: 'heroes',
     query: {
         selector: {},
@@ -209,8 +212,11 @@ The `useReplicationStatus` hook subscribes to an `RxReplicationState` and expose
 
 ```tsx
 import { useReplicationStatus } from 'rxdb/plugins/react';
+import type { RxReplicationState } from 'rxdb/plugins/replication';
 
-const SyncIndicator = ({ replicationState }) => {
+type Props = { replicationState: RxReplicationState<any, any> };
+
+const SyncIndicator = ({ replicationState }: Props) => {
     const status = useReplicationStatus(replicationState);
     const { syncing, error, lastSyncedAt, canceled } = status;
 

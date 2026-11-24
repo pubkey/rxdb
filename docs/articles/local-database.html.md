@@ -188,9 +188,9 @@ db.todos.find({
 The [replication](../replication.md) runs in the background. Your UI keeps reading from the local database while the sync catches up.
 
 ```ts
-import { replicateHTTP } from 'rxdb/plugins/replication-http';
+import { replicateRxCollection } from 'rxdb/plugins/replication';
 
-replicateHTTP({
+replicateRxCollection({
     collection: db.todos,
     replicationIdentifier: 'todos-http-replication',
     live: true,

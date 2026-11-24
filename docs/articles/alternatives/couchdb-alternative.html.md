@@ -96,7 +96,7 @@ With RxDB, the client has a full database instance. Every query runs against loc
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -128,6 +128,8 @@ const openTodos = await db.todos.find({
     sort: [{ dueAt: 'asc' }]
 }).exec();
 ```
+
+The IndexedDB RxStorage is part of [RxDB Premium ](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 Writes made while offline are stored locally and automatically pushed to CouchDB when the connection returns.
 
@@ -241,21 +243,23 @@ Unlike PouchDB, which is tied to IndexedDB in the browser, RxDB separates the qu
 
 | Environment | Storage Option |
 |---|---|
-| Browser (general use) | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (write-heavy workloads) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
-| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Browser (general use) | [IndexedDB](../../rx-storage-indexeddb.md)  |
+| Browser (write-heavy workloads) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md)  |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md)  |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md)  |
+| Multiple browser tabs | [SharedWorker](../../rx-storage-shared-worker.md)  |
 | Tests | [Memory](../../rx-storage-memory.md) |
+
+The storages marked with  are part of [RxDB Premium](/premium/).
 
 Switching storage is a one-line change in database creation. The rest of the application (queries, replication, schema) remains unchanged:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
 // Swap this import to change storage
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
-// import { getRxStorageOPFS } from 'rxdb/plugins/storage-opfs';
-// import { getRxStorageSQLite } from 'rxdb/plugins/storage-sqlite';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+// import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
+// import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -269,18 +273,16 @@ The [OPFS storage](../../rx-storage-opfs.md) option is particularly useful for w
 
 When a user opens a web application in multiple browser tabs, each tab has its own JavaScript process. Without coordination, writes from one tab would not appear reactively in other tabs.
 
-RxDB solves this with the [SharedWorker storage](../../rx-storage-shared-worker.md):
+RxDB solves this with the [SharedWorker storage](../../rx-storage-shared-worker.md) :
 
 ```ts
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const db = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```

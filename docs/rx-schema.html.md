@@ -9,6 +9,30 @@ import { FIELD_NAME_REGEX_STRING } from '../../src/plugins/dev-mode/check-schema
 
 Schemas define the structure of the documents of a collection. Which field should be used as the primary key, which fields should be used as indexes, and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [JSON Schema](https://json-schema.org/blog/posts/rxdb-case-study) standard which you might know from other projects.
 
+## A Minimal Schema
+
+A schema needs a `version`, the name of the `primaryKey` field, and the `properties` of the documents. The primary key is a `string` with a `maxLength`. Pass the schema to `addCollections()` to create a collection that stores documents of this shape.
+
+```ts
+const todoSchema = {
+    version: 0,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean' }
+    },
+    required: ['id', 'name']
+};
+
+await myDatabase.addCollections({
+    todos: { schema: todoSchema }
+});
+```
+
+This is a shorter version of the `todoSchema` that is used on all pages of the documentation. The full version below adds indexes, defaults, and nested fields.
+
 ## Example Schema
 
 This example schema describes a `todos` collection with the following settings:
@@ -112,67 +136,7 @@ When the version is greater than 0, you have to provide the `migrationStrategies
 
 The `primaryKey` field contains the fieldname of the property that will be used as primary key for the whole collection.
 The value of the primary key of the document must be a `string`, unique, final and required.
-
-### composite primary key
-
-You can define a composite primary key which is composed from multiple properties of the document data.
-
-```javascript
-const mySchema = {
-  keyCompression: true, // set this to true, to enable the keyCompression
-  version: 0,
-  title: 'human schema with composite primary',
-  primaryKey: {
-      // where should the composed string be stored
-      key: 'id',
-      // fields that will be used to create the composed key
-      fields: [
-          'firstName',
-          'lastName'
-      ],
-      // separator which is used to concat the fields values.
-      separator: '|'
-  },
-  type: 'object',
-  properties: {
-      id: {
-          type: 'string',
-          maxLength: 100 // <- the primary key must have set maxLength
-      },
-      firstName: {
-          type: 'string'
-      },
-      lastName: {
-          type: 'string'
-      }
-  },
-  required: [
-    'id', 
-    'firstName',
-    'lastName'
-  ]
-};
-```
-
-You can then find a document by using the relevant parts to create the composite primaryKey:
-
-```ts
-
-// inserting with composite primary
-await myRxCollection.insert({
-    // id, <- do not set the id, it will be filled by RxDB
-    firstName: 'foo',
-    lastName: 'bar'
-});
-
-// find by composite primary
-const id = myRxCollection.schema.getPrimaryOfDocumentData({
-    firstName: 'foo',
-    lastName: 'bar'
-});
-const myRxDocument = await myRxCollection.findOne(id).exec();
-
-```
+To build the primary key from several fields, use a [composite primary key](#composite-primary-key).
 
 ## Indexes
 RxDB supports secondary indexes which are defined at the schema-level of the collection.
@@ -252,13 +216,6 @@ const todoSchemaWithIndexes = {
 };
 ```
 
-## internalIndexes
-
-When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./rx-server.md#server-only-indexes)
-
-## attachments
-To use attachments in the collection, you have to add the `attachments`-attribute to the schema. [See RxAttachment](./rx-attachment.md).
-
 ## default
 Default values can only be defined for first-level fields.
 Whenever you insert a document unset fields will be filled with default-values.
@@ -331,7 +288,79 @@ const todoSchemaWithFinalName = {
 };
 ```
 
-## Non allowed properties
+## attachments
+To use attachments in the collection, you have to add the `attachments`-attribute to the schema. [See RxAttachment](./rx-attachment.md).
+
+## Advanced Schema Options
+
+Most apps do not need the following options. They cover keys that are composed of several fields, indexes for the server side, and the rules for field names.
+
+### composite primary key
+
+You can define a composite primary key which is composed from multiple properties of the document data.
+
+```javascript
+const mySchema = {
+  keyCompression: true, // set this to true, to enable the keyCompression
+  version: 0,
+  title: 'human schema with composite primary',
+  primaryKey: {
+      // where should the composed string be stored
+      key: 'id',
+      // fields that will be used to create the composed key
+      fields: [
+          'firstName',
+          'lastName'
+      ],
+      // separator which is used to concat the fields values.
+      separator: '|'
+  },
+  type: 'object',
+  properties: {
+      id: {
+          type: 'string',
+          maxLength: 100 // <- the primary key must have set maxLength
+      },
+      firstName: {
+          type: 'string'
+      },
+      lastName: {
+          type: 'string'
+      }
+  },
+  required: [
+    'id', 
+    'firstName',
+    'lastName'
+  ]
+};
+```
+
+You can then find a document by using the relevant parts to create the composite primaryKey:
+
+```ts
+
+// inserting with composite primary
+await myRxCollection.insert({
+    // id, <- do not set the id, it will be filled by RxDB
+    firstName: 'foo',
+    lastName: 'bar'
+});
+
+// find by composite primary
+const id = myRxCollection.schema.getPrimaryOfDocumentData({
+    firstName: 'foo',
+    lastName: 'bar'
+});
+const myRxDocument = await myRxCollection.findOne(id).exec();
+
+```
+
+### internalIndexes
+
+When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./rx-server.md#server-only-indexes)
+
+### Non allowed properties
 
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, key compression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
 For example, fieldnames must match the regex <code>{FIELD_NAME_REGEX_STRING}</code> and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
@@ -449,7 +478,7 @@ Also the following class properties of `RxDocument` cannot be used as top level 
     RxDB automatically sets `additionalProperties: false` at the top level of a schema to ensure that all top-level fields are known in advance. This design choice offers several benefits:
 
 - Prevents collisions with [RxDocument](./rx-document.md) class properties:
-RxDB documents have built-in class methods (e.g., .toJSON, .save) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
+RxDB documents have built-in class methods (e.g., .toJSON, .patch) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
 
 - Avoids conflicts with user-defined ORM functions:
 Developers can add custom [ORM methods](./orm.md) to RxDocuments. If top-level properties were unbounded, a property name could accidentally conflict with a method name, leading to unexpected behavior.
@@ -478,6 +507,7 @@ To change the schema in **production**-mode, do the following steps:
 
 In **development**-mode, the schema-change can be simplified by **one of these** strategies:
 
+-   Set [resetCollectionOnSchemaChange](./rx-database.md#resetcollectiononschemachange) to `true` when creating the database so that the stored data of a collection is deleted when its schema has changed
 -   Use the memory-storage so your db resets on restart and your schema is not saved permanently
 -   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new [RxDatabase](./rx-database.md)-instance
 -   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'mydatabase' + new Date().getTime()`

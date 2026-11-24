@@ -83,7 +83,7 @@ RxDB coordinates writes and query state across multiple browser tabs through a l
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const myDatabase = await createRxDatabase({
   name: 'mydatabase',
@@ -118,6 +118,8 @@ myDatabase.todos.find({
   console.log('open high-priority todos:', results.length);
 });
 ```
+
+The IndexedDB RxStorage is part of [RxDB Premium ](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
 
 ## Code Sample: HTTP Replication With a Postgres-Backed REST API
 

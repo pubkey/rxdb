@@ -9,6 +9,24 @@ import {Faq, FaqItem} from '@site/src/components/faq';
 # RxCollection
 A collection stores documents of the same type.
 
+## Add a Collection
+
+Add a collection with a name and a [schema](./rx-schema.md) to the database. The collection is then available as a property of the database, so you can insert and query documents right away.
+
+```ts
+await myDatabase.addCollections({
+    todos: { schema: todoSchema }
+});
+
+await myDatabase.todos.insert({
+    id: 'todo4',
+    name: 'Clean the kitchen',
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
+});
+const allTodos = await myDatabase.todos.find().exec();
+```
+
 ## Creating a Collection
 To create one or more collections you need an [RxDatabase](./rx-database.md) object which has the `.addCollections()` method. Every collection needs a collection name and a valid [RxJsonSchema](./rx-schema.md). Other attributes are optional.
 
@@ -51,10 +69,6 @@ The schema defines how the documents of the collection are structured. RxDB uses
 
 ### ORM-functions
 With the parameters `statics`, `methods` and `attachments`, you can define ORM functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).
-
-### liveQueryUpdateThrottleTime
-
-Overrides `liveQueryUpdateThrottleTime` set at the database level for this specific collection. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime).
 
 ### Migration
 With the parameters `migrationStrategies` and `autoMigrate` you can specify how migration between different schema-versions should be done. [See Migration](./migration-schema.md).
@@ -230,33 +244,6 @@ const docs = await myDatabase.todos.bulkUpsert([
  */
 ```
 
-### incrementalUpsert()
-
-When you run many `.upsert()` operations on the same RxDocument in parallel, they do not throw a [`409 CONFLICT`](./errors.md#CONFLICT) error. When the document already exists, the `.upsert()` writes on top of the current document state.
-`incrementalUpsert()` runs the operations for the same primary key one after another, in the order in which they were called.
-The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incrementalModify).
-
-```js
-const docData = {
-    id: 'todo4', // primary
-    name: 'Clean the kitchen',
-    dueAt: '2026-01-04T18:00:00.000Z',
-    priority: 1
-};
-
-myDatabase.todos.upsert(docData);
-myDatabase.todos.upsert(docData);
-// -> both calls resolve
-
-myDatabase.todos.incrementalUpsert(docData);
-myDatabase.todos.incrementalUpsert(docData);
-myDatabase.todos.incrementalUpsert(docData);
-
-// wait until last upsert finished
-await myDatabase.todos.incrementalUpsert(docData);
-// -> the document has the data of the last call
-```
-
 ### find()
 To find documents in your collection, use this method. [See RxQuery.find()](./rx-query.md#find). Queries are written in the [Mango query syntax](./rx-query-examples.md) or with the chained methods of the [query builder](./query-builder.md).
 
@@ -341,21 +328,59 @@ Removes the collection's object instance from the [RxDatabase](./rx-database.md)
 await myDatabase.todos.close();
 ```
 
-### onClose / onRemove()
-With these you can add a function that is run when the collection was closed or removed.
-This works even across multiple browser tabs so you can detect when another tab removes the collection
-and your application can behave accordingly.
-
-```js
-await myDatabase.todos.onClose(() => console.log('I am closed'));
-await myDatabase.todos.onRemove(() => console.log('I am removed'));
-```
-
 ### isRxCollection
 Returns true if the given object is an instance of RxCollection. Returns false if not.
 ```js
 const is = isRxCollection(myObj);
 ```
+
+## Advanced Options
+
+The following option and functions are only needed for live queries with many writes, for many parallel upserts on the same document, and to react to a collection that gets closed or removed.
+
+### liveQueryUpdateThrottleTime
+
+Overrides `liveQueryUpdateThrottleTime` set at the database level for this specific collection. See [liveQueryUpdateThrottleTime](./rx-query.md#livequeryupdatethrottletime).
+
+### incrementalUpsert()
+
+When you run many `.upsert()` operations on the same RxDocument in parallel, they do not throw a [`409 CONFLICT`](./errors.md#CONFLICT) error. When the document already exists, the `.upsert()` writes on top of the current document state.
+`incrementalUpsert()` runs the operations for the same primary key one after another, in the order in which they were called.
+The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incrementalModify).
+
+```js
+const docData = {
+    id: 'todo4', // primary
+    name: 'Clean the kitchen',
+    dueAt: '2026-01-04T18:00:00.000Z',
+    priority: 1
+};
+
+myDatabase.todos.upsert(docData);
+myDatabase.todos.upsert(docData);
+// -> both calls resolve
+
+myDatabase.todos.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
+myDatabase.todos.incrementalUpsert(docData);
+
+// wait until last upsert finished
+await myDatabase.todos.incrementalUpsert(docData);
+// -> the document has the data of the last call
+```
+
+### onClose / onRemove
+`onClose` and `onRemove` are arrays of functions and not methods. To run a function when the collection is closed or removed, you have to `push()` it into the array. A function can return a `Promise`, which is awaited by `close()` and `remove()`.
+
+```js
+myDatabase.todos.onClose.push(() => console.log('I am closed'));
+myDatabase.todos.onRemove.push(() => console.log('I am removed'));
+```
+
+- **onClose**: The functions run when the collection is closed with `myDatabase.todos.close()` or `myDatabase.close()`. Because a collection is closed before it is removed, they also run on each removal.
+- **onRemove**: The functions run when the collection is removed with `myDatabase.todos.remove()` or `myDatabase.remove()`.
+
+A removal works across multiple browser tabs. When another tab calls `remove()` on the collection or on the database, the collection is also closed in the current tab and the functions of both arrays run, so your application can detect the removal and behave accordingly. A `close()` in another tab only closes the instance of that tab and does not run the functions of the current tab.
 
 ## FAQ
 

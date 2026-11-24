@@ -195,7 +195,7 @@ The middle column is a valid target, and it is a common one. There are good reas
 RxDB still fits there. Instead of being the source of truth, the local database becomes a **cached materialized view** of the server state:
 
 - The server owns the data. Your API decides what a given user is allowed to see, and it decides the final state of every write.
-- RxDB holds the subset that this user needs, kept current by a [pull-only replication](../replication.md#pull-only-replication) over your own change stream.
+- RxDB holds the subset that this user needs, kept current by a [pull-only replication](../replicate-rx-collection.md#pull-only-replication) over your own change stream.
 - The UI reads from the local storage, so [reactive queries](../reactivity.md) stay inside the 16ms budget without touching the network.
 - Writes go to your API. The accepted state comes back through the same pull stream, so the client never invents a state the server did not confirm.
 - [Partial sync](../partial-sync.md) scopes the view: several replication states for several slices of data, started and stopped as the user navigates.
@@ -283,7 +283,7 @@ No. Google's own documentation states "We recommend new customers start with Clo
 
 **[RxDB](https://rxdb.info)** is a [local-first](./local-first-future.md) database that stores data in the browser through [IndexedDB, OPFS or SQLite](../rx-storage.md) and binds live query Observables directly to React, Angular, Vue and Svelte. The DOM updates whenever local or replicated state changes, and the [replication](../replication.md) works against your own HTTP, GraphQL, CouchDB, MongoDB or WebRTC backend, so the data and the backend stay yours.
 
-Yes. When your server has to stay the source of truth, run a [pull-only replication](../replication.md#pull-only-replication) and treat the local database as a cached materialized view: reads and [reactive queries](../reactivity.md) come from local storage, writes go through your API, and the accepted state comes back on the pull stream. You keep local query speed and reactive UI updates, and you give up offline writes. **[Partial sync](../partial-sync.md)** scopes how much of the backend each client holds.
+Yes. When your server has to stay the source of truth, run a [pull-only replication](../replicate-rx-collection.md#pull-only-replication) and treat the local database as a cached materialized view: reads and [reactive queries](../reactivity.md) come from local storage, writes go through your API, and the accepted state comes back on the pull stream. You keep local query speed and reactive UI updates, and you give up offline writes. **[Partial sync](../partial-sync.md)** scopes how much of the backend each client holds.
 
 For the UI, the target is **16 milliseconds**, because 1 second divided by 60 frames is 16.66ms and anything slower is visible as lag. A network round trip does not fit into that budget, which is why realtime apps read from a local database and replicate in the background. For the replication itself, "realtime" in practice means the change reaches other connected devices in the low hundreds of milliseconds, bounded by the network.
 

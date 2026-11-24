@@ -244,20 +244,22 @@ RxDB's storage system is pluggable. You choose the storage engine based on your 
 
 | Environment | Storage Option |
 |---|---|
-| Browser | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via op-sqlite or expo-sqlite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
-| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Browser | [IndexedDB](../../rx-storage-indexeddb.md)  |
+| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md)  |
+| React Native / Expo | [SQLite via op-sqlite or expo-sqlite](../../rx-storage-sqlite.md)  |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md)  |
+| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md)  |
 | Tests / CI | [Memory](../../rx-storage-memory.md) |
+
+The storages marked with  are part of [RxDB Premium](/premium/).
 
 Switching storage is a one-line change to the `storage` parameter when creating the database:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 // Or for React Native:
-// import { getRxStorageSQLite } from 'rxdb/plugins/storage-sqlite';
+// import { getRxStorageSQLite } from 'rxdb-premium/plugins/storage-sqlite';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -343,18 +345,20 @@ RxDB uses the [event-reduce](https://github.com/pubkey/event-reduce) algorithm t
 
 ### React Native Support Without Native Code Generation
 
-RxDB on React Native uses the [SQLite storage plugin](../../rx-storage-sqlite.md), which supports multiple underlying SQLite drivers including `expo-sqlite` (for Expo managed workflows) and `op-sqlite` (a high-performance JSI-based driver). No custom Objective-C or Java code generation is required. You define your schema in TypeScript and the library handles everything else:
+RxDB on React Native uses the [SQLite storage plugin](../../rx-storage-sqlite.md) , which supports multiple underlying SQLite drivers including `expo-sqlite` (for Expo managed workflows) and `op-sqlite` (a high-performance JSI-based driver). No custom Objective-C or Java code generation is required. You define your schema in TypeScript and the library handles everything else:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageSQLite } from 'rxdb/plugins/storage-sqlite';
-import { sqliteBasics } from 'rxdb/plugins/storage-sqlite/expo-sqlite';
-import * as ExpoSQLite from 'expo-sqlite';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsExpoSQLiteAsync
+} from 'rxdb-premium/plugins/storage-sqlite';
+import * as SQLite from 'expo-sqlite';
 
 const db = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSQLite({
-        sqliteBasics: sqliteBasics(ExpoSQLite)
+        sqliteBasics: getSQLiteBasicsExpoSQLiteAsync(SQLite.openDatabaseAsync)
     })
 });
 ```
@@ -385,18 +389,16 @@ RxDB also generates TypeScript types automatically from the schema, so you get I
 
 ### Multi-Tab Support in the Browser
 
-When a user opens your web application in multiple browser tabs, each tab needs access to the same data. RxDB handles this with its [SharedWorker storage](../../rx-storage-shared-worker.md): all tabs connect to a single database instance running in a SharedWorker, so writes from any tab are immediately visible in all others:
+When a user opens your web application in multiple browser tabs, each tab needs access to the same data. RxDB handles this with its [SharedWorker storage](../../rx-storage-shared-worker.md) : all tabs connect to a single database instance running in a SharedWorker, so writes from any tab are immediately visible in all others:
 
 ```ts
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const db = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```
@@ -466,13 +468,13 @@ Create a database, define a collection, and subscribe to reactive queries:
 ```ts
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 addRxPlugin(RxDBDevModePlugin);
 
 const db = await createRxDatabase({
     name: 'todoapp',
-    storage: getRxStorageIndexedDB()
+    storage: getRxStorageDexie()
 });
 
 await db.addCollections({

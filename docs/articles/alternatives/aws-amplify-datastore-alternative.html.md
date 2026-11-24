@@ -271,18 +271,20 @@ DataStore used SQLite on mobile and IndexedDB on web. RxDB supports both of thes
 
 | Environment | Storage Option |
 |---|---|
-| Browser (standard) | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
-| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Browser (standard) | [IndexedDB](../../rx-storage-indexeddb.md)  |
+| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md)  |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md)  |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md)  |
+| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md)  |
 | Testing / CI | [Memory](../../rx-storage-memory.md) |
+
+The storages marked with  are part of [RxDB Premium](/premium/).
 
 Switching storage is a single parameter change:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -342,18 +344,16 @@ With CRDTs, two users editing the same todo while offline will have their change
 
 DataStore on the web stored data in IndexedDB per-tab. Multiple browser tabs each had their own DataStore instance, and keeping them in sync required additional subscription logic.
 
-RxDB solves this with its [SharedWorker storage](../../rx-storage-shared-worker.md). All browser tabs share a single database instance running in a SharedWorker, so writes from any tab are immediately visible in all others with no extra code:
+RxDB solves this with its [SharedWorker storage](../../rx-storage-shared-worker.md) . All browser tabs share a single database instance running in a SharedWorker, so writes from any tab are immediately visible in all others with no extra code:
 
 ```ts
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const db = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```
@@ -366,7 +366,7 @@ RxDB includes a built-in [encryption plugin](../../encryption.md) that encrypts 
 import {
     wrappedKeyEncryptionCryptoJsStorage
 } from 'rxdb/plugins/encryption-crypto-js';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -494,13 +494,13 @@ Create a database with a collection and start using reactive queries:
 ```ts
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 addRxPlugin(RxDBDevModePlugin);
 
 const db = await createRxDatabase({
     name: 'myapp',
-    storage: getRxStorageIndexedDB()
+    storage: getRxStorageDexie()
 });
 
 await db.addCollections({

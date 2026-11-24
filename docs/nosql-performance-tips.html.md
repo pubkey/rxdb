@@ -147,16 +147,16 @@ For example when you use RxDB at [Node.js](./nodejs-database.md) for a webserver
 
 ```ts
 // wrong ❌
-app.get('/list', (req, res) => {
+app.get('/list', async (req, res) => {
     const result = await myCollection.find({/* ... */}).exec();
     res.send(JSON.stringify(result));
 });
 
 // right ✔️
 const query = myCollection.find({/* ... */});
-query.subscribe(); // <- make it hot
+query.$.subscribe(); // <- make it hot
 
-app.get('/list', (req, res) => {
+app.get('/list', async (req, res) => {
     const result = await query.exec();
     res.send(JSON.stringify(result));
 });

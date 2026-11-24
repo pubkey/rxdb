@@ -102,7 +102,7 @@ In RxDB, every query is observable. When you subscribe to a query result, you re
 
 ```typescript
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -137,6 +137,8 @@ db.todos.find({
 });
 ```
 
+The IndexedDB RxStorage is part of [RxDB Premium ](/premium/). The free [Dexie.js RxStorage](../../rx-storage-dexie.md) also stores data in IndexedDB. Swap in `getRxStorageDexie()` from `rxdb/plugins/storage-dexie` and the rest of the code stays the same.
+
 This works entirely offline. The query runs against IndexedDB (or any other configured storage), not against a remote server. There is no connection to establish and no disconnection to handle.
 
 RxDB uses the [event-reduce](https://github.com/pubkey/event-reduce) algorithm to make reactive updates efficient. When a document write occurs, RxDB checks whether the existing query result can be updated by applying the change directly without re-executing the full query. This means reactive UI updates remain fast even in write-heavy workloads.
@@ -155,21 +157,23 @@ RxDB has a pluggable storage layer. The same application code works with differe
 
 | Environment | Storage Option |
 |---|---|
-| Browser (standard) | [IndexedDB](../../rx-storage-indexeddb.md) |
-| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md) |
-| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md) |
-| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md) |
-| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md) |
+| Browser (standard) | [IndexedDB](../../rx-storage-indexeddb.md)  |
+| Browser (high-throughput) | [OPFS (Origin Private File System)](../../rx-storage-opfs.md)  |
+| React Native / Expo | [SQLite via expo-sqlite or op-sqlite](../../rx-storage-sqlite.md)  |
+| Node.js / Electron | [SQLite (better-sqlite3)](../../rx-storage-sqlite.md)  |
+| Multi-tab browsers | [SharedWorker](../../rx-storage-shared-worker.md)  |
 | Testing / CI | [Memory](../../rx-storage-memory.md) |
+
+The storages marked with  are part of [RxDB Premium](/premium/).
 
 Switching storage requires changing one parameter when creating the database:
 
 ```typescript
-import { getRxStorageOpfs } from 'rxdb/plugins/storage-opfs';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 const db = await createRxDatabase({
     name: 'myapp',
-    storage: getRxStorageOpfs() // use OPFS for better browser performance
+    storage: getRxStorageOPFSMainThread() // use OPFS for better browser performance
 });
 ```
 
@@ -223,18 +227,16 @@ The replication state is fully observable. You know exactly when replication is 
 
 RethinkDB is a server process; it does not have a concept of browser tabs. On the client side, running multiple browser tabs with independent in-memory state is a common source of consistency problems.
 
-RxDB solves this with the [SharedWorker storage](../../rx-storage-shared-worker.md). All tabs share a single database instance running in a SharedWorker, so a write from any tab is immediately reflected in reactive queries in all other tabs:
+RxDB solves this with the [SharedWorker storage](../../rx-storage-shared-worker.md) . All tabs share a single database instance running in a SharedWorker, so a write from any tab is immediately reflected in reactive queries in all other tabs:
 
 ```typescript
-import { getRxStorageSharedWorker } from 'rxdb/plugins/storage-shared-worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 
 const db = await createRxDatabase({
     name: 'myapp',
     storage: getRxStorageSharedWorker({
-        workerInput: new SharedWorker(
-            new URL('rxdb/plugins/storage-shared-worker/worker.js', import.meta.url),
-            { type: 'module' }
-        )
+        // path to the file copied from node_modules/rxdb-premium/dist/workers
+        workerInput: '/indexeddb.shared-worker.js'
     })
 });
 ```
@@ -279,7 +281,7 @@ In a realtime multi-user system, two users can edit the same document concurrent
 
 RxDB operates on a local-first model: users can edit locally while offline, and those edits sync when connectivity returns. If two clients edited the same document while disconnected, both versions must be reconciled when they sync.
 
-RxDB handles this with a configurable [conflict handler](../../replication.md):
+RxDB handles this with a configurable [conflict handler](../../transactions-conflicts-revisions.md#custom-conflict-handler):
 
 ```typescript
 await db.addCollections({
@@ -372,7 +374,7 @@ RxDB includes a built-in [encryption plugin](../../encryption.md) that encrypts 
 import {
     wrappedKeyEncryptionCryptoJsStorage
 } from 'rxdb/plugins/encryption-crypto-js';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'myapp',
@@ -411,13 +413,13 @@ Create a database, insert some documents, and subscribe to reactive queries:
 ```typescript
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 addRxPlugin(RxDBDevModePlugin);
 
 const db = await createRxDatabase({
     name: 'todoapp',
-    storage: getRxStorageIndexedDB()
+    storage: getRxStorageDexie()
 });
 
 await db.addCollections({

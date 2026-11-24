@@ -6,6 +6,8 @@ import {Steps} from '@site/src/components/steps';
 import {TriggerEvent} from '@site/src/components/trigger-event';
 import {Tabs} from '@site/src/components/tabs';
 import {NavbarDropdownSyncList} from '@site/src/components/navbar-dropdowns';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ReactiveQuery} from '@site/src/components/animations/reactive-query';
 
 import { IconQuickstart } from '@site/src/components/icons/quickstart';
 import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
@@ -277,13 +279,11 @@ RxDB has multiple [replication plugins](./replication.md) to replicate database 
 #### HTTP
 
 ```ts
-import {
-  replicateHTTP,
-  pullQueryBuilderFromRxSchema,
-} from "rxdb/plugins/replication-http";
+import { replicateRxCollection } from "rxdb/plugins/replication";
 
-replicateHTTP({
+replicateRxCollection({
   collection: myDatabase.todos,
+  replicationIdentifier: "my-http-replication",
   push: {
     handler: async (rows) => {
       return fetch("https://example.com/api/todos/push", {

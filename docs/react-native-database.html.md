@@ -141,12 +141,16 @@ For high-performance applications with frequent data updates, re-rendering the e
 RxDB supports **Signals** (via `@preact/signals-react` or similar) to pinpoint updates directly to the DOM nodes.
 
 ```tsx
-// Enable the signals plugin once
-import { addRxPlugin } from 'rxdb';
+// Set the reactivity factory when creating the database
+import { createRxDatabase } from 'rxdb';
 import {
-    RxDBReactivityPreactSignalsPlugin
+    PreactSignalsRxReactivityFactory
 } from 'rxdb/plugins/reactivity-preact-signals';
-addRxPlugin(RxDBReactivityPreactSignalsPlugin);
+
+const db = await createRxDatabase({
+    /* ... name and storage like above */
+    reactivity: PreactSignalsRxReactivityFactory
+});
 
 // ... in your component
 const signals = collection.find().$$; // Returns a Signal<Doc[]>

@@ -22,6 +22,8 @@ import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 addRxPlugin(RxDBCleanupPlugin);
 ```
 
+The cleanup plugin adds the [leader election plugin](./leader-election.md) by itself because with the default `waitForLeadership: true` the cleanup only runs on the leading instance. You do not have to add it on your own.
+
 ## Create a database with cleanup options
 
 You can set a specific cleanup policy when a [RxDatabase](./rx-database.md) is created. For most use cases, the defaults should be ok.

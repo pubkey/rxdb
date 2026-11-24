@@ -24,8 +24,8 @@ RxDB supports the following hooks:
 - postCreate
 
 ### Why is there no validate-hook?
-Different to mongoose, the validation on document-data is running on the field-level for every change to a document.
-This means if you set the value `lastName` of a [RxDocument](./rx-document.md), then the validation will only run on the changed field, not the whole document.
+In contrast to mongoose, the validation of the document data is not part of the middleware.
+The [schema validation](./schema-validation.md) is a wrapper around the [RxStorage](./rx-storage.md) and validates the whole document on every write of an [RxDocument](./rx-document.md), after the `preInsert` and `preSave` hooks have run.
 Therefore it is not useful to have validate-hooks when a document is written to the database.
 
 ## Use Cases
@@ -103,9 +103,10 @@ myCollection.postInsert(function(plainData, rxDocument){
 
 ### Save
 A save-hook receives the document which is saved.
+The save-hooks run when an existing document is changed with `patch()`, `modify()`, `update()`, `incrementalPatch()`, `incrementalModify()`, or `incrementalUpdate()`, when an upsert writes to a document that already exists, and when an [attachment](./rx-attachment.md) is added or removed.
 
 #### lifecycle
-- RxDocument.save is called
+- RxDocument.patch or another method that changes an existing document is called
 - preSave series-hooks
 - preSave parallel-hooks
 - updated document is written to database
