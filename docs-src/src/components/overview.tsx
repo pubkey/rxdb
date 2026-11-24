@@ -11,6 +11,7 @@ import { IconGear } from '../components/icons/gear';
 import { IconReplication } from '../components/icons/replication';
 import { IconStorage } from '../components/icons/storage';
 import { Tabs } from '../components/tabs';
+import { Tag } from '../components/tag';
 
 type OverviewLink = {
     key: string;
@@ -89,20 +90,26 @@ function StackLayer(props: {
                 key={link.key}
                 href={link.href}
                 target={link.target}
-            >{layerLinkTitle(link.title)}</a>)}
+            ><Tag dark={props.variant !== 'core'}>{layerLinkTitle(link.title, props.category.label)}</Tag></a>)}
         </div>
     </div>;
 }
 
 /**
- * Strips the runtime list like "(Browser, Capacitor)" from the sidebar label.
+ * Shortens the sidebar label so that it fits into a tag:
+ * The runtime list like "(Browser, Capacitor)" is stripped and also
+ * the name of the category, so "HTTP Replication" becomes "HTTP".
  * Function names like replicateRxCollection() keep their casing.
  */
-function layerLinkTitle(title: string): string {
+function layerLinkTitle(title: string, categoryLabel: string): string {
     if (title.endsWith('()')) {
         return title;
     }
-    return ucfirst(title.replace(/ \(.+\)$/, ''));
+    title = title.replace(/ \(.+\)$/, '');
+    if (title.endsWith(' ' + categoryLabel)) {
+        title = title.slice(0, -1 * (categoryLabel.length + 1));
+    }
+    return ucfirst(title);
 }
 
 /**

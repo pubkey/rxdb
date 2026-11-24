@@ -2475,7 +2475,7 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
  */
 .overview-stack {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) 56px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
     margin-bottom: 70px;
 }
 
@@ -2514,23 +2514,8 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
     margin-bottom: 16px;
 }
 
-.overview-stack-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
 .overview-stack-links a {
-    color: white;
     text-decoration: none;
-    font-size: var(--fontSizes-s);
-    padding: 4px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background-color: var(--bg-color-dark);
-}
-
-.overview-stack-links a:hover {
-    border-color: var(--color-top);
 }
 
 .overview-stack-connector {
