@@ -1276,6 +1276,9 @@ describe('replication-google-drive.test.ts', function () {
             await replicationState.cancel();
             assert.strictEqual(signalingState.closed, true);
 
+            await assertThrows(() => replicationState.start(), 'RxError', 'RC_START_CANCELED');
+            assert.ok(replicationState.signalingState === signalingState);
+
             await collection.database.close();
         });
     });

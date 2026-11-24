@@ -1,6 +1,6 @@
 {
     "$schema": "./schema.json",
-    "text": "FIX the Google Drive, Microsoft OneDrive, Appwrite, Firestore, MongoDB, NATS, and Supabase replication opened one more change stream on each `start()` after `pause()`, so that each server change was handled multiple times and `cancel()` only closed the newest stream",
+    "text": "FIX the Google Drive, Microsoft OneDrive, Appwrite, Firestore, and MongoDB replication opened one more change stream on each `start()` after `pause()`, so that each server change was handled multiple times and `cancel()` only closed the newest stream. In the Supabase replication `start()` after `pause()` rejected and the replication stayed paused",
     "links": [],
     "priority": 5
 }
