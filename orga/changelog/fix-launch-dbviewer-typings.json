@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `RxDatabase.launchDbViewer()` of the dbviewer plugin was missing in the typings, so the call from the docs did not compile",
+    "links": [],
+    "priority": 3
+}
