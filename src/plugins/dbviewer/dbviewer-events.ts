@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import type {
     RxCollection,
-    RxDatabase
+    RxDatabaseBase
 } from '../../index.d.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import {
@@ -66,7 +66,7 @@ function trimWindow(times: number[], now: number) {
     }
 }
 
-export function createViewerEventHub(database: RxDatabase): ViewerEventHub {
+export function createViewerEventHub(database: RxDatabaseBase<any, any, any, any>): ViewerEventHub {
     const changed$ = new Subject<void>();
     const hub: ViewerEventHub = {
         changes: [],

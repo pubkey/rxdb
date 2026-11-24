@@ -33,6 +33,20 @@ import {
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
 import { createQueryBuilder } from '../plugins/query-builder/index.mjs';
 import { RxDatabaseProvider } from '../plugins/react/index.mjs';
+import {
+    mountRxDBViewer,
+    connectRxDBViewer,
+    createLiveDataSource,
+    createViewerEventHub,
+    attachViewerBridge,
+    explainViewerQuery,
+    collectViewerStorageStats,
+    runViewerCleanup
+} from '../plugins/dbviewer/index.mjs';
+import type {
+    ViewerBridgeTransport,
+    ViewerInfo
+} from '../plugins/dbviewer/index.mjs';
 import type { AngularSignalReactivityLambda } from '../plugins/reactivity-angular/index.mjs';
 import type { Signal } from '@angular/core';
 
@@ -1160,6 +1174,74 @@ describe('other', () => {
                         ]
                     });
                 });
+            });
+        });
+    });
+    describe('dbviewer plugin', () => {
+        type TodoDocType = {
+            id: string;
+            name: string;
+        };
+        type TodoDatabase = RxDatabase<{
+            todos: RxCollection<TodoDocType>;
+        }>;
+        it('should accept a database with typed collections', () => {
+            const myDatabase: TodoDatabase = {} as any;
+            mountRxDBViewer({ database: myDatabase });
+            connectRxDBViewer({ database: myDatabase });
+            const source = createLiveDataSource(myDatabase);
+            const hub = createViewerEventHub(myDatabase);
+            attachViewerBridge({
+                database: myDatabase,
+                source,
+                hub,
+                info: {} as ViewerInfo,
+                transport: {} as ViewerBridgeTransport
+            });
+            explainViewerQuery(myDatabase, 'todos', {});
+            collectViewerStorageStats(myDatabase);
+            runViewerCleanup(myDatabase);
+        });
+        it('should accept a database without typed collections', () => {
+            const myDatabase: RxDatabase = {} as any;
+            mountRxDBViewer({ database: myDatabase });
+            connectRxDBViewer({ database: myDatabase });
+        });
+        it('should not accept something that is not a database', () => {
+            const myDatabase: TodoDatabase = {} as any;
+            // @ts-expect-error a string is not a database
+            mountRxDBViewer({ database: 'myDatabase' });
+            // @ts-expect-error a collection is not a database
+            mountRxDBViewer({ database: myDatabase.todos });
+            // @ts-expect-error a string is not a database
+            connectRxDBViewer({ database: 'myDatabase' });
+            // @ts-expect-error a collection is not a database
+            connectRxDBViewer({ database: myDatabase.todos });
+            // @ts-expect-error a string is not a database
+            createLiveDataSource('myDatabase');
+            // @ts-expect-error a collection is not a database
+            createLiveDataSource(myDatabase.todos);
+            // @ts-expect-error a plain object is not a database
+            createViewerEventHub({ foo: 'bar' });
+            // @ts-expect-error a collection is not a database
+            collectViewerStorageStats(myDatabase.todos);
+            // @ts-expect-error an element is not a database
+            runViewerCleanup(document.body);
+        });
+        it('should accept the result of document.getElementById() as parent', () => {
+            const myDatabase: RxDatabase = {} as any;
+            mountRxDBViewer({
+                database: myDatabase,
+                parent: document.getElementById('viewer-panel')
+            });
+            mountRxDBViewer({
+                database: myDatabase,
+                parent: document.body
+            });
+            mountRxDBViewer({
+                database: myDatabase,
+                // @ts-expect-error a selector string is not an element
+                parent: '#viewer-panel'
             });
         });
     });
