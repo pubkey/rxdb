@@ -119,11 +119,12 @@ import {
     getDocs,
     query,
     where,
-    serverTimestamp
+    serverTimestamp,
+    updateDoc
 } from 'firebase/firestore';
 const allDocsResult = await getDocs(query(firestoreCollection));
 allDocsResult.forEach(doc => {
-    doc.update({
+    updateDoc(doc.ref, {
         _deleted: false,
         serverTimestamp: serverTimestamp()
     })

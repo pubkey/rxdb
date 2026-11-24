@@ -28,6 +28,9 @@ const storage = getRxStorageRemote({
         messages$: new Subject(),
         send(msg) {
             // send to remote storage
+        },
+        async close() {
+            // close the connection to the remote storage
         }
     })
 });
