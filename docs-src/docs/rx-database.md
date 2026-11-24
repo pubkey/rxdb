@@ -5,9 +5,16 @@ description: Get started with RxDatabase and integrate multiple storages. Learn 
 image: /headers/rx-database.jpg
 ---
 
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {DataModel} from '@site/src/components/animations/data-model';
+
 # RxDatabase
 
 An RxDatabase Object contains your [collections](./rx-collection.md) and handles the synchronization of change events.
+
+<DocsAnimation subtitle="RxDatabase, RxCollection and RxDocument on top of the RxStorage">
+<DataModel />
+</DocsAnimation>
 
 ## Create a Database
 

@@ -7,10 +7,18 @@ image: /headers/rx-query.jpg
 
 import {BetaBlock} from '@site/src/components/beta-block';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import {DocsAnimation} from '@site/src/components/docs-animation';
+import {ReactiveQuery} from '@site/src/components/animations/reactive-query';
 
 # RxQuery
 
 To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](./rx-query-examples.md), and provides three types of queries: [find()](#find), [findOne()](#findOne) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
+
+What makes RxDB different from most other databases is that every query is reactive.
+
+<DocsAnimation subtitle="A reactive query emits a new result on every change">
+<ReactiveQuery />
+</DocsAnimation>
 
 ## Run and Observe a Query
 

@@ -46,7 +46,6 @@ export function DocsAnimation(props: {
             <div
                 className="docs-animation-frame"
                 style={{
-                    borderRadius: 8,
                     background: '#0D0F18',
                     overflow: 'hidden',
                     lineHeight: 0,

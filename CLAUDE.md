@@ -292,6 +292,7 @@ Do not reproduce (authentic errors in old pages; write the correct form):
 - `<HeadlineWithIcon h1 icon={<IconX />}>Title</HeadlineWithIcon>` for icon headlines.
 - `<RxdbLogo alt="..." />` is global and needs no import.
 - `<PremiumIcon />` is global and needs no import. It renders the inline crown that marks RxDB Premium features.
+- **No round borders**: new components and animations use square corners, so no `border-radius` and no `rx`/`ry` on SVG rects. Only shapes that are circles by nature (dots, markers) are round. See `docs-src/AGENTS.md`.
 
 ### Terminology and spelling
 - US English ("behavior", "optimize", "synchronize"). The corpus has rare UK slips ("initialisation", "realised", "optimisation"); do not copy them. Oxford comma throughout.
