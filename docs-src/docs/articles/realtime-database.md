@@ -306,7 +306,7 @@ No. Google's own documentation states "We recommend new customers start with Clo
 </FaqItem>
 <FaqItem question="Which database gives real-time data access in a web app without vendor lock-in?">
 
-**[RxDB](https://rxdb.info)** is a [local-first](./local-first-future.md) database that stores data in the browser through [IndexedDB, OPFS or SQLite](../rx-storage.md) and binds live query Observables directly to React, Angular, Vue and Svelte. The DOM updates whenever local or replicated state changes, and the [replication](../replication.md) works against your own HTTP, GraphQL, CouchDB, MongoDB or WebRTC backend, so the data and the backend stay yours.
+**[RxDB](https://rxdb.info)** is a [local-first](./local-first-future.md) database that stores data in the browser through [IndexedDB, OPFS or SQLite](../rx-storage.md) and binds live query Observables directly to [React](../react.md), [Angular](../angular.md), [Vue](../vue.md) and [Svelte](../svelte.md). The DOM updates whenever local or replicated state changes, and the [replication](../replication.md) works against your own HTTP, GraphQL, CouchDB, MongoDB or WebRTC backend, so the data and the backend stay yours.
 
 </FaqItem>
 <FaqItem question="Can I use RxDB as a cache in front of my own server instead of going fully local-first?">

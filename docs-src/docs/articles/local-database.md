@@ -227,7 +227,7 @@ replicateRxCollection({
 
 </Steps>
 
-The same code runs in [React](./react-database.md), [Angular](./angular-database.md), [Vue](./vue-database.md), and Svelte. Only the binding between the observable and the component changes.
+The same code runs in [React](./react-database.md), [Angular](./angular-database.md), [Vue](./vue-database.md), and [Svelte](../svelte.md). Only the binding between the observable and the component changes.
 
 ## Local Database Performance
 

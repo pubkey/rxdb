@@ -545,6 +545,21 @@ const sidebars = {
           label: 'React'
         },
         {
+          type: 'doc',
+          id: 'angular',
+          label: 'Angular'
+        },
+        {
+          type: 'doc',
+          id: 'vue',
+          label: 'Vue'
+        },
+        {
+          type: 'doc',
+          id: 'svelte',
+          label: 'Svelte'
+        },
+        {
           type: 'ref',
           id: 'articles/tanstack-db/rxdb-collection-for-tanstack-db',
           label: 'TanStack DB'
