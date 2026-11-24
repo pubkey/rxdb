@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
     "text": "FIX `getRxStorageIpcRenderer()` storages with different keys shared one message channel when `mode` was left out or was `one`, so their requests went to the main process storage of the first key. Also the `mode` setting of `getRxStorageRemoteWebsocket()` and `getRxStorageIpcRenderer()` was required in the typings while the docs leave it out",
-    "links": [],
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9837",
+            "linkText": "#9837"
+        }
+    ],
     "priority": 5
 }

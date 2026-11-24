@@ -797,4 +797,4 @@ Todo:
 - Check the premium worker and shared-worker storages. When they pass `mode` on the same way, they start one worker per `getRxStorage...()` call afterwards.
 - Breaking: one message channel per `getRxStorage...()` call instead of one per url or key, which means more websocket connections.
 
-An implementation with tests is in the pull request [TODO_LINK_TO_THE_PULL_REQUEST_OF_THE_REMOTE_MODE_FIX](TODO_LINK_TO_THE_PULL_REQUEST_OF_THE_REMOTE_MODE_FIX).
+An implementation with tests is in the pull request [#9837](https://github.com/pubkey/rxdb/pull/9837) (first commit).
