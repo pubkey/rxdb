@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
     "text": "FIX the Google Drive, Microsoft OneDrive, Appwrite, Firestore, and MongoDB replication opened one more change stream on each `start()` after `pause()`, so that each server change was handled multiple times and `cancel()` only closed the newest stream. In the Supabase replication `start()` after `pause()` rejected and the replication stayed paused",
-    "links": [],
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9842",
+            "linkText": "#9842"
+        }
+    ],
     "priority": 5
 }
