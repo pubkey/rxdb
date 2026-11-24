@@ -91,14 +91,24 @@ export async function closeDexieDb(statePromise: DexieStorageInternals) {
          * the closed dexie instance and throw a DatabaseClosedError.
          * @link https://github.com/pubkey/rxdb/issues/8793
          */
-        for (const [cachedName, cachedState] of DEXIE_STATE_DB_BY_NAME.entries()) {
-            if (cachedState === statePromise) {
-                DEXIE_STATE_DB_BY_NAME.delete(cachedName);
-            }
-        }
+        removeDexieStateFromCache(statePromise);
     } else {
         REF_COUNT_PER_DEXIE_DB.set(statePromise, newCount);
     }
+}
+
+function removeDexieStateFromCache(statePromise: DexieStorageInternals) {
+    for (const [cachedName, cachedState] of DEXIE_STATE_DB_BY_NAME.entries()) {
+        if (cachedState === statePromise) {
+            DEXIE_STATE_DB_BY_NAME.delete(cachedName);
+        }
+    }
+}
+
+export async function deleteDexieDb(statePromise: DexieStorageInternals) {
+    const state = await statePromise;
+    removeDexieStateFromCache(statePromise);
+    await state.dexieDb.delete();
 }
 
 
