@@ -66,7 +66,7 @@ function trimWindow(times: number[], now: number) {
     }
 }
 
-export function createViewerEventHub(database: RxDatabase): ViewerEventHub {
+export function createViewerEventHub(database: RxDatabase<any>): ViewerEventHub {
     const changed$ = new Subject<void>();
     const hub: ViewerEventHub = {
         changes: [],

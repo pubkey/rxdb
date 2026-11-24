@@ -143,7 +143,7 @@ async function readAllSystemDocs(system: ViewerSystemCollection): Promise<any[]>
     return result.documents;
 }
 
-export function createLiveDataSource(database: RxDatabase): ViewerDataSource {
+export function createLiveDataSource(database: RxDatabase<any>): ViewerDataSource {
     const findSystemCollection = (collectionName: string) =>
         listSystemCollections(database).find(system => system.name === collectionName);
     /**

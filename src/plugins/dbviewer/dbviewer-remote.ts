@@ -20,7 +20,7 @@ import type {
 } from './dbviewer-types.ts';
 
 export type ViewerBridgeOptions = {
-    database: RxDatabase;
+    database: RxDatabase<any>;
     source: ViewerDataSource;
     hub: ViewerEventHub;
     info: ViewerInfo;

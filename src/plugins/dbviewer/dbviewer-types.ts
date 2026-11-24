@@ -25,7 +25,7 @@ export type RxDBViewerOptions = {
      * The live database to inspect.
      * Either database or dump must be given.
      */
-    database?: RxDatabase;
+    database?: RxDatabase<any>;
     /**
      * A static export created with db.exportJSON().
      * Opens the viewer in read-only dump mode.
@@ -39,7 +39,7 @@ export type RxDBViewerOptions = {
      * Element the viewer is mounted into.
      * [default=document.body]
      */
-    parent?: HTMLElement;
+    parent?: HTMLElement | null;
     /**
      * Rows per page in grids and results.
      * [default=100]

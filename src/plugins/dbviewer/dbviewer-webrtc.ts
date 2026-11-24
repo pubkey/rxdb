@@ -20,7 +20,7 @@ export type RxDBViewerConnectOptions = {
     /**
      * The live database to expose.
      */
-    database: RxDatabase;
+    database: RxDatabase<any>;
     /**
      * The pairing room id. Everyone who knows the room id
      * and can reach the signaling server gets FULL read and

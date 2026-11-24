@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX typings of the dbviewer plugin: `mountRxDBViewer()`, `connectRxDBViewer()` and the other exported functions rejected a database with typed collections like `RxDatabase<{ todos: RxCollection<TodoDocType> }>`, and the `parent` option rejected the `HTMLElement | null` that `document.getElementById()` returns",
+    "links": [],
+    "priority": 4
+}
