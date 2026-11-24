@@ -10,8 +10,9 @@ import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/compone
 
 import {Steps} from '@site/src/components/steps';
 import {Faq, FaqItem} from '@site/src/components/faq';
+import { HeadlineWithIcon } from '@site/src/components/headline-with-icon';
 
-# RxStorage Dexie.js
+# <HeadlineWithIcon h1 icon={<img src="/files/icons/dexie.svg" alt="Dexie.js" />}>RxStorage Dexie.js</HeadlineWithIcon>
 
 To store the data inside of and [RxDB Database](./rx-database.md) in IndexedDB in the [browser](./articles/browser-database.md), you can use the [Dexie.js](https://github.com/dexie/Dexie.js) based [RxStorage](./rx-storage.md). Dexie.js is a minimal wrapper around IndexedDB and the Dexie.js RxStorage wraps that again to use it for an RxDB database in the browser. For side projects and prototypes that run in a browser, you should use the dexie RxStorage as a default.
 
