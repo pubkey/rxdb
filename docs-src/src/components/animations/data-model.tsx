@@ -4,6 +4,7 @@ const COLLECTIONS = [
     {
         name: 'todos',
         x: 18,
+        width: 126,
         docs: [
             { id: 'todo1', name: 'Learn RxDB' },
             { id: 'todo2', name: 'Buy groceries' },
@@ -12,20 +13,22 @@ const COLLECTIONS = [
     },
     {
         name: 'assignees',
-        x: 154,
+        x: 150,
+        width: 76,
         docs: [
             { id: 'alice', name: 'Alice' },
             { id: 'bob', name: 'Bob' }
         ]
     }
 ];
-const COLLECTION_WIDTH = 128;
-const DOC_Y = [52, 84, 116];
+const DOC_Y = [58, 88, 118];
+const MORE = { x: 232, width: 50 };
 const STORAGE_Y = 180;
 
 const DOCS = COLLECTIONS.flatMap(c => c.docs.map((d, i) => ({
     ...d,
     x: c.x + 8,
+    width: c.width - 16,
     y: DOC_Y[i]
 })));
 
@@ -47,7 +50,9 @@ export function DataModel() {
                 .data-model .dm-label { fill: #A29DB6; font-size: 8px; letter-spacing: .06em; }
                 .data-model .dm-name { fill: #FFFFFF; font-size: 8px; }
                 .data-model .dm-doc rect { fill: #20243A; stroke: #752A8A; stroke-width: 1; }
-                .data-model .dm-doc text { fill: #FFFFFF; font-size: 6.5px; }
+                .data-model .dm-doc text { fill: #FFFFFF; font-size: 6.2px; }
+                .data-model .dm-more { fill: none; stroke: #262B40; stroke-width: 1.2; stroke-dasharray: 4 3; }
+                .data-model .dm-more-text { fill: #A29DB6; font-size: 6.2px; letter-spacing: .04em; }
                 .data-model .dm-doc .dm-id { fill: #ED168F; }
                 .data-model .dm-doc { animation: data-model-doc 4.8s cubic-bezier(.16, 1, .3, 1) infinite; }
                 .data-model .dm-storage { fill: #ED168F; animation: data-model-storage 4.8s ease-out infinite; }
@@ -77,7 +82,7 @@ export function DataModel() {
             <svg
                 viewBox="0 0 300 216"
                 role="img"
-                aria-label="RxDB data model: an RxDatabase contains RxCollections, here todos and assignees. Each RxCollection contains RxDocuments like todo1, todo2 and todo3 or alice and bob, and all documents are stored in the RxStorage of the database, here IndexedDB."
+                aria-label="RxDB data model: an RxDatabase contains RxCollections, here todos and assignees, and can hold more collections. Each RxCollection contains RxDocuments like todo1, todo2 and todo3 or alice and bob, and all documents are stored in the RxStorage of the database, here IndexedDB."
             >
                 <rect className="dm-box" x="8" y="6" width="284" height="174" />
                 <text className="dm-label" x="18" y="20">RxDatabase</text>
@@ -85,11 +90,15 @@ export function DataModel() {
 
                 {COLLECTIONS.map(c => (
                     <g key={c.name}>
-                        <rect className="dm-col" x={c.x} y="28" width={COLLECTION_WIDTH} height="142" />
-                        <text className="dm-label" x={c.x + 8} y="42">RxCollection</text>
-                        <text className="dm-name" x={c.x + 76} y="42">{c.name}</text>
+                        <rect className="dm-col" x={c.x} y="28" width={c.width} height="142" />
+                        <text className="dm-label" x={c.x + 8} y="40">RxCollection</text>
+                        <text className="dm-name" x={c.x + 8} y="51">{c.name}</text>
                     </g>
                 ))}
+
+                <rect className="dm-more" x={MORE.x} y="28" width={MORE.width} height="142" />
+                <text className="dm-more-text" x={MORE.x + MORE.width / 2} y="96" textAnchor="middle">more</text>
+                <text className="dm-more-text" x={MORE.x + MORE.width / 2} y="106" textAnchor="middle">collections</text>
 
                 {DOCS.map((d, i) => (
                     <g
@@ -97,9 +106,9 @@ export function DataModel() {
                         className="dm-doc"
                         style={{ animationDelay: (i * 0.4) + 's' }}
                     >
-                        <rect x={d.x} y={d.y} width={COLLECTION_WIDTH - 16} height="24" />
+                        <rect x={d.x} y={d.y} width={d.width} height="24" />
                         <text className="dm-id" x={d.x + 6} y={d.y + 15}>{d.id}</text>
-                        <text x={d.x + 32} y={d.y + 15}>{'\'' + d.name + '\''}</text>
+                        <text x={d.x + 28} y={d.y + 15}>{'\'' + d.name + '\''}</text>
                     </g>
                 ))}
 
@@ -107,7 +116,7 @@ export function DataModel() {
                     <circle
                         key={d.id}
                         className="dm-pulse"
-                        cx={d.x + COLLECTION_WIDTH - 22}
+                        cx={d.x + d.width - 6}
                         cy={d.y + 12}
                         r="3"
                         style={{
