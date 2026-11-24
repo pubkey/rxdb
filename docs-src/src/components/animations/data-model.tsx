@@ -4,7 +4,7 @@ const COLLECTIONS = [
     {
         name: 'todos',
         x: 18,
-        width: 126,
+        width: 123,
         docs: [
             { id: 'todo1', name: 'Learn RxDB' },
             { id: 'todo2', name: 'Buy groceries' },
@@ -13,8 +13,8 @@ const COLLECTIONS = [
     },
     {
         name: 'assignees',
-        x: 150,
-        width: 76,
+        x: 147,
+        width: 79,
         docs: [
             { id: 'alice', name: 'Alice' },
             { id: 'bob', name: 'Bob' }
@@ -50,7 +50,8 @@ export function DataModel() {
                 .data-model .dm-label { fill: #A29DB6; font-size: 8px; letter-spacing: .06em; }
                 .data-model .dm-name { fill: #FFFFFF; font-size: 8px; }
                 .data-model .dm-doc rect { fill: #20243A; stroke: #752A8A; stroke-width: 1; }
-                .data-model .dm-doc text { fill: #FFFFFF; font-size: 6.2px; }
+                .data-model .dm-doc text { fill: #FFFFFF; font-size: 5.6px; white-space: pre; }
+                .data-model .dm-doc .dm-json { fill: #A29DB6; }
                 .data-model .dm-more { fill: none; stroke: #262B40; stroke-width: 1.2; stroke-dasharray: 4 3; }
                 .data-model .dm-more-text { fill: #A29DB6; font-size: 6.2px; letter-spacing: .04em; }
                 .data-model .dm-doc .dm-id { fill: #ED168F; }
@@ -107,8 +108,16 @@ export function DataModel() {
                         style={{ animationDelay: (i * 0.4) + 's' }}
                     >
                         <rect x={d.x} y={d.y} width={d.width} height="24" />
-                        <text className="dm-id" x={d.x + 6} y={d.y + 15}>{d.id}</text>
-                        <text x={d.x + 28} y={d.y + 15}>{'\'' + d.name + '\''}</text>
+                        <text x={d.x + 5} y={d.y + 10}>
+                            <tspan className="dm-json">{'{ id: '}</tspan>
+                            <tspan className="dm-id">{'\'' + d.id + '\''}</tspan>
+                            <tspan className="dm-json">,</tspan>
+                        </text>
+                        <text x={d.x + 5} y={d.y + 19}>
+                            <tspan className="dm-json">{'  name: '}</tspan>
+                            <tspan>{'\'' + d.name + '\''}</tspan>
+                            <tspan className="dm-json">{' }'}</tspan>
+                        </text>
                     </g>
                 ))}
 
