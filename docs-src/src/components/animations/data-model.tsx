@@ -126,12 +126,12 @@ export function DataModel() {
                     <circle
                         key={d.id}
                         className="dm-pulse"
-                        cx={d.x + d.width - 6}
-                        cy={d.y + 12}
+                        cx={d.x + d.width - 10}
+                        cy={d.y + 24}
                         r="3"
                         style={{
                             animationDelay: (i * 0.4) + 's',
-                            ['--dm-fall' as string]: (STORAGE_Y + 6 - (d.y + 12)) + 'px'
+                            ['--dm-fall' as string]: (STORAGE_Y + 6 - (d.y + 24)) + 'px'
                         } as React.CSSProperties}
                     />
                 ))}
