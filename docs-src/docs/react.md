@@ -126,7 +126,7 @@ This hook does not subscribe to any data. It only provides access to the collect
 
 ### Queries
 
-To render query results in your component, use the `useRxQuery` hook. In TypeScript, a query object that is defined outside of the hook call has to be typed as `UseRxQueryOptions`. Without the type, the sort direction `'asc'` is widened to `string` and the call does not compile.
+To render query results in your component, use the `useRxQuery` hook. In TypeScript, a query object with a `sort` that is defined outside of the hook call has to be typed, for example as `UseRxQueryOptions`. Without the type, the sort direction `'asc'` is widened to `string` and the call does not compile.
 
 ```tsx
 import { useRxQuery } from 'rxdb/plugins/react';
