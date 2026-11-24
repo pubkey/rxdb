@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX `getRxStorageRemoteWebsocket()` and `getRxStorageIpcRenderer()` required the `mode` setting in their typings and did not use the default mode `storage` when it was left out. All storages with the same websocket url then shared one connection, and electron storages with different keys sent their requests to the storage of the first key",
+    "links": [],
+    "priority": 5
+}

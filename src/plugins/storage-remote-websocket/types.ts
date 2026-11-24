@@ -28,7 +28,7 @@ export type RxStorageRemoteWebsocketServerState = {
 
 export type RxStorageRemoteWebsocketClientOptions = ClientOptions & {
     url: string;
-    mode: RxStorageRemoteSettings['mode'];
+    mode?: RxStorageRemoteSettings['mode'];
 };
 
 export type RxStorageRemoteWebsocketClient = RxStorageRemote;

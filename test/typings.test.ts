@@ -31,6 +31,9 @@ import {
     CouchBulkDocResultRow
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
+import { getRxStorageRemote } from '../plugins/storage-remote/index.mjs';
+import { getRxStorageRemoteWebsocket } from '../plugins/storage-remote-websocket/index.mjs';
+import { getRxStorageIpcRenderer } from '../plugins/electron/index.mjs';
 import { createQueryBuilder } from '../plugins/query-builder/index.mjs';
 import { RxDatabaseProvider } from '../plugins/react/index.mjs';
 import type { AngularSignalReactivityLambda } from '../plugins/reactivity-angular/index.mjs';
@@ -1091,6 +1094,49 @@ describe('other', () => {
                         reason: 'not allowed'
                     };
                     assert.strictEqual(row.error === 'conflict', false);
+                });
+            });
+            describe('remote storage', () => {
+                it('should not require the mode setting', () => {
+                    const createStorages = () => {
+                        getRxStorageRemote({
+                            identifier: 'my-id',
+                            messageChannelCreator: () => Promise.reject(new Error('not called'))
+                        });
+                        getRxStorageRemoteWebsocket({
+                            url: 'ws://example.com:8080'
+                        });
+                        getRxStorageIpcRenderer({
+                            key: 'main-storage',
+                            ipcRenderer: {}
+                        });
+                        getRxStorageRemoteWebsocket({
+                            url: 'ws://example.com:8080',
+                            mode: 'database'
+                        });
+                        getRxStorageIpcRenderer({
+                            key: 'main-storage',
+                            ipcRenderer: {},
+                            mode: 'one'
+                        });
+                    };
+                    assert.ok(createStorages);
+                });
+                it('should not allow an unknown mode', () => {
+                    const createStorages = () => {
+                        getRxStorageRemoteWebsocket({
+                            url: 'ws://example.com:8080',
+                            // @ts-expect-error not a known mode
+                            mode: 'foobar'
+                        });
+                        getRxStorageIpcRenderer({
+                            key: 'main-storage',
+                            ipcRenderer: {},
+                            // @ts-expect-error not a known mode
+                            mode: 'foobar'
+                        });
+                    };
+                    assert.ok(createStorages);
                 });
             });
             describe('issues', () => {

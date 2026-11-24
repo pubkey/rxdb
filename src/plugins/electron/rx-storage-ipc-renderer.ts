@@ -18,7 +18,7 @@ export type RxStorageIpcRendererSettings = {
      */
     key: string;
     ipcRenderer: any;
-    mode: RxStorageRemoteSettings['mode'];
+    mode?: RxStorageRemoteSettings['mode'];
 };
 
 export type RxStorageIpcRenderer = RxStorageRemote;

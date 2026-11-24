@@ -36,6 +36,11 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams
 } from '../../plugins/core/index.mjs';
+import {
+    exposeIpcMainRxStorage,
+    getRxStorageIpcRenderer,
+    IPC_RENDERER_KEY_PREFIX
+} from '../../plugins/electron/index.mjs';
 
 describe('rx-storage-remote.test.ts', () => {
     /**
@@ -380,6 +385,116 @@ describe('rx-storage-remote.test.ts', () => {
 
             await droppedInstance.close().catch(() => { });
             await server.serverState.close();
+        });
+    });
+    describe('without the mode setting', () => {
+        it('should use the mode storage with getRxStorageRemoteWebsocket()', async () => {
+            const port = await nextPort();
+            const server = startRxStorageRemoteWebsocketServer({
+                port,
+                storage: config.storage.getStorage()
+            });
+            const getInstanceParams = () => ({
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
+                collectionName: randomToken(10),
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+
+            const storage = getRxStorageRemoteWebsocket({
+                url: 'ws://localhost:' + port
+            });
+            const storageInstanceA = await storage.createStorageInstance(getInstanceParams());
+            const storageInstanceB = await storage.createStorageInstance(getInstanceParams());
+            assert.strictEqual(server.serverState.server.clients.size, 1);
+
+            const otherStorage = getRxStorageRemoteWebsocket({
+                url: 'ws://localhost:' + port
+            });
+            const storageInstanceOther = await otherStorage.createStorageInstance(getInstanceParams());
+            assert.strictEqual(server.serverState.server.clients.size, 2);
+
+            const undefinedModeStorage = getRxStorageRemoteWebsocket({
+                url: 'ws://localhost:' + port,
+                mode: undefined
+            });
+            const storageInstanceUndefinedMode = await undefinedModeStorage.createStorageInstance(getInstanceParams());
+            assert.strictEqual(server.serverState.server.clients.size, 3);
+
+            await storageInstanceA.close();
+            await storageInstanceB.close();
+            await storageInstanceOther.close();
+            await storageInstanceUndefinedMode.close();
+            await server.serverState.close();
+        });
+        it('should not send to the ipc channel of another key with getRxStorageIpcRenderer()', async () => {
+            type IpcListener = (event: any, message: any) => void;
+            const mainListeners = new Map<string, IpcListener>();
+            const rendererListeners = new Map<string, Set<IpcListener>>();
+            const sender = {
+                on() { },
+                send(channelId: string, message: any) {
+                    (rendererListeners.get(channelId) || []).forEach(listener => listener({}, message));
+                }
+            };
+            const ipcMain = {
+                on(channelId: string, listener: IpcListener) {
+                    mainListeners.set(channelId, listener);
+                }
+            };
+            const createCallsByChannelId: { [channelId: string]: number; } = {};
+            const ipcRenderer = {
+                on(channelId: string, listener: IpcListener) {
+                    const listeners = rendererListeners.get(channelId) || new Set<IpcListener>();
+                    rendererListeners.set(channelId, listeners);
+                    listeners.add(listener);
+                },
+                removeListener(channelId: string, listener: IpcListener) {
+                    (rendererListeners.get(channelId) || new Set<IpcListener>()).delete(listener);
+                },
+                postMessage(channelId: string, message: any) {
+                    if (message && message.method === 'create') {
+                        createCallsByChannelId[channelId] = (createCallsByChannelId[channelId] || 0) + 1;
+                    }
+                    (mainListeners.get(channelId) as IpcListener)({ sender }, message);
+                }
+            };
+
+            const keys = [randomToken(10), randomToken(10)];
+            const storageInstances = await Promise.all(
+                keys.map(key => {
+                    exposeIpcMainRxStorage({
+                        key,
+                        storage: config.storage.getStorage(),
+                        ipcMain
+                    });
+                    return getRxStorageIpcRenderer({
+                        key,
+                        ipcRenderer
+                    }).createStorageInstance({
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(10),
+                        collectionName: 'human',
+                        devMode: true,
+                        multiInstance: false,
+                        options: {},
+                        schema: fillWithDefaultSettings(schemas.human)
+                    });
+                })
+            );
+
+            assert.deepStrictEqual(
+                createCallsByChannelId,
+                {
+                    [IPC_RENDERER_KEY_PREFIX + '|' + keys[0]]: 1,
+                    [IPC_RENDERER_KEY_PREFIX + '|' + keys[1]]: 1
+                }
+            );
+
+            await Promise.all(storageInstances.map(storageInstance => storageInstance.close()));
         });
     });
     if (config.storage.name !== 'remote') {
