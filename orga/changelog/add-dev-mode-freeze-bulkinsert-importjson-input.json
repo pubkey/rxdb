@@ -1,6 +1,11 @@
 {
     "$schema": "./schema.json",
     "text": "ADD the dev-mode plugin now deep-freezes the nested objects of the documents that `bulkInsert()` and `importJSON()` (collection and database) have written, like it is done for `insert()` and `upsert()`, because RxDB does not clone the written data and a later mutation of the input could change the stored document. The input of rows that were rejected with a write error stays mutable",
-    "links": [],
+    "links": [
+        {
+            "url": "https://github.com/pubkey/rxdb/pull/9845",
+            "linkText": "#9845"
+        }
+    ],
     "priority": 4
 }
