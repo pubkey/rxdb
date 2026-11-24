@@ -217,7 +217,7 @@ export async function processWalFile<RxDocType>(
         init,
         docIds as string[]
     );
-    const fileMetaByDocId: Record<string, { fileId: string; etag: string }> = {};
+    const fileMetaByDocId: Record<string, { fileId: string; etag: string }> = Object.create(null);
 
     /**
      * The Google Drive v3 list API no longer supports "etag" as a field selector,

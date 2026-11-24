@@ -129,7 +129,7 @@ export function getAssumedMasterState<RxDocType>(
                 docData: RxDocumentData<RxDocType>;
                 metaDocument: RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>;
             };
-        } = {};
+        } = Object.create(null);
         Object
             .values(metaDocs)
             .forEach((metaDoc) => {

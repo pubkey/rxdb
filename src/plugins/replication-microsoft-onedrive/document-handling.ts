@@ -132,7 +132,7 @@ export async function updateDocumentFiles<DocType>(
 ) {
     const baseUrl = getDriveBaseUrl(oneDriveState);
     const queue = docs.slice(0);
-    const results: Record<string, { id: string }> = {};
+    const results: Record<string, { id: string }> = Object.create(null);
 
     async function worker() {
         let doc = queue.shift();
