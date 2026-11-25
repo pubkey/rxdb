@@ -236,15 +236,15 @@ The change validator is a JavaScript function that is used to restrict which doc
 For example you could restrict clients to only change specific document fields or to not do any document writes at all.
 It can also be used to validate change document data before storing it at the server.
 
-In this example we restrict clients from doing inserts and only allow updates. For that we check if the change contains an `assumedMasterState` property and return false to block the write.
+In this example we restrict clients from doing inserts and only allow updates. An insert has no `assumedMasterState` property, so we return `false` to block the write when it is missing.
 
 ```ts
 
 function myChangeValidator(authData, change) {
     if(change.assumedMasterState) {
-        return false;
-    } else {
         return true;
+    } else {
+        return false;
     }
 }
 
@@ -315,14 +315,16 @@ When you have fields that should only be modified by the server, but not by the 
 ```ts
 
 const myChangeValidator = function(authData, change){
-    if(
-        change.newDocumentState.priority !==
-        change.assumedMasterState.priority
-    ){
-        throw new Error('priority is readonly');
+    if(!change.assumedMasterState) {
+        // inserts have no assumedMasterState
+        return true;
     }
+    return change.newDocumentState.priority ===
+        change.assumedMasterState.priority;
 }
 ```
+
+The `changeValidator` has to return `true` to allow the write and `false` to block it. A write that is blocked is answered with `403 Forbidden`.
 
 ## $regex queries not allowed
 
