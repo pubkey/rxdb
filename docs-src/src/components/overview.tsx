@@ -82,6 +82,9 @@ function StartButtons() {
  */
 const LINK_ICONS: Record<string, ReactNode> = {
     'react': '/files/icons/react.svg',
+    'angular': '/files/icons/angular.svg',
+    'vue': '/files/icons/vuejs.svg',
+    'svelte': '/files/icons/svelte.svg',
     'articles/tanstack-db/rxdb-collection-for-tanstack-db': '/files/icons/tanstack.svg',
     'encryption': <IconEncryption />,
     'key-compression': <IconCompression />,

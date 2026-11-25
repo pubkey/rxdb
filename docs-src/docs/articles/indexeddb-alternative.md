@@ -68,7 +68,7 @@ const user = await db.users.findOne('user1').exec();
 
 ### 2. Reactivity (The "Rx" in RxDB)
 
-Modern UIs ([React](../articles/react-database.md), [Vue](../articles/vue-database.md), [Angular](../articles/angular-database.md), Svelte) need to be reactive. When data changes, the view should update.
+Modern UIs ([React](../articles/react-database.md), [Vue](../articles/vue-database.md), [Angular](../articles/angular-database.md), [Svelte](../svelte.md)) need to be reactive. When data changes, the view should update.
 RxDB is built on **[RxJS](https://rxjs.dev/)**. Every query, document, or field can be observed.
 
 ```js

@@ -30,7 +30,7 @@ RxDB allows you to pass a custom reactivity factory on [RxDatabase](./rx-databas
 
 ### Angular
 
-In angular we use [Angular Signals](https://angular.dev/guide/signals) as custom reactivity objects.
+In angular we use [Angular Signals](https://angular.dev/guide/signals) as custom reactivity objects. The full setup with a database service is described in the guide on [using RxDB with Angular](./angular.md).
 
 <Steps>
 
@@ -157,7 +157,7 @@ export function TodosList() {
 
 ### Vue
 
-For Vue, we use the [Vue Shallow Refs](https://vuejs.org/api/reactivity-advanced) for custom reactivity.
+For Vue, we use the [Vue Shallow Refs](https://vuejs.org/api/reactivity-advanced) for custom reactivity. The full setup with a database plugin is described in the guide on [using RxDB with Vue](./vue.md).
 
 <Steps>
 
