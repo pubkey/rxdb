@@ -1,13 +1,25 @@
 {
-  "name": "rxdb",
-  "description": "A local-first realtime NoSQL Database for JavaScript applications - https://rxdb.info/",
-  "version": "17.6.0",
-  "author": "pubkey",
+  "name": "@clatech/db",
+  "description": "CLA DB - A minimal Apache 2.0 local-first reactive NoSQL database fork of RxDB maintained by CLA Tech",
+  "version": "0.1.0",
+  "author": "CLA Tech",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pubkey/rxdb"
+    "url": "https://github.com/AngelCLA/cla-db"
   },
-  "homepage": "https://rxdb.info/",
+  "homepage": "https://github.com/AngelCLA/cla-db#readme",
+  "bugs": {
+    "url": "https://github.com/AngelCLA/cla-db/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "claDb": {
+    "upstream": "https://github.com/pubkey/rxdb",
+    "upstreamVersion": "17.6.0",
+    "upstreamCommit": "9d5849cf4c695ffc27d60e134b2039539e77a9b0",
+    "upstreamTagOffset": 522
+  },
   "keywords": [
     "db",
     "database",

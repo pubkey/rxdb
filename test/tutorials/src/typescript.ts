@@ -11,10 +11,10 @@ import {
     RxJsonSchema,
     RxDocument,
     createRxDatabase
-} from 'rxdb';
+} from '@clatech/db';
 import {
     getRxStorageMemory
-} from 'rxdb/plugins/storage-memory';
+} from '@clatech/db/plugins/storage-memory';
 
 /**
  * declare types

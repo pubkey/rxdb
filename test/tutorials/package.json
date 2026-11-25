@@ -5,7 +5,7 @@
     "test": "npm run test:typescript"
   },
   "dependencies": {
-    "rxdb": "../../"
+    "@clatech/db": "../../"
   },
   "devDependencies": {
     "@types/node": "24.19.2",

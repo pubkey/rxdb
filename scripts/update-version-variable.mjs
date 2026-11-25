@@ -17,7 +17,12 @@ async function run() {
             path.join(rootPath, 'package.json')
         )
     );
-    const newVersion = packageJson.version;
+    // CLA-DB: Keep RXDB_VERSION aligned with the upstream RxDB storage-format version
+    // (packageJson.claDb.upstreamVersion) so on-disk compatibility checks (DM5)
+    // remain compatible with RxDB 16/17 databases while @clatech/db tracks its own SemVer.
+    const newVersion = (packageJson.claDb && packageJson.claDb.upstreamVersion)
+        ? packageJson.claDb.upstreamVersion
+        : packageJson.version;
     if (
         !newVersion ||
         typeof newVersion !== 'string'

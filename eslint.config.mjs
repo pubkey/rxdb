@@ -23,6 +23,11 @@ export default [
         ignores: [
             'test/playground/*',
             '.claude/*',
+            // CLA-DB: Ignore local agent workspace metadata directories
+            '.atl/*',
+            '.agent/*',
+            'odd/*',
+            'skills/*',
             'test/tutorials',
             '**/test_tmp/',
             '**/tmp/',
