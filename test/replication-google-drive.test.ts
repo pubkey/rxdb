@@ -1235,6 +1235,24 @@ describe('replication-google-drive.test.ts', function () {
             await state1.close();
             await state2.close();
         });
+        it('a new session should connect to a peer that already has signaling messages for an earlier session', async () => {
+            const signalingOptions: SignalingOptions = { wrtc, config: { iceServers: [] } };
+            const isConnectedTo = (state: SignalingState, other: SignalingState) => {
+                const peer = state.peerBySenderId.get(other.sessionId);
+                return !!peer && peer.connected;
+            };
+            const stayingState = new SignalingState(options, options.initData, signalingOptions);
+            let reconnectingState = new SignalingState(options, options.initData, signalingOptions);
+            for (let i = 0; i < 6; i++) {
+                const state = reconnectingState;
+                await waitUntil(() => isConnectedTo(stayingState, state) && isConnectedTo(state, stayingState), 15000);
+                state.close();
+                reconnectingState = new SignalingState(options, options.initData, signalingOptions);
+                stayingState.resetReadLoop();
+            }
+            reconnectingState.close();
+            stayingState.close();
+        });
     });
     describe('live replication', () => {
         beforeEach(async () => {

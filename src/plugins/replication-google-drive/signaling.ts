@@ -194,7 +194,7 @@ export class SignalingState {
                         config: this.signalingOptions.config
                     })
                     peer.on("signal", async (signalData: any) => {
-                        await this.sendMessage(signalData);
+                        await this.sendMessage(Object.assign({ to: senderId }, signalData));
                     });
                     peer.on('connect', () => {
                         this._resync$.next();
@@ -232,7 +232,10 @@ export class SignalingState {
                 }
             );
 
-            if (!message.data.i) {
+            if (
+                !message.data.i &&
+                (!message.data.to || message.data.to === this.sessionId)
+            ) {
                 peerInstance.signal(message.data);
             }
         });

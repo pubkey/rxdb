@@ -33,6 +33,8 @@ import {
     OneDriveState,
     replicateMicrosoftOneDrive,
     SignalingState,
+    readMessages,
+    getDriveBaseUrl,
     cleanupOldSignalingMessages,
     SignalingOptions
 } from '../src/plugins/replication-microsoft-onedrive/index.ts';
@@ -1092,6 +1094,51 @@ describe('replication-microsoft-onedrive.test.ts', function () {
 
             await state1.close();
             await state2.close();
+        });
+        it('should not skip a message that was sent in the same millisecond as an already read one', async () => {
+            const processedMessageIds = new Set<string>();
+            async function insertMessage(fileName: string, data: any) {
+                const url = getDriveBaseUrl(options) + '/items/' + options.initData.signalingFolderId + ':/' + encodeURIComponent(fileName) + ':/content';
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        Authorization: 'Bearer ' + options.authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                assert.ok(response.ok);
+            }
+
+            /**
+             * now() can return the same millisecond with a different
+             * decimal part, like 1794000000000.01 and 1794000000000.02
+             */
+            await insertMessage('sender_1794000000000.01_msgone.json', { nr: 1 });
+            const firstRead = await readMessages(options, options.initData, processedMessageIds);
+            assert.deepStrictEqual(firstRead.map(m => m.data), [{ nr: 1 }]);
+
+            await insertMessage('sender_1794000000000.02_msgtwo.json', { nr: 2 });
+            const secondRead = await readMessages(options, options.initData, processedMessageIds);
+            assert.deepStrictEqual(secondRead.map(m => m.data), [{ nr: 2 }]);
+        });
+        it('a new session should connect to a peer that already has signaling messages for an earlier session', async () => {
+            const signalingOptions: SignalingOptions = { wrtc, config: { iceServers: [] } };
+            const isConnectedTo = (state: SignalingState, other: SignalingState) => {
+                const peer = state.peerBySenderId.get(other.sessionId);
+                return !!peer && peer.connected;
+            };
+            const stayingState = new SignalingState(options, options.initData, signalingOptions);
+            let reconnectingState = new SignalingState(options, options.initData, signalingOptions);
+            for (let i = 0; i < 6; i++) {
+                const state = reconnectingState;
+                await waitUntil(() => isConnectedTo(stayingState, state) && isConnectedTo(state, stayingState), 15000);
+                state.close();
+                reconnectingState = new SignalingState(options, options.initData, signalingOptions);
+                stayingState.resetReadLoop();
+            }
+            reconnectingState.close();
+            stayingState.close();
         });
     });
     describe('live replication', () => {

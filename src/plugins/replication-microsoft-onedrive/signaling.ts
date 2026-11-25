@@ -234,7 +234,7 @@ export class SignalingState {
                         config: this.signalingOptions.config
                     });
                     peer.on("signal", async (signalData: any) => {
-                        await this.sendMessage(signalData);
+                        await this.sendMessage(Object.assign({ to: senderId }, signalData));
                     });
                     peer.on('connect', () => {
                         this._resync$.next();
@@ -272,7 +272,10 @@ export class SignalingState {
                 }
             );
 
-            if (!message.data.i) {
+            if (
+                !message.data.i &&
+                (!message.data.to || message.data.to === this.sessionId)
+            ) {
                 peerInstance.signal(message.data);
             }
         });
@@ -351,7 +354,7 @@ export async function readMessages(
 }
 
 function messageIdByFilename(name: string): string {
-    const fileName = name.split('.')[0];
+    const fileName = name.endsWith('.json') ? name.slice(0, -5) : name;
     const messageId = ensureNotFalsy(lastOfArray(fileName.split('_')));
     return messageId;
 }
