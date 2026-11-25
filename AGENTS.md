@@ -66,6 +66,18 @@ This guide is derived from an analysis of all existing pages in `docs-src/docs/`
 - Headings: Title Case for H2/H3. Question headings ("What is a Vector Database?") and how-to gerund headings ("Using the sharding plugin") are fine.
 - End articles with `## Follow Up`: a bullet list of internal links, usually the Quickstart (`../quickstart.md`), the GitHub repo as `/code/`, the chat as `/chat/`, and related articles. A star CTA "leave a star ⭐" is allowed. Reference pages may simply end after the last technical section.
 
+### Learning curve
+A docs page has to be easy to enter and get harder step by step. An analysis of all docs pages (November 2026, compared with the docs of Vue, TanStack Query, Vite, Prisma and Dexie) showed that RxDB pages are not more complex than those of other tools. The problem was that they start hard and jump between easy and expert sections. Follow these rules when you write or restructure a page:
+- **Start with a minimal example**: directly after the intro, show the smallest runnable code (3 to 10 lines, with imports) and 2 to 3 sentences. It introduces at most one or two new concepts. Do NOT open a page with the full options object or the hardest variant.
+- **Order by difficulty**: basics first, then the common options and methods, then an `## Advanced ...` section near the end for expert options and edge cases (for example `hashFunction`, querying the storage directly, composite primary keys).
+- **No jumps**: neighboring sections must not swing from trivial to expert. Group the expert material instead of mixing it into the basics.
+- **Limit new terms**: introduce only a few new APIs or terms per section. Every new term needs a sentence that explains it before it is used in code. For example, do not use `lastCheckpoint` in an example before checkpoints are explained.
+- **One topic per page**: when a page passes about 2,000 words and mixes concept and API reference, split it into a concept page, an options page and an API page (as done for `replication.md`, `replicate-rx-collection.md` and `rx-replication-state.md`).
+- **Teach a thing once**: do not teach the same content twice on neighboring pages. Keep one canonical page and let the other page link to it, for example with a comparison table (as `query-builder.md` does for the Mango operators of `rx-query-examples.md`).
+- **One default choice**: in quickstarts and tutorials, show one default option (for example the LocalStorage storage) and put the alternatives in tabs or a collapsed section. Every step must run without a server.
+- **Show what is special early**: put RxDB's differentiators, like the reactive `.$` observable, into the first example of a page, not after the API details.
+- **Add a picture to concept pages**: a concept page needs at least one diagram or animation (`<DocsAnimation>`), with square corners (see `docs-src/AGENTS.md`).
+
 ### Voice and tone: the author fingerprint
 
 The docs have one dominant authorial voice: the maintainer, a German native speaker who writes direct, pragmatic, evidence-driven English. New pages must sound like this voice. The fingerprint below was measured on his most personally written pages (release notes, slow-indexeddb.md, why-nosql.md, downsides-of-offline-first.md, offline-first.md, leader-election.md, transactions-conflicts-revisions.md, replication.md, contribute.md, the websockets and localstorage-indexeddb articles).
