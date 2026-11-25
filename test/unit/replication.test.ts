@@ -3922,6 +3922,127 @@ describe('replication.test.ts', () => {
             serverCollection.database.close();
             clientCollection.database.close();
         });
+        ['constructor', 'toString', 'hasOwnProperty', 'valueOf', '__proto__'].forEach(docId => {
+            it('should replicate a document with the primary key "' + docId + '"', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+                const pullOnlyCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+                const conflictCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+
+                async function syncOnce(collection: RxCollection<TestDocType>) {
+                    const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
+                        collection,
+                        replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                        live: false,
+                        retryTime: 20,
+                        pull: {
+                            handler: getPullHandler(remoteCollection)
+                        },
+                        push: {
+                            handler: getPushHandler(remoteCollection)
+                        }
+                    });
+                    const firstError = firstValueFrom(
+                        replicationState.error$,
+                        { defaultValue: undefined }
+                    ).then(err => {
+                        if (err) {
+                            throw err;
+                        }
+                    });
+                    try {
+                        await Promise.race([
+                            replicationState.awaitInitialReplication(),
+                            firstError
+                        ]);
+                    } finally {
+                        await replicationState.cancel();
+                    }
+                }
+
+                try {
+                    // push
+                    await localCollection.insert(schemaObjects.humanWithTimestampData({
+                        id: docId,
+                        name: 'pushed'
+                    }));
+                    await syncOnce(localCollection);
+                    const remoteDocs = await remoteCollection.find().exec();
+                    assert.deepStrictEqual(remoteDocs.map(d => d.primary), [docId]);
+                    assert.strictEqual(remoteDocs[0].name, 'pushed');
+
+                    // pull
+                    await syncOnce(pullOnlyCollection);
+                    const pulledDocs = await pullOnlyCollection.find().exec();
+                    assert.deepStrictEqual(pulledDocs.map(d => d.primary), [docId]);
+                    assert.strictEqual(pulledDocs[0].name, 'pushed');
+
+                    // push conflict, the default conflict handler keeps the master state
+                    await conflictCollection.insert(schemaObjects.humanWithTimestampData({
+                        id: docId,
+                        name: 'conflicting'
+                    }));
+                    await syncOnce(conflictCollection);
+                    const conflictDocs = await conflictCollection.find().exec();
+                    assert.deepStrictEqual(conflictDocs.map(d => d.primary), [docId]);
+                    assert.strictEqual(conflictDocs[0].name, 'pushed');
+
+                    // push an update of a document that is known to the master
+                    await pulledDocs[0].incrementalPatch({ name: 'updated' });
+                    await syncOnce(pullOnlyCollection);
+                    assert.strictEqual((await remoteCollection.findOne(docId).exec(true)).name, 'updated');
+                } finally {
+                    await localCollection.database.close();
+                    await remoteCollection.database.close();
+                    await pullOnlyCollection.database.close();
+                    await conflictCollection.database.close();
+                }
+            });
+        });
+        ['constructor', '__proto__'].forEach(docId => {
+            it('should replicate later changes of a document with the primary key "' + docId + '" in a live replication', async () => {
+                const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 1 });
+                await localCollection.insert(schemaObjects.humanWithTimestampData({
+                    id: docId,
+                    name: 'initial'
+                }));
+                const replicationState = replicateRxCollection<TestDocType, CheckpointType>({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: {
+                        handler: getPullHandler(remoteCollection),
+                        stream$: getPullStream(remoteCollection)
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection)
+                    }
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                try {
+                    await replicationState.awaitInSync();
+                    assert.strictEqual((await localCollection.find().exec()).length, 2);
+                    const remoteDoc = await remoteCollection.findOne(docId).exec(true);
+                    assert.strictEqual(remoteDoc.name, 'initial');
+
+                    const localDoc = await localCollection.findOne(docId).exec(true);
+                    await localDoc.incrementalPatch({ name: 'fork-change' });
+                    await waitUntil(async () => {
+                        const doc = await remoteCollection.findOne(docId).exec(true);
+                        return doc.name === 'fork-change';
+                    });
+                    await replicationState.awaitInSync();
+
+                    await remoteDoc.incrementalPatch({ name: 'master-change' });
+                    await waitUntil(async () => {
+                        const doc = await localCollection.findOne(docId).exec(true);
+                        return doc.name === 'master-change';
+                    });
+                } finally {
+                    await localCollection.database.close();
+                    await remoteCollection.database.close();
+                }
+            });
+        });
     });
     describe('push-only', () => {
         it('should stop the replication when the push modifier throws', async () => {
