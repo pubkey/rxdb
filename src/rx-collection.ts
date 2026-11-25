@@ -12,9 +12,7 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID,
-    NON_PREMIUM_COLLECTION_LIMIT,
-    hasPremiumFlag
+    PROMISE_RESOLVE_VOID
 } from './plugins/utils/index.ts';
 import {
     fillObjectDataBeforeInsert,
@@ -253,37 +251,9 @@ export class RxCollectionBase<
 
     public async prepare(): Promise<void> {
 
-        if (!(await hasPremiumFlag())) {
-
-            /**
-             * When used in a test suite, we often open and close many databases with collections
-             * while not awaiting the database.close() call to improve the test times.
-             * So when reopening collections and the OPEN_COLLECTIONS size is full,
-             * we retry after some times to account for this.
-             * Use a higher retry count to account for slow storage backends like MongoDB
-             * where tests hold collections open for several seconds.
-             */
-            let count = 0;
-            const startTime = Date.now();
-            while (count < 60 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
-                await this.promiseWait(30);
-                count++;
-            }
-            if (OPEN_COLLECTIONS.size > NON_PREMIUM_COLLECTION_LIMIT) {
-                const timeInRetry = Date.now() - startTime;
-                throw newRxError('COL23', {
-                    database: this.database.name,
-                    collection: this.name,
-                    args: {
-                        timeInRetry,
-                        existing: Array.from(OPEN_COLLECTIONS.values()).map(c => ({
-                            db: c.database ? c.database.name : '',
-                            c: c.name
-                        }))
-                    }
-                });
-            }
-        }
+        // CLA-DB: Removed the artificial NON_PREMIUM_COLLECTION_LIMIT (COL23) check.
+        // OPEN_COLLECTIONS tracking and utils-premium exports are preserved for
+        // database shutdown cleanup and public API compatibility.
 
         /**
          * Must be after the check because the hooks might throw on dev-mode

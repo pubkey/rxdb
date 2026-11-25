@@ -109,40 +109,28 @@ describe('rx-collection.test.ts', () => {
                     db.close();
                 });
             });
-            describe('negative', () => {
-                it('if not premium, it should limit the collections amount', async function () {
+            describe('CLA DB collection limit removal', () => {
+                it('should allow opening more than NON_PREMIUM_COLLECTION_LIMIT collections without a premium flag', async function () {
                     this.timeout(10 * 1000);
-                    if (isFastMode()) {
-                        return;
-                    }
-                    if ((await hasPremiumFlag())) {
-                        return;
-                    }
-                    if (isFastMode()) {
-                        return;
-                    }
+                    assert.strictEqual(await hasPremiumFlag(), false);
+
                     const db = await createRxDatabase({
                         name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
-                    let t = NON_PREMIUM_COLLECTION_LIMIT + 2;
-                    await assertThrows(
-                        async () => {
-                            while (t > 0) {
-                                await db.addCollections({
-                                    ['human_' + t]: {
-                                        schema: schemas.human,
-                                        options: {
-                                            foo: 'bar'
-                                        }
-                                    }
-                                });
-                                t--;
+                    const totalCollections = NON_PREMIUM_COLLECTION_LIMIT + 2;
+                    for (let i = 1; i <= totalCollections; i++) {
+                        await db.addCollections({
+                            ['human_' + i]: {
+                                schema: schemas.human,
+                                options: {
+                                    foo: 'bar'
+                                }
                             }
-                        },
-                        'RxError',
-                        'COL23'
-                    );
+                        });
+                    }
+                    assert.strictEqual(Object.keys(db.collections).length, totalCollections);
+                    assert.strictEqual(await hasPremiumFlag(), false);
 
                     await db.close();
                 });
