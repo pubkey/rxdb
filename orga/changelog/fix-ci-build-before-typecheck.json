@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX CLA DB CI type checking on clean checkouts by building the plugin shims and declarations first",
+    "links": [],
+    "priority": 1
+}
