@@ -1,6 +1,7 @@
 import { newRxError } from '../../rx-error.ts';
 import { setOwnProperty } from '../utils/index.ts';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import { RX_COLLECTION_BULK_INSERT_CONTEXT } from '../../rx-storage-helper.ts';
 import type { BulkWriteRow, RxDocumentData, RxStorageInstance } from '../../types/index.d.ts';
 
 /**
@@ -91,7 +92,8 @@ export function containsDateInstance(obj: any): boolean {
 
 export function checkWriteRows<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any, any>,
-    rows: BulkWriteRow<RxDocType>[]
+    rows: BulkWriteRow<RxDocType>[],
+    context: string
 ) {
     const primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
     for (const writeRow of rows) {
@@ -101,6 +103,11 @@ export function checkWriteRows<RxDocType>(
             storageInstance.schema,
             writeRow.document
         );
+
+        const primaryKey = (writeRow.document as any)[primaryPath];
+        if (context === RX_COLLECTION_BULK_INSERT_CONTEXT && typeof primaryKey === 'string') {
+            ensurePrimaryKeyValid(primaryKey, writeRow.document);
+        }
 
         /**
          * Writes and their results are mapped by the document id,

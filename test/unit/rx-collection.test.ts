@@ -634,6 +634,45 @@ describe('rx-collection.test.ts', () => {
                     ].map(id => ensurePrimaryKeyInsertThrows(id)));
                     c.database.close();
                 });
+                it('should not store a document when the primary key is not allowed', async () => {
+                    const c = await humansCollection.create(0);
+                    const invalidPrimaryKeys: [string, string][] = [
+                        ['not-trimmed ', 'DOC21'],
+                        [' not-trimmed', 'DOC21'],
+                        ['', 'DOC20'],
+                        ['contains \n linebreak', 'DOC22'],
+                        ['contains \r linebreak', 'DOC22'],
+                        ['contains " quote', 'DOC23']
+                    ];
+                    for (const [id, code] of invalidPrimaryKeys) {
+                        // the upsert methods have their own errors for an empty primary key
+                        const upsertCode = id === '' ? 'COL3' : code;
+                        const incrementalUpsertCode = id === '' ? 'COL4' : code;
+                        const doc = schemaObjects.humanData(id);
+                        const writes: [() => Promise<any>, string][] = [
+                            [() => c.insert(doc), code],
+                            [() => c.insertIfNotExists(doc), code],
+                            [() => c.bulkInsert([schemaObjects.humanData(), doc]), code],
+                            [() => c.upsert(doc), upsertCode],
+                            [() => c.incrementalUpsert(doc), incrementalUpsertCode],
+                            [() => c.bulkUpsert([schemaObjects.humanData(), doc]), upsertCode]
+                        ];
+                        for (const [write, expectedCode] of writes) {
+                            await assertThrows(write, 'RxError', expectedCode);
+                            const docs = await c.find().exec();
+                            assert.deepStrictEqual(docs.map(d => d.primary), []);
+                        }
+                    }
+
+                    const validDoc = schemaObjects.humanData('valid-key');
+                    await c.insert(validDoc);
+                    const docsAfter = await c.find().exec();
+                    assert.deepStrictEqual(docsAfter.map(d => d.primary), ['valid-key']);
+                    const found = await c.findOne('valid-key').exec(true);
+                    assert.strictEqual(found.firstName, validDoc.firstName);
+
+                    c.database.close();
+                });
                 /**
                  * @link https://github.com/pubkey/rxdb/issues/5046
                  */

@@ -190,7 +190,7 @@ Docs: ${err.docs}`;
         },
         preStorageWrite: {
             before: (args) => {
-                checkWriteRows(args.storageInstance, args.rows);
+                checkWriteRows(args.storageInstance, args.rows, args.context);
             }
         },
         createRxCollection: {

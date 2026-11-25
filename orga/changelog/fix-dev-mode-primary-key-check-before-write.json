@@ -1,0 +1,6 @@
+{
+    "$schema": "./schema.json",
+    "text": "FIX in dev-mode, an insert or upsert with a primary key that is not allowed (`DOC20`, `DOC21`, `DOC22`, `DOC23`) threw the error but stored the document anyway, so that each later query that returned it threw again. The primary key is now checked before the write and nothing is stored",
+    "links": [],
+    "priority": 4
+}
