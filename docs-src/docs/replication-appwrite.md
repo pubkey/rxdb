@@ -261,7 +261,7 @@ const replicationState = replicateAppwrite({
 
 ### Do other things with the replication state
 
-The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` allows you to run all functionality of the normal [RxReplicationState](./rx-replication-state.md). The Appwrite realtime subscription of a live replication is closed on [`pause()`](./rx-replication-state.md#pause) and on `cancel()`, and `start()` after a pause opens a new one.
+The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` allows you to run all functionality of the normal [RxReplicationState](./rx-replication-state.md).
 
 </Steps>
 

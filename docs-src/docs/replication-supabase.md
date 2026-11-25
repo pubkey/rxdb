@@ -43,7 +43,7 @@ Clients connect **directly to Supabase** using the official JS client. The plugi
 
 - **Pulls** documents over PostgREST using a checkpoint `(modified, id)` and deterministic ordering.
 - **Pushes** inserts/updates using optimistic concurrency guards.
-- **Streams** new changes using Supabase Realtime so live replication stays up to date. The Realtime channel is removed on [`pause()`](./rx-replication-state.md#pause) and on `cancel()`, and `start()` after a pause subscribes to a new one.
+- **Streams** new changes using Supabase Realtime so live replication stays up to date.
 
 
 :::note

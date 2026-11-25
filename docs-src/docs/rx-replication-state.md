@@ -205,8 +205,6 @@ await myRxReplicationState.pause();
 await myRxReplicationState.start(); // restart
 ```
 
-The replication plugins that open their own change stream do not keep it open while the replication is paused. These plugins ([GraphQL](./replication-graphql.md), [CouchDB](./replication-couchdb.md), [Firestore](./replication-firestore.md), [Supabase](./replication-supabase.md), [MongoDB](./replication-mongodb.md), [NATS](./replication-nats.md), [Appwrite](./replication-appwrite.md), [Google Drive](./replication-google-drive.md), and [Microsoft OneDrive](./replication-microsoft-onedrive.md)) close it on `pause()` and on `cancel()`. This is the websocket subscription, the long polling request, the change stream, the realtime channel, or the WebRTC signaling of that plugin. When `start()` is called after a pause, the plugin opens a new stream. The [WebSocket](./replication-websocket.md) replication is different: its connection also carries the pull and push requests, and it stays open while the replication is paused. The [WebRTC](./replication-webrtc.md) replication returns a pool of connections that has no `pause()`.
-
 Changes that happen on the server during the pause are not lost. The resync cycle that `start()` runs after a pause fetches them with the [checkpoint iteration](./replication.md#checkpoint-iteration).
 
 With `replicateRxCollection()` RxDB does not know which connection is behind your `pull.stream$`, so it cannot close it. You have to [close and open the connection of your own pull stream](./replication-http.md#close-the-pullstream-connection-on-pause) next to your `pause()` and `start()` calls.

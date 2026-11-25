@@ -80,8 +80,6 @@ const replicationState = replicateNats({
 });
 ```
 
-The NATS consumer of a live replication is closed on [`pause()`](./rx-replication-state.md#pause) and on `cancel()`, and `start()` after a pause creates a new one.
-
 </Steps>
 
 

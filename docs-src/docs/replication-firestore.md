@@ -96,7 +96,7 @@ const replicationState = replicateFirestore({
 });
 ```
 
-To observe and cancel the replication, you can use any other methods from the [RxReplicationState](./rx-replication-state.md) like `error$`, `cancel()` and `awaitInitialReplication()`. The `onSnapshot()` listener of a live replication is removed on [`pause()`](./rx-replication-state.md#pause) and on `cancel()`, and `start()` after a pause adds a new one.
+To observe and cancel the replication, you can use any other methods from the [RxReplicationState](./rx-replication-state.md) like `error$`, `cancel()` and `awaitInitialReplication()`.
 
 
 </Steps>
