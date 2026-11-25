@@ -1,271 +1,109 @@
-<p align="center">
-  <a href="https://rxdb.info/">
-    <img src="./docs-src/static/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
-  </a>
-  <br />
-  <h3 align="center">A fast, <a href="https://rxdb.info/articles/local-first-future.html">local-first</a>, reactive Database for JavaScript Applications</h3>
-</p>
-<br />
+# CLA DB (`@clatech/db`)
 
+A minimal, Apache 2.0 fork of [RxDB](https://github.com/pubkey/rxdb) maintained by **CLA Tech**.
 
-<p align="center">
-    <a href="https://github.com/pubkey/rxdb/releases"><img src="https://img.shields.io/github/v/release/pubkey/rxdb?color=%23ff00a0&include_prereleases&label=version&sort=semver&style=flat-square"></a>
-    &nbsp;
-    <a href="https://rxdb.info/tutorials/typescript.html"><img src="https://img.shields.io/npm/types/rxdb?style=flat-square"></a>
-    &nbsp;
-    <a href="https://github.com/pubkey/rxdb/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/pubkey/rxdb?style=flat-square"></a>
-    &nbsp;
-    <a href="https://github.com/pubkey/rxdb/stargazers"><img src="https://img.shields.io/github/stars/pubkey/rxdb?color=f6f8fa&style=flat-square"></a>
-    &nbsp;
-    <a href="https://www.npmjs.com/package/rxdb"><img src="https://img.shields.io/npm/dm/rxdb?color=c63a3b&style=flat-square"></a>   
-</p>
+CLA DB provides a reactive, local-first, offline-first NoSQL database for JavaScript and TypeScript applications without the artificial 13-collection cap, while preserving full compatibility with RxDB's public API, storage interfaces, and replication protocol.
 
-<p align="center">
- 	  <a href="https://rxdb.info/chat"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
-	  &nbsp;
-    <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/badge/twitter-%40rxdbjs-1DA1F2?style=flat-square"></a>
-	  &nbsp;
-    <a href="https://www.linkedin.com/company/rxdb"><img src="https://img.shields.io/badge/linkedin-%40rxdb-0e76a8?style=flat-square"></a>
-    &nbsp;
-    <a href="https://rxdb.info/newsletter"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
-</p>
+- **Package**: `@clatech/db` (`v0.1.0`)
+- **License**: [Apache-2.0](./LICENSE.txt)
+- **Repository**: `https://github.com/AngelCLA/cla-db`
+- **Upstream**: [pubkey/rxdb](https://github.com/pubkey/rxdb) (v0.1.0 base: RxDB `17.6.0+522`, commit `9d5849cf4c695ffc27d60e134b2039539e77a9b0`)
 
+## Why CLA DB Exists
 
-<br />
+CLA Tech builds offline-first commercial applications (starting with field-sales credit furniture software) that model more than 13 domain collections locally and synchronize bidirectionally when connectivity returns.
 
-<h2>
-  <img height="16" width="16" src="./docs-src/static/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
-</h2>
+CLA DB follows a **minimal fork, maximum compatibility** policy:
+- Removes only the artificial `NON_PREMIUM_COLLECTION_LIMIT` check (`COL23`) in `src/rx-collection.ts`.
+- Preserves all open-source RxDB core features, Mango queries, RxJS reactivity, schema migrations, conflict handling, and replication plugins.
+- Contains zero proprietary RxDB Premium code and never falsifies Premium flags.
+- Keeps future CLA Tech adapters (Cloudflare Workers + D1, R2, custom SQLite, custom OPFS, diagnostics) outside the core repository as separate packages over public interfaces.
 
-<p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a <a href="https://rxdb.info/articles/local-first-future.html">local-first</a>, NoSQL-database for JavaScript Applications.
-  Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
-  This is great for UI-based <b>realtime</b> applications in a way that makes it easy to develop and also has great performance benefits.
-</p>
+## Open Storage Engines Included
 
-Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
+| Storage | Import Path | Notes |
+| --- | --- | --- |
+| Dexie (IndexedDB) | `@clatech/db/plugins/storage-dexie` | Recommended persistent browser/PWA storage |
+| Memory | `@clatech/db/plugins/storage-memory` | In-memory storage for tests and ephemeral workloads |
+| LocalStorage | `@clatech/db/plugins/storage-localstorage` | Lightweight key-value persistence |
+| FoundationDB | `@clatech/db/plugins/storage-foundationdb` | Node.js backend |
+| MongoDB | `@clatech/db/plugins/storage-mongodb` | Node.js backend (`mongodb` peer dependency) |
+| DenoKV | `@clatech/db/plugins/storage-denokv` | Deno runtime |
+| Remote / WebSocket | `@clatech/db/plugins/storage-remote` | Cross-process / WebWorker storage bridge |
 
+Note: `@clatech/db/plugins/storage-sqlite` is inherited from upstream RxDB as an open-source trial adapter capped at 500 documents (`SQL2`). An unrestricted open-source SQLite adapter is planned as an external package in `ROADMAP.md`.
 
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=tj7AaDDHv2g" target="_blank"><img src="./docs-src/static/files/readme_video.png" alt="RxDB on Youtube" /></a>
-</p>
+## Quick Start
 
+### Install (local evaluation)
 
-<h2>
-  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/people.svg">&nbsp;&nbsp;Used by <b style="color: #e6008d;">many</b>
-</h2>
-
-RxDB is a proven technology used by [thousands of developers](https://github.com/pubkey/rxdb/network/dependents) worldwide. With its flexibility, RxDB is used in a diverse range of apps and services.
-
-<a href="https://rxdb.info/#reviews" target="_blank">
-<img src="./docs-src/static/files/used-by-many.png" />
-</a>
-<br />
-(<a href="https://forms.gle/7taae27VqLXqd4sF6">add yours</a>)
-
-<h2>
-  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications
-  <img height="36" src="./docs-src/static/files/icons/with-gradient/text/made-easy.svg">
-</h2>
-
-
-
-![realtime.gif](docs-src/static/files/animations/realtime.gif)
-
-
-<h2>
-  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Replicate with your <b style="color: #e6008d;">existing infrastructure</b>
-</h2>
-
-RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html">Sync Engine</a> for <a href="https://rxdb.info/articles/realtime-database.html">realtime</a> replication with your existing infrastructure.<br />
-You do not have to use a specific cloud or backend database. The protocol works by implementing three simple HTTP endpoints.
-There are also production-ready plugins to easily replicate with <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC (P2P)</a>, <a href="https://rxdb.info/replication-supabase.html">Supabase</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a>, <a href="https://rxdb.info/replication-nats.html">NATS</a> or <a href="https://rxdb.info/replication-google-drive.html">Google Drive</a>.
-
-
-<h2>
-  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/storage-layer.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
-</h2>
-
-RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that enables you to swap out the underlying storage engine. This increases **code reuse** because the same database code can be used in different JavaScript environments by just switching out the storage settings.
-
-You can use RxDB on top of [LocalStorage](https://rxdb.info/rx-storage-localstorage.html), [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html), [OPFS](https://rxdb.info/rx-storage-opfs.html), [LokiJS](https://rxdb.info/rx-storage-lokijs.html), [Dexie.js](https://rxdb.info/rx-storage-dexie.html), [in-memory](https://rxdb.info/rx-storage-memory.html), [SQLite](https://rxdb.info/rx-storage-sqlite.html), in a [WebWorker](https://rxdb.info/rx-storage-worker.html) thread and even on top of [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html) and [DenoKV](https://rxdb.info/rx-storage-denokv.html).
-
-No matter what kind of runtime you have, as long as it runs JavaScript, it can run RxDB:
-
-<h4>
-  <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/chrome/chrome_24x24.png" />
-  <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/firefox/firefox_24x24.png" />
-  <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/safari/safari_24x24.png" />
-  <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" />
-  <a href="./examples/angular">Browsers</a>
-  <img height="13" src="docs-src/static/files/icons/nodejs.svg" />
-  <a href="./examples/node">Node.js</a>
-  <img height="13" src="docs-src/static/files/icons/react.svg" />
-  <a href="https://rxdb.info/react-native-database.html">React Native</a>
-  <img height="13" src="docs-src/static/files/icons/capacitor.svg" />
-  <a href="https://rxdb.info/capacitor-database.html">Capacitor</a>
-  <img height="13" src="docs-src/static/files/icons/nativescript.svg" />
-  <a href="https://github.com/herefishyfish/rxdb-nativescript">NativeScript</a>
-  <img height="13" src="docs-src/static/files/icons/flutter.svg" />
-  <a href="./examples/flutter">Flutter</a>
-  or as an <img height="13" src="docs-src/static/files/icons/electron.svg" />
-  <a href="https://rxdb.info/electron-database.html">Electron Database</a>
-</h4>
-
-
-<h2>
-  All the features that you need
-</h2>
-
-Since its beginning in 2018, RxDB has gained a huge set of features and plugins which makes it a flexible full solution regardless of which type of application you are building. Every feature that you need now or might need in the future is already there.
-
-
-<table>
-  <tr>
-    <td>
-      <a href="https://rxdb.info/logger.html">Logging</a><br>
-      <a href="https://rxdb.info/rx-attachment.html">Attachments</a><br>
-      <a href="https://rxdb.info/orm.html">ORM</a><br>
-      <a href="https://rxdb.info/transactions-conflicts-revisions.html">Conflict Handling</a><br>
-      <a href="https://rxdb.info/middleware.html">Middleware</a><br>
-      <a href="https://rxdb.info/reactivity.html">Signals</a><br>
-      <a href="https://rxdb.info/articles/tanstack-db/rxdb-collection-for-tanstack-db.html">TanStack DB</a>
-    </td>
-    <td>
-      <a href="https://rxdb.info/rx-state.html">State</a><br>
-      <a href="https://rxdb.info/backup.html">Backup</a><br>
-      <a href="https://rxdb.info/replication.html">Replication</a><br>
-      <a href="https://rxdb.info/rx-server.html">Server</a><br>
-      <a href="https://rxdb.info/rx-storage.html">Storages</a><br>
-      <a href="https://rxdb.info/rx-local-document.html">Local Documents</a>
-    </td>
-    <td>
-      <a href="https://rxdb.info/schema-validation.html">Schema Validation</a><br>
-      <a href="https://rxdb.info/key-compression.html">Compression</a><br>
-      <a href="https://rxdb.info/migration-schema.html">Migration</a><br>
-      <a href="https://rxdb.info/encryption.html">Encryption</a><br>
-      <a href="https://rxdb.info/crdt.html">CRDT</a><br>
-      <a href="https://rxdb.info/population.html">Population</a>
-    </td>
-  </tr>
-</table>
-
-
-
-
-<h2>
-  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Quick start
-</h2>
-
-
-#### Install
+Build and pack locally to evaluate `@clatech/db` in an application:
 
 ```sh
-npm install rxdb rxjs --save
+npm install
+npm run build
+npm pack
 ```
 
-#### Store data
+Then install the generated tarball alongside `rxjs`:
 
-```javascript
-import {
-    createRxDatabase
-} from 'rxdb/plugins/core';
+```sh
+npm install ./clatech-db-0.1.0.tgz rxjs
+```
 
-/**
- * For browsers, we use the localstorage based storage.
- * In other JavaScript runtimes, we can use different storages:
- * @link https://rxdb.info/rx-storage.html
- */
-import {
-    getRxStorageLocalstorage
-} from 'rxdb/plugins/storage-localstorage';
+### Usage Example
 
-// create a database
+```ts
+import { createRxDatabase } from '@clatech/db';
+import { getRxStorageDexie } from '@clatech/db/plugins/storage-dexie';
+
 const db = await createRxDatabase({
-    name: 'heroesdb', // the name of the database
-    storage: getRxStorageLocalstorage()
+    name: 'field_sales_db',
+    storage: getRxStorageDexie()
 });
 
-// add collections with a schema
 await db.addCollections({
-  heroes: {
-    schema: {
-      version: 0,
-      primaryKey: 'name',
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          maxLength: 100
-        },
-        healthpoints: {
-          type: 'number'
+    customers: {
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: { type: 'string', maxLength: 100 },
+                name: { type: 'string' },
+                balance: { type: 'number' }
+            },
+            required: ['id', 'name', 'balance']
         }
-      },
-      required: ['name', 'healthpoints']
     }
-  }
 });
 
-// insert a document
-await db.heroes.insert({
-  name: 'Bob',
-  healthpoints: 100
+await db.customers.insert({
+    id: 'cust-001',
+    name: 'Maria Lopez',
+    balance: 1200
+});
+
+// Reactive query
+db.customers.find({
+    selector: { balance: { $gt: 0 } }
+}).$.subscribe((docs) => {
+    console.log('Active credit accounts:', docs.length);
 });
 ```
 
-#### Query data once
-```javascript
-const aliveHeroes = await db.heroes.find({
-  selector: {
-    healthpoints: {
-      $gt: 0
-    }
-  }
-}).exec(); // the exec() returns the result once
-```
+## Documentation
 
-#### Observe a Query
-```javascript
-await db.heroes.find({
-  selector: {
-    healthpoints: {
-      $gt: 0
-    }
-  }
-})
-.$ // observable with updated query results
-.subscribe(aliveHeroes => console.dir(aliveHeroes));
-```
+- [System Design](./SYSTEM_DESIGN.md) - Architecture, core components, open storages, and replication model
+- [Roadmap](./ROADMAP.md) - Planned milestones and future external adapter packages
+- [Upstream Maintenance](./UPSTREAM.md) - Strategy and step-by-step procedure for syncing from RxDB
+- [CLA DB Changelog](./CLA_CHANGELOG.md) - Fork-specific changes, upstream base tracking, and verification metrics
+- [Contributing](./CONTRIBUTING.md) - Development workflow, coding conventions, and test commands
+- [Agent Guidelines](./AGENTS.md) - Repository instructions for coding agents
 
+For general API reference on RxDB queries, schemas, hooks, and replication protocols, see the upstream [RxDB documentation](https://rxdb.info/).
 
-<h2>
-  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Get started
-</h2>
+## Attribution and License
 
-
-Get started now by [reading the docs](https://rxdb.info/quickstart.html) or exploring the [example-projects](./examples).
-
-<h2>
-  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/contribute.svg">&nbsp;&nbsp;Support and Contribute
-</h2>
-
-- **Leave a Star ☝️**
-- [Check out how you can contribute to this project](https://rxdb.info/contribution.html).
-- [Read this when you have found a bug](./orga/bug-checklist.md)
-- [Buy access to the premium plugins](https://rxdb.info/premium/)
-- [Join us at discord to get help](https://rxdb.info/chat)
-- [Follow us at LinkedIn](https://www.linkedin.com/company/rxdb/)
-
-<!-- 
-  There are many websites that just exact-copy the readme of github projects.
-  This generates free backlinks so we add some links here to pages
-  that we need to rank better.
--->
-
-#### More content
-[Angular Database](https://rxdb.info/articles/angular-database.html), [Frontend Database](https://rxdb.info/articles/frontend-database.html), [localStorage](https://rxdb.info/articles/localstorage.html), [React Database](https://rxdb.info/articles/react-database.html), [Browser Database](https://rxdb.info/articles/browser-database.html), [React Native Database](https://rxdb.info/react-native-database.html), [PWA Database](https://rxdb.info/articles/progressive-web-app-database.html), [In-memory NoSQL database](https://rxdb.info/articles/in-memory-nosql-database.html), [JSON database](https://rxdb.info/articles/json-database.html), [Angular IndexedDB](https://rxdb.info/articles/angular-indexeddb.html), [React IndexedDB](https://rxdb.info/articles/react-indexeddb.html), [Optimistic UI](https://rxdb.info/articles/optimistic-ui.html), [local database](https://rxdb.info/articles/local-database.html), [React Native Encryption](https://rxdb.info/articles/react-native-encryption.html), [Vue Database](https://rxdb.info/articles/vue-database.html), [jQuery Database](https://rxdb.info/articles/jquery-database.html), [Vue IndexedDB](https://rxdb.info/articles/vue-indexeddb.html), [Firestore Alternative](https://rxdb.info/articles/firestore-alternative.html), [Firebase Realtime Database Alternative](https://rxdb.info/articles/firebase-realtime-database-alternative.html), [Ionic Storage](https://rxdb.info/articles/ionic-storage.html), [Electron SQLite](https://rxdb.info/articles/electron-sqlite.html), [SQLite Sync](https://rxdb.info/articles/sqlite-sync.html), [TanStack DB Offline](https://rxdb.info/articles/tanstack-db/tanstack-db-offline-first.html), [DDIL Database](https://rxdb.info/articles/ddil-database.html)
-
-----------------
-
-View [llms.txt](https://rxdb.info/llms.txt)
+CLA DB is derived from [RxDB](https://github.com/pubkey/rxdb) created by Daniel Meyer (`pubkey`) and the RxDB contributors, licensed under the [Apache License 2.0](./LICENSE.txt).
+All original copyright notices, licenses, and upstream changelog records (`CHANGELOG.md`) are preserved in full. CLA DB is an independent fork by CLA Tech and is not affiliated with or endorsed by RxDB or RxDB Premium.

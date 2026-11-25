@@ -1,10 +1,21 @@
 # AGENTS.md
 
 ## Project Overview
-- **Database**: RxDB (local-first, NoSQL)
-- **Language**: TypeScript
+- **Project**: CLA DB (`@clatech/db`), a minimal Apache 2.0 fork of [RxDB](https://github.com/pubkey/rxdb) maintained by CLA Tech.
+- **Repository**: `https://github.com/AngelCLA/cla-db`
+- **Upstream**: `https://github.com/pubkey/rxdb` (v0.1.0 base: RxDB `17.6.0+522`, commit `9d5849cf4c695ffc27d60e134b2039539e77a9b0`)
+- **Language**: TypeScript (ES modules)
 - **State Management**: Reactive (RxJS Observables)
-- **Paths**: Source code in `src/`, tests in `test/`, documentation in `docs-src/`.
+- **Paths**: Source code in `src/`, tests in `test/`, fork docs at repo root (`SYSTEM_DESIGN.md`, `ROADMAP.md`, `UPSTREAM.md`, `CLA_CHANGELOG.md`, `CONTRIBUTING.md`), upstream docs source in `docs-src/`.
+
+## Fork Rules (Mandatory)
+- **Minimal fork, maximum compatibility**: Keep diffs against upstream RxDB small, isolated, and clearly marked with `// CLA-DB:` comments so future upstream merges stay clean.
+- **No proprietary code**: Never copy, port, or enable RxDB Premium proprietary plugins. Never falsify Premium flags or alter Premium license validation.
+- **Public API & storage compatibility**: Preserve RxDB public APIs, `OPEN_COLLECTIONS` cleanup tracking, `plugin.rxdb === true`, and internal storage prefixes (`_rxdb_internal`, `rxdatabase_storage_local`, `BroadcastChannel('RxDB:|...')`).
+- **Version decoupling**: `package.json#version` tracks CLA DB SemVer (`0.1.0`), while `RXDB_VERSION` is driven by `package.json#claDb.upstreamVersion` (`17.6.0`) via `scripts/update-version-variable.mjs` so on-disk compatibility checks (`DM5`) stay aligned with RxDB 17 format.
+- **External extensions only**: Future adapters (Cloudflare Workers + D1, R2, custom SQLite, custom OPFS, diagnostics, visual inspector) must be implemented as separate packages using public core interfaces, not added to `src/`.
+- **No automated publishing or force push**: Never auto-publish npm packages or GitHub releases, and never force push shared branches.
+- **Record fork changes**: Update `CLA_CHANGELOG.md` for every CLA DB modification and keep `package.json#claDb` aligned when syncing upstream (`UPSTREAM.md`).
 
 ## Tooling
 - **Build All**: `npm run build`
@@ -12,8 +23,10 @@
 - **Run All Tests**: `npm run test`
 - **Fast Tests (Parallel)**: `npm run test:fast`
 - **Fast Memory Tests**: `npm run test:fast:memory`
+- **Fast Dexie Tests**: `npm run test:fast:dexie`
 - **Node Tests**: `npm run test:node`
-- **Browser Tests**: `npm run test:browser`
+- **Typings Test**: `npm run test:typings`
+- **Circular Deps Check**: `npm run test:circular`
 - **Performance Tests**: `npm run test:performance`
 - **Lint**: `npm run lint`
 - **Lint Fix**: `npm run lint:fix`
@@ -23,25 +36,25 @@
 ## Code Style & Patterns
 - **Language**: TypeScript
 - **Formatting**: Uses ESLint. Run `npm run lint` to check and `npm run lint:fix` to auto-fix.
-- **Imports**: Uses ES modules (import/export).
+- **Imports**: Uses ES modules (import/export). Keep internal `src/` imports relative; do not hardcode `'rxdb'` or `'@clatech/db'` inside `src/`.
 - **TypeScript**: Do not use enums. Prefer types instead of interfaces.
-- **Errors**: Do not use `throw new Error()`. Use `throw new RxError()` instead to reduce build size and do not include full error messages in production builds. Use the error codes from `src/rx-error.ts` and add new error codes if needed like `PL1`, `PL2`. Example: `throw newRxError('PL1', { plugin });`
+- **Errors**: Do not use `throw new Error()`. Use `throw newRxError()` instead to reduce build size and avoid shipping full error messages in production builds. Use the error codes from `src/rx-error.ts` and add new error codes only when required. Example: `throw newRxError('PL1', { plugin });`
 
 ## Documentation Style
 - SHOULD use clear, simple language.
 - SHOULD use data and examples to support claims when possible.
 - SHOULD be informative.
 - SHOULD focus on practical, actionable insights.
-- AVOID using em dashes (–) anywhere.
+- AVOID using em dashes anywhere.
 - AVOID constructions like "not just this, but also this".
 - AVOID metaphors and cliches.
 - AVOID generalizations.
 - AVOID upfront warnings or notes, just the output requested.
 - AVOID rhetorical questions.
-- AVOID specific words like: very, really, literally, actually, certainly, probably, basically, delve, embark, enlightening, esteemed, shed light, craft, creative, imagine, realm, game-changer, unlock, discover, skyrocket, abyss, not alone, in a world where, revolutionize, disruptive, utilize, utilizing, dive deep, tapestry, illuminate, unveil, pivotal, intricate, elucidate, hence, furthermore, realm, however, harness, exciting, groundbreaking, cutting-edge, remarkable, it remains to be seen, glimpse into, navigating, landscape, stark, testament, in summary, in conclusion, moreover, boost, skyrocket, opened up, powerful, inquiries, ever-evolving.
-- Review your response and ensure no em dashes.
-- MUST format FAQ sections using HTML `<details>` and `<summary>` tags. Ensure there is an empty line before and after the inner markdown content so it parses correctly.
-- SHOULD try to use components from the `docs-src/src/components` folder when writing docs.
+- AVOID hype words (very, really, literally, actually, certainly, probably, basically, delve, embark, game-changer, unlock, revolutionize, disruptive, utilize, dive deep, tapestry, illuminate, unveil, pivotal, intricate, elucidate, hence, furthermore, however, harness, groundbreaking, cutting-edge, remarkable, moreover, boost, skyrocket, ever-evolving).
+- Review output and ensure no em dashes.
+- MUST format FAQ sections in `docs-src/` using HTML `<details>` and `<summary>` tags with an empty line before and after inner markdown content.
+- SHOULD use components from `docs-src/src/components` when editing upstream docs.
 
 ## Documentation Writing Style Guide
 
