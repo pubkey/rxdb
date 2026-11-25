@@ -119,7 +119,7 @@ export async function updateDocumentFiles<DocType>(
     concurrency = 5
 ) {
     const queue = docs.slice(0);
-    const results: Record<string, { id: string }> = {};
+    const results: Record<string, { id: string }> = Object.create(null);
 
     async function worker() {
         while (queue.length) {

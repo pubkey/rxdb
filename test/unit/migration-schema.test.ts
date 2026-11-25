@@ -3978,5 +3978,79 @@ describe('migration-schema.test.ts', function () {
                 await ensureMigrationContinuesAfterReopen(dbName, storage);
             });
         });
+        ['constructor', 'toString', 'hasOwnProperty', 'valueOf', '__proto__'].forEach(docId => {
+            it('should migrate a document with the primary key "' + docId + '"', async () => {
+                type DocType = {
+                    id: string;
+                    val: string;
+                    migrated?: string;
+                };
+                function getSchema(version: number): RxJsonSchema<DocType> {
+                    return {
+                        version,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            val: {
+                                type: 'string'
+                            },
+                            migrated: {
+                                type: 'string'
+                            }
+                        },
+                        required: ['id', 'val']
+                    };
+                }
+                const name = randomToken(10);
+                const storage = config.storage.getStorage();
+
+                const db = await createRxDatabase<{ items: RxCollection<DocType>; }>({
+                    name,
+                    storage
+                });
+                await db.addCollections({
+                    items: {
+                        schema: getSchema(0)
+                    }
+                });
+                await db.items.bulkInsert([
+                    { id: docId, val: 'a' },
+                    { id: 'other', val: 'b' }
+                ]);
+                await db.close();
+
+                const db2 = await createRxDatabase<{ items: RxCollection<DocType>; }>({
+                    name,
+                    storage
+                });
+                try {
+                    await db2.addCollections({
+                        items: {
+                            schema: getSchema(1),
+                            migrationStrategies: {
+                                1: (oldDoc: DocType) => {
+                                    oldDoc.migrated = 'yes';
+                                    return oldDoc;
+                                }
+                            }
+                        }
+                    });
+                    const docs = await db2.items.find({ sort: [{ id: 'asc' }] }).exec();
+                    assert.deepStrictEqual(
+                        docs.map(d => d.toJSON()),
+                        [
+                            { id: docId, val: 'a', migrated: 'yes' },
+                            { id: 'other', val: 'b', migrated: 'yes' }
+                        ].sort((a, b) => a.id < b.id ? -1 : 1)
+                    );
+                } finally {
+                    await db2.remove();
+                }
+            });
+        });
     });
 });

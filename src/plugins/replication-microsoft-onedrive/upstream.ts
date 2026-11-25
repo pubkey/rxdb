@@ -220,7 +220,7 @@ export async function processWalFile<RxDocType>(
         init,
         docIds as string[]
     );
-    const fileIdByDocId: Record<string, string> = {};
+    const fileIdByDocId: Record<string, string> = Object.create(null);
 
     docFiles.files.forEach(file => {
         const docId = docIdFromFileName(file.name) as any;

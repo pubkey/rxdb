@@ -777,6 +777,35 @@ describe('replication-microsoft-onedrive.test.ts', function () {
                 );
                 assert.strictEqual(docsFiles.length, 20);
             });
+            it('process a wal file with document ids that are names of Object.prototype members', async () => {
+                const ids = ['constructor', 'toString', 'hasOwnProperty', 'valueOf', '__proto__'];
+                async function processRows(age: number) {
+                    await writeToWal(
+                        options,
+                        options.initData,
+                        ids.map(id => toWriteRow(schemaObjects.humanData(id, age)))
+                    );
+                    await processWalFile(
+                        options,
+                        options.initData,
+                        PRIMARY_PATH
+                    );
+                    const docsFiles = await listFilesInFolder(
+                        options,
+                        options.initData.docsFolderId
+                    );
+                    const contents = await fetchDocumentContents<WithDeletedAndAttachments<HumanDocumentType>>(
+                        options,
+                        docsFiles.map(d => d.id)
+                    );
+                    assert.deepStrictEqual(
+                        contents.ordered.map(doc => doc.passportId + ':' + doc.age).sort(),
+                        ids.map(id => id + ':' + age).sort()
+                    );
+                }
+                await processRows(1);
+                await processRows(2);
+            });
             it('process a non-empty wal file with updates', async () => {
                 const rows = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
                 await writeToWal(

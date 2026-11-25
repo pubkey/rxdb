@@ -275,7 +275,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         checkpoint?: CheckpointType;
         docs: ById<WithDeleted<RxDocType>>;
     } = {
-        docs: {}
+        docs: Object.create(null)
     };
 
     function persistFromMaster(
@@ -300,7 +300,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
          */
         persistenceQueue = persistenceQueue.then(() => {
             const downDocsById: ById<WithDeletedAndAttachments<RxDocType>> = nonPersistedFromMaster.docs;
-            nonPersistedFromMaster.docs = {};
+            nonPersistedFromMaster.docs = Object.create(null);
             const useCheckpoint = nonPersistedFromMaster.checkpoint;
             const docIds = Object.keys(downDocsById);
 
@@ -312,8 +312,8 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             }
 
             const writeRowsToFork: BulkWriteRow<RxDocType>[] = [];
-            const writeRowsToForkById: ById<BulkWriteRow<RxDocType>> = {};
-            const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {};
+            const writeRowsToForkById: ById<BulkWriteRow<RxDocType>> = Object.create(null);
+            const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, CheckpointType>> = Object.create(null);
             const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta<RxDocType, CheckpointType>>[] = [];
 
             return Promise.all([

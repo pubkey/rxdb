@@ -90,7 +90,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         checkpoint?: CheckpointType;
         docs: ById<RxDocumentData<RxDocType>>;
     } = {
-        docs: {}
+        docs: Object.create(null)
     };
 
     const sub = state.input.forkInstance.changeStream()
@@ -296,14 +296,14 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         });
         nonPersistedFromMaster.checkpoint = checkpoint;
 
-        let upDocsById: ById<RxDocumentData<RxDocType>> = {};
+        let upDocsById: ById<RxDocumentData<RxDocType>> = Object.create(null);
         persistenceQueue = persistenceQueue.then(async () => {
             if (state.events.canceled.getValue()) {
                 return false;
             }
 
             upDocsById = nonPersistedFromMaster.docs;
-            nonPersistedFromMaster.docs = {};
+            nonPersistedFromMaster.docs = Object.create(null);
             const useCheckpoint = nonPersistedFromMaster.checkpoint;
             const docIds = Object.keys(upDocsById);
             /**
@@ -333,10 +333,10 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 docIds
             );
 
-            const writeRowsToMaster: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
+            const writeRowsToMaster: ById<RxReplicationWriteToMasterRow<RxDocType>> = Object.create(null);
             const writeRowsToMasterIds: string[] = [];
-            const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, any>> = {};
-            const forkStateById: ById<RxDocumentData<RxDocType>> = {};
+            const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, any>> = Object.create(null);
+            const forkStateById: ById<RxDocumentData<RxDocType>> = Object.create(null);
 
             await Promise.all(
                 docIds.map(async (docId) => {
@@ -401,7 +401,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
             const writeRowsArray = Object.values(writeRowsToMaster);
             const conflictIds: Set<string> = new Set();
-            const conflictsById: ById<WithDeleted<RxDocType>> = {};
+            const conflictsById: ById<WithDeleted<RxDocType>> = Object.create(null);
 
             /**
              * To always respect the push.batchSize,
@@ -500,7 +500,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             if (conflictIds.size > 0) {
                 state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
                 const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
-                const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, any>> = {};
+                const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, any>> = Object.create(null);
                 await Promise.all(
                     Object
                         .entries(conflictsById)

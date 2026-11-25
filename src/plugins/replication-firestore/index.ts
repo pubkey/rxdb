@@ -233,7 +233,7 @@ export function replicateFirestore<RxDocType>(
                     rows = await asyncFilter(rows, (row) => pushFilter(row.newDocumentState));
                 }
 
-                const writeRowsById: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
+                const writeRowsById: ById<RxReplicationWriteToMasterRow<RxDocType>> = Object.create(null);
                 const docIds: string[] = rows.map(row => {
                     const docId = (row.newDocumentState as any)[primaryPath];
                     writeRowsById[docId] = row;
@@ -279,7 +279,7 @@ export function replicateFirestore<RxDocType>(
 
                     const docsInDbResult = await getContentByIds<RxDocType>(docIds, getQuery);
 
-                    const docsInDbById: ById<RxDocType> = {};
+                    const docsInDbById: ById<RxDocType> = Object.create(null);
                     docsInDbResult.forEach(row => {
                         const docDataInDb = stripServerTimestampField(serverTimestampField, row.data());
                         const docId = row.id;

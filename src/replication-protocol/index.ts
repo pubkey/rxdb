@@ -260,7 +260,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
         async masterWrite(
             rows
         ) {
-            const rowById: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
+            const rowById: ById<RxReplicationWriteToMasterRow<RxDocType>> = Object.create(null);
             rows.forEach(row => {
                 const docId: string = (row.newDocumentState as any)[primaryPath];
                 rowById[docId] = row;
