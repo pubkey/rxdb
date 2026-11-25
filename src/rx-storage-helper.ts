@@ -692,7 +692,8 @@ export function getWrappedStorageInstance<
             if (HOOKS.preStorageWrite.length > 0) {
                 runPluginHooks('preStorageWrite', {
                     storageInstance: this.originalStorageInstance,
-                    rows: toStorageWriteRows
+                    rows: toStorageWriteRows,
+                    context
                 });
             }
 

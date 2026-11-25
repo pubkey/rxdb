@@ -152,6 +152,7 @@ export interface RxPlugin {
         preStorageWrite?: RxPluginHooks<{
             storageInstance: RxStorageInstance<any, any, any, any>;
             rows: BulkWriteRow<any>[];
+            context: string;
         }>;
         preMigrateDocument?: RxPluginHooks<any>;
         postMigrateDocument?: RxPluginHooks<any>;
