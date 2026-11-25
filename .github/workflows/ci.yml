@@ -1,0 +1,94 @@
+name: CLA DB CI
+
+on:
+  push:
+    branches:
+      - master
+      - 'feature/**'
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NPM_CONFIG_FETCH_RETRIES: 3
+  NPM_CONFIG_FETCH_RETRY_FACTOR: 2
+  NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 5000
+  NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 20000
+
+jobs:
+  verify:
+    name: Build, Lint, Test, Pack & License Check
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package.json
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Verify Apache 2.0 license and zero proprietary dependencies
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            const assert = require("node:assert");
+            const pkg = JSON.parse(fs.readFileSync("./package.json", "utf8"));
+            assert.strictEqual(pkg.name, "@clatech/db", "Unexpected package name");
+            assert.strictEqual(pkg.license, "Apache-2.0", "Package license must be Apache-2.0");
+            const licenseText = fs.readFileSync("./LICENSE.txt", "utf8");
+            assert.ok(licenseText.includes("Apache License"), "LICENSE.txt missing Apache License header");
+            assert.ok(licenseText.includes("Version 2.0"), "LICENSE.txt missing Version 2.0");
+            const allDeps = {
+              ...(pkg.dependencies || {}),
+              ...(pkg.devDependencies || {}),
+              ...(pkg.peerDependencies || {}),
+              ...(pkg.optionalDependencies || {})
+            };
+            const proprietary = Object.keys(allDeps).filter((d) => d.includes("rxdb-premium"));
+            assert.strictEqual(proprietary.length, 0, "Proprietary dependencies forbidden: " + proprietary.join(", "));
+            console.log("License & proprietary dependency check: PASS");
+          '
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run check-types
+
+      - name: Build package
+        run: npm run build
+
+      - name: Check TypeScript typings
+        run: npm run test:typings
+
+      - name: Check circular dependencies
+        run: npm run test:circular
+
+      - name: Run unit tests (memory + CLA DB suite)
+        env:
+          NODE_OPTIONS: --expose-gc
+        run: npm run test:fast:memory
+
+      - name: Run unit tests (Dexie / IndexedDB)
+        run: npm run test:fast:dexie
+
+      - name: Validate packed tarball in isolated external consumer (ESM, CJS, TS)
+        run: node ./scripts/verify-pack-consumer.mjs

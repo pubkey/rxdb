@@ -10,9 +10,9 @@
     "jest-expo",
     "dexie"
   ],
-  "automerge": true,
+  "automerge": false,
   "major": {
-    "automerge": true
+    "automerge": false
   },
   "minimumReleaseAge": "7 days",
   "ignorePaths": [
