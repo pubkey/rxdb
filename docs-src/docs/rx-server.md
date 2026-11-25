@@ -293,6 +293,7 @@ Indexes come with a performance burden. You should only use the indexes you need
 ## Server-only fields
 
 All endpoints can be created with the `serverOnlyFields` set which defines some fields to only exist on the server, not on the clients. Clients will not see that fields and cannot do writes where one of the `serverOnlyFields` is set.
+Clients also cannot filter or sort by a server-only field in the queries of the [REST endpoint](#rest-endpoint). Such a query is answered with `400 Bad Request`. The [queryModifier](#query-modifier) of the endpoint can still use the server-only fields.
 Notice that when you use `serverOnlyFields` you likely need to have a different schema on the server than the schema that is used on the clients.
 
 ```ts
