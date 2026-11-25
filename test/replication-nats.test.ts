@@ -197,6 +197,30 @@ describe('replication-nats.test.js', () => {
         });
     });
 
+    describe('unreachable server', () => {
+        it('pause(), cancel() and database.close() should resolve while the connection is pending', async () => {
+            const collection = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            const natsName = randomToken(10);
+            const replicationState = replicateNats<TestDocType>({
+                collection,
+                replicationIdentifier: 'nats-' + natsName,
+                streamName: natsName,
+                subjectPrefix: natsName,
+                connection: {
+                    servers: '127.0.0.1:4299',
+                    waitOnFirstConnect: true,
+                    maxReconnectAttempts: -1
+                },
+                live: true,
+                pull: {},
+                push: {}
+            });
+            await wait(200);
+            await replicationState.pause();
+            await replicationState.cancel();
+            await collection.database.close();
+        });
+    });
     describe('init', () => {
         it('wait for server to be reachable', async function () {
             this.timeout(CONNECT_RETRY_TIME * CONNECT_MAX_TRIES + 30 * 1000);

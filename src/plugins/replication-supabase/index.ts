@@ -1,4 +1,5 @@
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication/index.ts';
+import { openStreamWhileStarted } from '../replication/replication-helper.ts';
 import { SupabaseCheckpoint, SyncOptionsSupabase } from './types.ts';
 import { addRxPlugin } from '../../plugin.ts';
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
@@ -259,9 +260,7 @@ export function replicateSupabase<RxDocType>(
      * Subscribe to changes for the pull.stream$
      */
     if (options.live && options.pull) {
-        const startBefore = replicationState.start.bind(replicationState);
-        const cancelBefore = replicationState.cancel.bind(replicationState);
-        replicationState.start = async () => {
+        openStreamWhileStarted(replicationState, () => {
             /**
              * Use a unique channel name per replication instance.
              * The supabase client reuses channels with the same topic, so
@@ -305,10 +304,10 @@ export function replicateSupabase<RxDocType>(
                         pullStream$.next('RESYNC');
                     }
                 });
-            replicationState.cancel = () => {
-                options.client.removeChannel(sub);
-                return cancelBefore();
-            };
+            return () => options.client.removeChannel(sub);
+        });
+        const startBefore = replicationState.start.bind(replicationState);
+        replicationState.start = async () => {
             await startBefore();
             /**
              * Emit a RESYNC after startBefore() resolves so that

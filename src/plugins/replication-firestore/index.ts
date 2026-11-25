@@ -38,6 +38,7 @@ import {
     RxReplicationState,
     startReplicationOnLeaderShip
 } from '../replication/index.ts';
+import { openStreamWhileStarted } from '../replication/replication-helper.ts';
 import {
     addRxPlugin,
     ById,
@@ -349,9 +350,7 @@ export function replicateFirestore<RxDocType>(
      * Use long polling to get live changes for the pull.stream$
      */
     if (options.live && options.pull) {
-        const startBefore = replicationState.start.bind(replicationState);
-        const cancelBefore = replicationState.cancel.bind(replicationState);
-        replicationState.start = () => {
+        openStreamWhileStarted(replicationState, () => {
             const lastChangeQuery = query(
                 pullQuery,
                 orderBy(serverTimestampField, 'desc'),
@@ -373,12 +372,8 @@ export function replicateFirestore<RxDocType>(
                     );
                 }
             );
-            replicationState.cancel = () => {
-                unsubscribe();
-                return cancelBefore();
-            };
-            return startBefore();
-        };
+            return unsubscribe;
+        });
     }
 
     startReplicationOnLeaderShip(options.waitForLeadership, replicationState);

@@ -107,7 +107,11 @@ Lets say for authentication you need to add a [bearer token](https://swagger.io/
 
 const myCustomFetch = (url, options) => {
 
-    // flat clone the given options to not mutate the input
+    /**
+     * Flat clone the given options to not mutate the input.
+     * Keep the 'signal' of the options. RxDB uses it to abort
+     * the long polling request on pause() and cancel().
+     */
     const optionsWithAuth = Object.assign({}, options);
     // ensure the headers property exists
     if(!optionsWithAuth.headers) {

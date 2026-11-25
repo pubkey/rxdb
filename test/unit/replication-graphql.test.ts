@@ -1815,8 +1815,9 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.close();
             });
-            it('should not open another stream subscription when start() is called after pause()', async () => {
+            it('should close the stream subscription on pause() and open a new one on start()', async () => {
                 const capturedWSStates: string[] = [];
+                const countWSState = (state: string) => capturedWSStates.filter(s => s === state).length;
                 let streamResponses = 0;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -1841,6 +1842,9 @@ describe('replication-graphql.test.ts', () => {
                         },
                         wsOptions: {
                             on: {
+                                'connected': () => {
+                                    capturedWSStates.push('connected');
+                                },
                                 'closed': () => {
                                     capturedWSStates.push('closed');
                                 }
@@ -1852,24 +1856,40 @@ describe('replication-graphql.test.ts', () => {
                 });
                 ensureReplicationHasNoErrors(replicationState);
                 await replicationState.awaitInSync();
+                await waitUntil(() => countWSState('connected') === 1);
+                const testData = getTestData(2);
 
                 await replicationState.pause();
-                await replicationState.start();
-                await replicationState.pause();
-                await replicationState.start();
-                await replicationState.awaitInSync();
+                await waitUntil(() => countWSState('closed') === 1, 2000);
 
-                await server.setDocument(getTestData(1)[0]);
+                await server.setDocument(testData[0]);
+                await wait(200);
+                assert.strictEqual(streamResponses, 0);
+                assert.strictEqual((await c.find().exec()).length, 0);
+
+                await replicationState.start();
+                await waitUntil(() => countWSState('connected') === 2);
                 await waitUntil(async () => {
                     const docs = await c.find().exec();
                     return docs.length === 1;
                 });
+
+                await server.setDocument(testData[1]);
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === 2;
+                });
                 await wait(200);
                 assert.strictEqual(streamResponses, 1);
+                assert.strictEqual(countWSState('connected'), 2);
+                assert.strictEqual(countWSState('closed'), 1);
 
-                // cancel() must release the websocket
-                await replicationState.cancel();
-                await waitUntil(() => capturedWSStates.includes('closed'), 2000);
+                const cancelPromise = replicationState.cancel();
+                await replicationState.start();
+                await cancelPromise;
+                await waitUntil(() => countWSState('closed') === 2, 2000);
+                await assertThrows(() => replicationState.start(), 'RxError', 'RC_START_CANCELED');
+                assert.strictEqual(countWSState('connected'), 2);
 
                 server.close();
                 c.database.close();

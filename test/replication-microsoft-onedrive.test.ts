@@ -1197,5 +1197,73 @@ describe('replication-microsoft-onedrive.test.ts', function () {
             collectionA.database.close();
             collectionB.database.close();
         }).timeout(1000 * 60);
+        it('pause() directly after the creation should pause the started replication', async () => {
+            const collection = await humansCollection.createHumanWithTimestamp(0, 'aa' + randomToken(10), false);
+            const replicationState = await replicateMicrosoftOneDrive<any>({
+                replicationIdentifier: 'foobar',
+                collection,
+                oneDrive: options,
+                signalingOptions: options.signalingOptions,
+                live: true,
+                pull: {},
+                push: {}
+            });
+            const signalingState = ensureNotFalsy(replicationState.signalingState);
+
+            await replicationState.pause();
+            assert.strictEqual(replicationState.isPaused(), true);
+            assert.strictEqual(signalingState.closed, true);
+
+            const startPromise = replicationState.start();
+            await replicationState.pause();
+            await startPromise;
+            assert.strictEqual(replicationState.isPaused(), true);
+            assert.strictEqual(ensureNotFalsy(replicationState.signalingState).closed, true);
+
+            await replicationState.start();
+            assert.strictEqual(replicationState.isPaused(), false);
+            assert.strictEqual(ensureNotFalsy(replicationState.signalingState).closed, false);
+            await replicationState.awaitInitialReplication();
+
+            await replicationState.cancel();
+            await collection.database.close();
+        });
+        it('pause() should close the signaling state and start() should open a new one', async () => {
+            const collectionA = await humansCollection.createHumanWithTimestamp(0, 'aa' + randomToken(10), false);
+            const collectionB = await humansCollection.createHumanWithTimestamp(0, 'bb' + randomToken(10), false);
+            const collectionC = await humansCollection.createHumanWithTimestamp(0, 'cc' + randomToken(10), false);
+            const collectionD = await humansCollection.createHumanWithTimestamp(0, 'dd' + randomToken(10), false);
+            const replicationState = await sync(collectionA, options, options.signalingOptions);
+            const firstSignalingState = ensureNotFalsy(replicationState.signalingState);
+            assert.strictEqual(firstSignalingState.closed, false);
+
+            await replicationState.pause();
+            assert.strictEqual(firstSignalingState.closed, true);
+
+            await collectionC.insert(schemaObjects.humanWithTimestampData({ id: 'during-pause' }));
+            await syncOnce(collectionC, options);
+
+            await replicationState.start();
+            const secondSignalingState = ensureNotFalsy(replicationState.signalingState);
+            assert.ok(secondSignalingState !== firstSignalingState);
+            assert.strictEqual(secondSignalingState.closed, false);
+            await waitUntil(async () => !!(await collectionA.findOne('during-pause').exec()), 20000);
+
+            await collectionD.insert(schemaObjects.humanWithTimestampData({ id: 'after-resume' }));
+            await syncOnce(collectionD, options);
+            await sync(collectionB, options, options.signalingOptions);
+            await waitUntil(async () => !!(await collectionA.findOne('after-resume').exec()), 20000);
+
+            await replicationState.cancel();
+            assert.strictEqual(secondSignalingState.closed, true);
+
+            await assertThrows(() => replicationState.start(), 'RxError', 'RC_START_CANCELED');
+            assert.ok(replicationState.signalingState === secondSignalingState);
+
+            await collectionA.database.close();
+            await collectionB.database.close();
+            await collectionC.database.close();
+            await collectionD.database.close();
+        });
     });
 });

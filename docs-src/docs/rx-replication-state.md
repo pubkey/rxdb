@@ -205,6 +205,10 @@ await myRxReplicationState.pause();
 await myRxReplicationState.start(); // restart
 ```
 
+Changes that happen on the server during the pause are not lost. The resync cycle that `start()` runs after a pause fetches them with the [checkpoint iteration](./replication.md#checkpoint-iteration).
+
+With `replicateRxCollection()` RxDB does not know which connection is behind your `pull.stream$`, so it cannot close it. You have to [close and open the connection of your own pull stream](./replication-http.md#close-the-pullstream-connection-on-pause) next to your `pause()` and `start()` calls.
+
 
 ## remove()
 

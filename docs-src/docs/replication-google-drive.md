@@ -88,6 +88,8 @@ To achieve real-time updates, this plugin uses **WebRTC** to signal changes betw
 2.  Other devices detect these files, read the WebRTC connection data, and establish a direct P2P connection with each other.
 3.  When a device makes a write, it sends a "RESYNC" signal via WebRTC to all connected peers to notify them about the change.
 
+The signaling and the WebRTC connections are closed on [`pause()`](./rx-replication-state.md#pause) and on `cancel()`. When `start()` is called after a pause, the device announces itself again and builds new connections to the other devices.
+
 ### Polyfill for Node.js
 
 WebRTC is native in browsers but requires a polyfill in Node.js. Use `createSimplePeerWrtc()` to wrap the polyfill for compatibility with `simple-peer`:

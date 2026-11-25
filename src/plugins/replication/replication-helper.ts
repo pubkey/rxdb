@@ -1,8 +1,9 @@
 import type {
+    MaybePromise,
     RxCollection,
     WithDeleted
 } from '../../types/index.d.ts';
-import { flatClone } from '../../plugins/utils/index.ts';
+import { flatClone, isPromise, PROMISE_RESOLVE_VOID } from '../../plugins/utils/index.ts';
 import { getComposedPrimaryKeyOfDocumentData } from '../../rx-schema-helper.ts';
 import type { RxReplicationState } from './index.ts';
 
@@ -119,4 +120,100 @@ export function preventHibernateBrowserTab(replicationState: RxReplicationState<
 
     const intervalId = setInterval(simulateActivity, 20 * 1000); // Simulate activity every 20 seconds
     replicationState.onCancel.push(() => clearInterval(intervalId));
+}
+
+
+/**
+ * start(), pause(), and cancel() can be called without awaiting the call before,
+ * so an asynchronous open or close is queued to never have two open streams.
+ */
+export function openStreamWhileStarted(
+    replicationState: RxReplicationState<any, any>,
+    openStream: () => MaybePromise<() => any>
+) {
+    const startBefore = replicationState.start.bind(replicationState);
+    const pauseBefore = replicationState.pause.bind(replicationState);
+    const cancelBefore = replicationState.cancel.bind(replicationState);
+    let closeStream: (() => any) | undefined;
+    let streamWanted = false;
+    let canceled = false;
+    let openInFlight = false;
+    let pending: Promise<any> | undefined;
+    function openOrClose(): MaybePromise<any> {
+        if (streamWanted && !closeStream) {
+            const opened = openStream();
+            if (!isPromise(opened)) {
+                closeStream = opened as () => any;
+                return;
+            }
+            openInFlight = true;
+            return (opened as Promise<() => any>).then(
+                closeFn => {
+                    openInFlight = false;
+                    closeStream = closeFn;
+                },
+                err => {
+                    openInFlight = false;
+                    throw err;
+                }
+            );
+        } else if (!streamWanted && closeStream) {
+            const closeFn = closeStream;
+            closeStream = undefined;
+            return closeFn();
+        }
+    }
+    function updateStream(): MaybePromise<any> {
+        const result = pending ? pending.catch(() => { }).then(openOrClose) : openOrClose();
+        if (!isPromise(result)) {
+            return;
+        }
+        pending = result;
+        const unsetPending = () => {
+            if (pending === result) {
+                pending = undefined;
+            }
+        };
+        result.then(unsetPending, unsetPending);
+        return result;
+    }
+    function stop<T>(baseFn: () => Promise<T>): Promise<T> {
+        streamWanted = false;
+        const ret = baseFn();
+        let closed: MaybePromise<any>;
+        try {
+            closed = updateStream();
+        } catch (err) { }
+        if (!isPromise(closed)) {
+            return ret;
+        }
+        const closedWithoutError = (closed as Promise<any>).catch(() => { });
+        return openInFlight ? ret : Promise.all([ret, closedWithoutError]).then(r => r[0]);
+    }
+    replicationState.start = () => {
+        if (replicationState.isStopped()) {
+            return startBefore();
+        }
+        if (canceled) {
+            return PROMISE_RESOLVE_VOID;
+        }
+        streamWanted = true;
+        const updated = updateStream();
+        if (!isPromise(updated)) {
+            return startBefore();
+        }
+        return (updated as Promise<any>).then(
+            () => streamWanted ? startBefore() : undefined,
+            err => {
+                if (streamWanted) {
+                    throw err;
+                }
+            }
+        );
+    };
+    replicationState.pause = () => stop(pauseBefore);
+    replicationState.cancel = () => {
+        canceled = true;
+        return stop(cancelBefore);
+    };
 }

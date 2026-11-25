@@ -334,6 +334,45 @@ const replicationState = await replicateRxCollection({
 });
 ```
 
+### Close the pullStream$ connection on pause
+
+A [paused](./rx-replication-state.md#pause) replication does not need the events of the `pull.stream$`. But the replication does not know the connection that is behind your observable, so the `EventSource` stays open when you call `pause()` or `cancel()`. Close the connection at the place where you pause or cancel the replication, and open a new one before you call `start()` again.
+
+```ts
+// > client.ts
+function openEventSource() {
+    const eventSource = new EventSource(
+        'http://localhost/pullStream',
+        { withCredentials: true }
+    );
+    eventSource.onmessage = event => {
+        const eventData = JSON.parse(event.data);
+        myPullStream$.next({
+            documents: eventData.documents,
+            checkpoint: eventData.checkpoint
+        });
+    };
+    eventSource.onopen = () => myPullStream$.next('RESYNC');
+    eventSource.onerror = () => myPullStream$.next('RESYNC');
+    return eventSource;
+}
+let eventSource = openEventSource();
+
+// pause: close the connection, then pause the replication
+eventSource.close();
+await replicationState.pause();
+
+// resume: open a new connection, then start the replication again
+eventSource = openEventSource();
+await replicationState.start();
+
+// cancel: close the connection, it is no longer needed
+eventSource.close();
+await replicationState.cancel();
+```
+
+When a replication is started after a pause, it runs one resync cycle by itself, which fetches the changes that happened on the server during the pause with the [checkpoint iteration](./replication.md#checkpoint-iteration). But the new connection is not open at that moment. A write that happens on the server after the pull of that resync cycle and before the connection is open is in neither of them, and the next event of the stream moves the checkpoint past it. Therefore the example emits the `RESYNC` flag in `onopen`, each time a connection is open, also after an automatic reconnect.
+
 </Steps>
 
 

@@ -30,6 +30,7 @@ import {
     RxReplicationState,
     startReplicationOnLeaderShip
 } from '../replication/index.ts';
+import { openStreamWhileStarted } from '../replication/replication-helper.ts';
 import {
     addRxPlugin,
     SyncOptionsGraphQL,
@@ -199,27 +200,16 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
         pull.streamQueryBuilder &&
         live;
 
-    /**
-     * start() is also called to resume after pause().
-     * The stream subscription stays open while paused,
-     * so it must only be opened once per replication state.
-     */
-    let socketOpened = false;
-    const startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
-    graphqlReplicationState.start = () => {
-        if (
-            mustUseSocket &&
-            !socketOpened &&
-            !graphqlReplicationState.isStopped()
-        ) {
-            socketOpened = true;
+    if (mustUseSocket) {
+        openStreamWhileStarted(graphqlReplicationState, () => {
             const httpHeaders = pull.includeWsHeaders ? () => mutateableClientState.headers : undefined;
             const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders, pull.wsOptions);
 
             const streamQueryBuilder = ensureNotFalsy(pull.streamQueryBuilder);
             const query: any = streamQueryBuilder(mutateableClientState.headers);
 
-            wsClient.on('connected', () => {
+            let closed = false;
+            const removeConnectedListener = wsClient.on('connected', () => {
                 /**
                  * graphql-ws sends the same query object again when it subscribes on a new connection.
                  * Updating that object ensures that the stream query
@@ -229,7 +219,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 pullStream$.next('RESYNC');
             });
 
-            wsClient.subscribe(
+            const unsubscribe = wsClient.subscribe(
                 query,
                 {
                     next: async (streamResponse: any) => {
@@ -261,24 +251,29 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                         }
                     },
                     error: (error: any) => {
-                        pullStream$.error(error);
+                        if (!closed) {
+                            pullStream$.error(error);
+                        }
                     },
                     complete: () => {
-                        pullStream$.complete();
+                        if (!closed) {
+                            pullStream$.complete();
+                        }
                     }
                 });
-        }
-        return startBefore();
-    };
+            return () => {
+                closed = true;
+                removeConnectedListener();
+                unsubscribe();
+                removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
+            };
+        });
+    }
 
     const cancelBefore = graphqlReplicationState.cancel.bind(graphqlReplicationState);
     graphqlReplicationState.cancel = () => {
         if (!graphqlReplicationState.isStopped()) {
             pullStream$.complete();
-            if (socketOpened) {
-                socketOpened = false;
-                removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
-            }
         }
         return cancelBefore();
     };

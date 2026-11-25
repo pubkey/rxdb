@@ -574,13 +574,13 @@ An implementation with tests is in the closed pull request [#9576](https://githu
 
 ## CouchDB replication: long polling when `live` is not set
 
-The CouchDB replication does not start the long polling of the changes feed when the `live` option is not set, although `live` defaults to `true`. Also `pause()` does not stop the long polling, and `start()` after `pause()` starts additional parallel long polling requests.
+The CouchDB replication does not start the long polling of the changes feed when the `live` option is not set, although `live` defaults to `true`.
 
 Todo:
-- Run the long polling when `live` is omitted, stop it on `pause()`, and run one loop per replication state.
+- Run the long polling when `live` is omitted.
 - Breaking: replications that omit `live` start to send `_changes?feed=longpoll` requests.
 
-An implementation with tests is in the closed pull request [#9542](https://github.com/pubkey/rxdb/pull/9542).
+An implementation with tests is in the closed pull request [#9542](https://github.com/pubkey/rxdb/pull/9542). Its other part, to stop the long polling on `pause()` and to run one loop per replication state, is done in [#9842](https://github.com/pubkey/rxdb/pull/9842).
 
 ## Replication: retry with `retryTime: 0` and a growing default retry time
 
