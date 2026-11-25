@@ -1,4 +1,6 @@
 import assert from 'assert';
+import { readFileSync } from 'fs';
+import path from 'path';
 import {
     indexedDB as fakeIndexedDB,
     IDBKeyRange as fakeIDBKeyRange
@@ -8,6 +10,7 @@ import {
     createRxDatabase,
     hasPremiumFlag,
     NON_PREMIUM_COLLECTION_LIMIT,
+    OPEN_COLLECTIONS,
     randomToken,
     RXDB_VERSION
 } from '../../plugins/core/index.mjs';
@@ -104,6 +107,26 @@ describe('cla-db.test.ts', () => {
             assert.strictEqual(RXDB_VERSION.startsWith('17.'), true);
             assert.strictEqual(NON_PREMIUM_COLLECTION_LIMIT, 13);
             assert.strictEqual(await hasPremiumFlag(), false);
+        });
+
+        it('matches package.json#claDb.upstreamVersion exactly and cleans OPEN_COLLECTIONS after closing >13 collections', async () => {
+            const pkg = JSON.parse(
+                readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')
+            );
+            assert.strictEqual(RXDB_VERSION, pkg.claDb.upstreamVersion);
+
+            const openBefore = OPEN_COLLECTIONS.size;
+            const db = await createRxDatabase({
+                name: 'cla_open_cleanup_' + randomToken(8),
+                storage: createMemoryTestStorage()
+            });
+            try {
+                await db.addCollections(buildCollectionsMap(16));
+                assert.strictEqual(OPEN_COLLECTIONS.size, openBefore + 16);
+            } finally {
+                await db.remove();
+            }
+            assert.strictEqual(OPEN_COLLECTIONS.size, openBefore);
         });
     });
 

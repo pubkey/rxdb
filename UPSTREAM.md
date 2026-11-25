@@ -38,6 +38,7 @@ Keep fork modifications strictly confined to this minimal set of files:
 | `src/rx-collection.ts` | Removal of the artificial `COL23` collection limit check (marked with `// CLA-DB:`) |
 | `test/unit/rx-collection.test.ts` | Updated test asserting >13 collections work without `COL23` |
 | `test/unit/cla-db.test.ts` | CLA DB-specific test and benchmark suite (fork-only file) |
+| `test/unit.test.ts` | Registers `test/unit/cla-db.test.ts` in the unit test entrypoint |
 | `package.json` | `@clatech/db` identity, version, `publishConfig`, and `claDb` metadata |
 | `scripts/update-version-variable.mjs` | Reads `packageJson.claDb.upstreamVersion` for `RXDB_VERSION` |
 | `scripts/generate-plugins-package-json.mjs` | Plugin shim package naming (`cla-db-plugins-*`) |

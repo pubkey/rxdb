@@ -44,9 +44,9 @@ Notes: Removing the artificial 13-collection cap does not remove physical memory
 - `npm run build`: PASS (289 CJS files, 289 ESM files, `.d.ts` types, 55 plugin shims, dbviewer bundle)
 - `npm run test:typings`: PASS
 - `npm run test:circular`: PASS (0 circular dependencies in core ESM, Dexie ESM, and tests)
-- `npm run test:fast:memory`: PASS (1,894 passing, 0 failing, includes `cla-db.test.ts` 13/13 and updated `rx-collection.test.ts`)
+- `npm run test:fast:memory`: PASS (1,894 passing, 0 failing; follow-up targeted `cla-db.test.ts` run: 14/14 passing including exact `claDb.upstreamVersion` and `OPEN_COLLECTIONS` cleanup invariant)
 - `npm run test:fast:dexie`: PASS (1,898 passing, 0 failing)
-- `node ./scripts/verify-pack-consumer.mjs`: PASS (`clatech-db-0.1.0.tgz`, 2222.4 KB; verified ESM, CommonJS, and TypeScript `NodeNext` compilation with 15 simultaneous collections, reactive queries, and Dexie restart persistence)
+- `node ./scripts/verify-pack-consumer.mjs`: PASS (`clatech-db-0.1.0.tgz`, 2223.5 KB; verified ESM, CommonJS, and TypeScript `NodeNext` compilation with 15 simultaneous collections, reactive queries, and Dexie restart persistence)
 
 #### Suites Not Executed in This Environment (Recorded Honestly)
 - `test:browser:*` (Karma/Chrome): Not executed because no browser binary/display server is configured in this headless shell environment.
