@@ -611,6 +611,7 @@ using RxDB in development mode.
 
 - Adds readable error messages.
 - Ensures that `readonly` JavaScript objects are not accidentally mutated.
+  - RxDB does not clone the data that you write, so the stored document shares its nested objects with your input. The dev-mode plugin deep-freezes these nested objects of each document that was written, after a write like [insert()](./rx-collection.md#insert), [bulkInsert()](./rx-collection.md#bulkinsert), [upsert()](./rx-collection.md#upsert), or [importJSON()](./rx-collection.md#importjson). When you mutate them afterwards, JavaScript throws a `TypeError` in strict mode instead of silently changing the stored document.
 - Adds validation check for validity of schemas, queries, [ORM](./orm.md) methods and document fields.
   - Notice that the `dev-mode` plugin does not perform schema checks against the data see [schema validation](./schema-validation.md) for that.
 
@@ -11477,7 +11478,7 @@ RxDB allows you to pass a custom reactivity factory on [RxDatabase](./rx-databas
 
 #### Angular
 
-In angular we use [Angular Signals](https://angular.dev/guide/signals) as custom reactivity objects.
+In angular we use [Angular Signals](https://angular.dev/guide/signals) as custom reactivity objects. The full setup with a database service is described in the guide on [using RxDB with Angular](./angular.md).
 
 ##### Import
 
@@ -11595,7 +11596,7 @@ export function TodosList() {
 
 #### Vue
 
-For Vue, we use the [Vue Shallow Refs](https://vuejs.org/api/reactivity-advanced) for custom reactivity.
+For Vue, we use the [Vue Shallow Refs](https://vuejs.org/api/reactivity-advanced) for custom reactivity. The full setup with a database plugin is described in the guide on [using RxDB with Vue](./vue.md).
 
 ##### Import
 ```ts
@@ -14623,6 +14624,303 @@ Convex is a reactive backend for TypeScript apps. Queries and mutations are Type
 ## Read further
 
 - [Offline First Database Comparison](https://github.com/pubkey/client-side-databases)
+
+---
+
+## Angular RxDB Integration with Signals and Observables
+
+import {Steps} from '@site/src/components/steps';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
+
+## Using RxDB with Angular
+
+RxDB works in **Angular** out of the box because both are built on [RxJS](https://rxjs.dev/). Each [RxQuery](./rx-query.md) and each [RxDocument](./rx-document.md) exposes an observable that you can render with the `async` pipe. With the `reactivity-angular` plugin, the same values are also available as [Angular Signals](https://angular.dev/guide/signals).
+
+This page shows how to create the [RxDatabase](./rx-database.md) in an Angular service and how to read and write data in components. The same code runs in the browser, in [Ionic](./articles/ionic-database.md), and in [Capacitor](./capacitor-database.md) apps. Only the [storage](./rx-storage.md) differs between these platforms.
+
+### General Concept
+
+The database is created once, before the app renders, and is then handed to the components through a service. Components never create or configure the database. They only consume it.
+
+There are two ways to bind RxDB data to a template:
+
+- **Signals**: The `reactivity-angular` plugin converts each observable into a `Signal`. Reactive values are accessed with a double dollar sign like `query.$$` or `document.name$$`.
+- **Observables**: Each reactive value has a single dollar sign variant like `query.$` which returns an RxJS `Observable` for the `async` pipe.
+
+Both ways can be used at the same time in the same component.
+
+### Usage
+
+#### Installation
+
+Install RxDB and RxJS into your Angular project:
+
+```bash
+npm install rxdb rxjs
+```
+
+#### Create the Database Service
+
+Create the database in an init function and expose it through an injectable service. The reactivity factory needs the Angular `Injector`, so `inject(Injector)` has to be called before the first `await` while the injection context is still active.
+
+```ts
+// database.service.ts
+import { Injectable, Injector, inject } from '@angular/core';
+import { createRxDatabase } from 'rxdb';
+import type { RxCollection, RxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+import { createReactivityFactory } from 'rxdb/plugins/reactivity-angular';
+import type {
+    AngularSignalReactivityLambda
+} from 'rxdb/plugins/reactivity-angular';
+
+export type TodoDocType = {
+    id: string;
+    name: string;
+    done: boolean;
+    dueAt: string;
+    priority: number;
+};
+
+const todoSchema = {
+    title: 'todo schema',
+    version: 0,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
+    },
+    required: ['id', 'name', 'done', 'dueAt', 'priority'],
+    indexes: ['dueAt']
+} as const;
+
+// The Reactivity type parameter makes $$ return a typed Signal.
+export type MyCollections = {
+    todos: RxCollection<
+        TodoDocType, {}, {}, {}, AngularSignalReactivityLambda
+    >;
+};
+export type MyDatabase = RxDatabase<
+    MyCollections, any, any, AngularSignalReactivityLambda
+>;
+
+let myDatabase: MyDatabase;
+
+export async function initDatabase() {
+    // must run before the first await
+    const injector = inject(Injector);
+
+    myDatabase = await createRxDatabase<
+        MyCollections, any, any, AngularSignalReactivityLambda
+    >({
+        name: 'mydatabase',
+        storage: getRxStorageLocalstorage(),
+        reactivity: createReactivityFactory(injector)
+    });
+    await myDatabase.addCollections({
+        todos: {
+            schema: todoSchema
+        }
+    });
+
+    /**
+     * Start the replication
+     * or add middleware hooks here.
+     */
+}
+
+@Injectable({ providedIn: 'root' })
+export class DatabaseService {
+    get db(): MyDatabase {
+        return myDatabase;
+    }
+}
+```
+
+#### Initialize the Database on App Start
+
+Run `initDatabase()` in an app initializer. Angular waits for the returned promise before it renders the first component, so each component can use the database without a loading check.
+
+```ts
+// app.config.ts
+import { ApplicationConfig, provideAppInitializer } from '@angular/core';
+import { initDatabase } from './database.service';
+
+export const appConfig: ApplicationConfig = {
+    providers: [
+        provideAppInitializer(() => initDatabase())
+    ]
+};
+```
+
+#### Render a Query with Signals
+
+Access the `$$` property of a query to get a `Signal` with the query results. The signal updates each time a matching document is inserted, updated, or deleted. The value is `undefined` until the query has emitted its first result.
+
+```ts
+// todo-list.component.ts
+import { Component, inject } from '@angular/core';
+import { DatabaseService } from './database.service';
+
+@Component({
+    selector: 'todo-list',
+    template: `
+        @if (todos(); as list) {
+            <ul>
+                @for (todo of list; track todo.id) {
+                    <li>{{ todo.name }}</li>
+                }
+            </ul>
+            <span>Open todos: {{ openCount() }}</span>
+        } @else {
+            <span>Loading...</span>
+        }
+    `
+})
+export class TodoListComponent {
+    private dbService = inject(DatabaseService);
+
+    // Signal<RxDocument[]>
+    readonly todos = this.dbService.db.todos.find({
+        selector: {},
+        sort: [{ dueAt: 'asc' }]
+    }).$$;
+
+    // Signal<number>
+    readonly openCount = this.dbService.db.todos.count({
+        selector: { done: false }
+    }).$$;
+}
+```
+
+The signals are bound to the injector that was passed to `createReactivityFactory()`. This is why they also work with `ChangeDetectionStrategy.OnPush` and in zoneless applications.
+
+#### Render a Query with Observables
+
+Instead of signals you can use the observable of the query together with the `async` pipe. The pipe subscribes when the component is created and unsubscribes when it is destroyed.
+
+```ts
+// todo-list-observable.component.ts
+import { Component, inject } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
+import { DatabaseService } from './database.service';
+
+@Component({
+    selector: 'todo-list-observable',
+    imports: [AsyncPipe],
+    template: `
+        <ul>
+            @for (todo of todos$ | async; track todo.id) {
+                <li>{{ todo.name }}</li>
+            }
+        </ul>
+    `
+})
+export class TodoListObservableComponent {
+    private dbService = inject(DatabaseService);
+
+    // Observable<RxDocument[]>
+    readonly todos$ = this.dbService.db.todos.find({
+        selector: {},
+        sort: [{ dueAt: 'asc' }]
+    }).$;
+}
+```
+
+#### Write Data
+
+Writes are done with the normal [RxCollection](./rx-collection.md) and RxDocument methods. Each query that is affected by the write emits a new result, so the templates update without any additional code.
+
+```ts
+// insert a document
+await this.dbService.db.todos.insert({
+    id: 'todo1',
+    name: 'Learn RxDB',
+    done: false,
+    dueAt: '2026-01-01T10:00:00.000Z',
+    priority: 8
+});
+
+// update a document
+await todo.incrementalPatch({ done: true });
+
+// delete a document
+await todo.remove();
+```
+
+### Signals for Single Documents and Fields
+
+Signals are not limited to queries. An RxDocument exposes a signal for the whole document, for each field, and for its deleted state. This is useful for detail views and edit forms.
+
+```ts
+const todo = await this.dbService.db.todos.findOne('todo1').exec(true);
+
+// Signal with the latest state of the document
+const todoSignal = todo.$$;
+
+// Signal<string> with the value of a single field
+const nameSignal = todo.name$$;
+
+// Signal<boolean> that is true after the document was deleted
+const deletedSignal = todo.deleted$$;
+```
+
+A `findOne()` query also has a `$$` property. Its signal contains the document or `null` when no document matches. All available reactive getters are listed in the [custom reactivity documentation](./reactivity.md#accessing-custom-reactivity-objects).
+
+### Replication Status
+
+An [RxReplicationState](./replication.md) exposes observables like `active$` and `error$`. Convert them with `toSignal()` from `@angular/core/rxjs-interop` to show a sync indicator.
+
+```ts
+import { Component, input, computed } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs';
+import type { RxReplicationState } from 'rxdb/plugins/replication';
+
+@Component({
+    selector: 'sync-indicator',
+    template: `<span>{{ label() }}</span>`
+})
+export class SyncIndicatorComponent {
+    readonly replicationState = input.required<RxReplicationState<any, any>>();
+
+    private readonly active = toSignal(
+        toObservable(this.replicationState).pipe(
+            switchMap(state => state.active$)
+        ),
+        { initialValue: false }
+    );
+
+    readonly label = computed(() => this.active() ? 'Syncing...' : 'Idle');
+}
+```
+
+### Server-Side Rendering
+
+RxDB also runs during Angular server-side rendering. On the server there is no IndexedDB or localStorage, so you have to use the [memory storage](./rx-storage-memory.md) there and skip the replication. The [RxDB Angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular) switches the storage through the Angular environment files.
+
+### FAQ
+
+Yes. The `reactivity-angular` plugin of **[RxDB](./rx-database.md)** converts each observable value into an Angular `Signal`. You get the signal with the double dollar sign, for example `collection.find().$$` or `document.name$$`. The plugin uses `toSignal()` from `@angular/core/rxjs-interop` under the hood.
+
+No. Signals from the **[reactivity plugin](./reactivity.md)** notify Angular directly and the `async` pipe marks the component for check on each emit. Both work in zoneless applications and with `ChangeDetectionStrategy.OnPush`.
+
+Create it once in an app initializer with `provideAppInitializer()` and expose it through an injectable service. Do not create the **[RxDatabase](./rx-database.md)** inside of a component, because components are created and destroyed many times while the database must exist only once.
+
+For a quick start in the browser use the **[localStorage RxStorage](./rx-storage-localstorage.md)**. For bigger datasets use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) or the [OPFS RxStorage](./rx-storage-opfs.md). In Ionic and Capacitor apps the [SQLite RxStorage](./rx-storage-sqlite.md) is the recommended choice.
+
+### Follow Up
+
+- The [RxDB Angular example](https://github.com/pubkey/rxdb/tree/master/examples/angular) contains a full application with signals, observables, replication, and server-side rendering.
+- Read how [signals and custom reactivity](./reactivity.md) work in RxDB.
+- Learn why RxDB fits Angular apps in the [Angular database article](./articles/angular-database.md) and how it compares to plain IndexedDB in [IndexedDB in Angular](./articles/angular-indexeddb.md).
+- RxDB also has integrations for [React](./react.md), [Vue](./vue.md), and [Svelte](./svelte.md).
+- Start with the [RxDB Quickstart](./quickstart.md).
 
 ---
 
@@ -24743,7 +25041,7 @@ this.amount$ = this.dbService
 
 #### Use custom reactivity to have signals instead of rxjs observables
 
-RxDB supports adding custom reactivity factories that allow you to get angular signals out of the database instead of rxjs observables. [read more](../reactivity.md).
+RxDB supports adding custom reactivity factories that allow you to get angular signals out of the database instead of rxjs observables. The [Angular integration guide](../angular.md) shows how to set up the signals in a database service and how to render queries with them. [read more](../reactivity.md).
 
 #### Use Angular Services for Database creation
 To ensure proper separation of concerns and maintain a clean codebase, it is recommended to create an Angular service responsible for managing the RxDB database instance. This service can handle database creation, initialization, and provide methods for interacting with the database throughout your application.
@@ -25004,7 +25302,7 @@ constructor(private dbService: DatabaseService) {
 
 #### With Angular Signals
 
-Angular Signals are a newer approach for reactivity. RxDB supports them via a [custom reactivity](../reactivity.md) factory. You can convert RxJS Observables to Signals using Angular's `toSignal`:
+Angular Signals are a newer approach for reactivity. RxDB supports them via a [custom reactivity](../reactivity.md) factory, which is described step by step in the guide on [using RxDB with Angular](../angular.md). You can convert RxJS Observables to Signals using Angular's `toSignal`:
 
 ```ts
 import { RxReactivityFactory } from 'rxdb/plugins/core';
@@ -25139,7 +25437,7 @@ Browser databases offer the advantage of running queries locally, resulting in l
 Storing data in the browser reduces the initial application start time. Instead of waiting for data to be fetched from the server, the application can leverage the [local database](./local-database.md), resulting in faster initialization and improved user satisfaction right from the start.
 
 #### Easier integration with JavaScript frameworks
-Browser databases, including [RxDB](https://rxdb.info/), seamlessly integrate with popular JavaScript frameworks such as [Angular](./angular-database.md), [React.js](./react-database.md) (see [IndexedDB in React](./react-indexeddb.md)), [Vue.js](./vue-database.md), and Svelte. This integration allows developers to leverage the power of a database while working within the familiar environment of their preferred framework, enhancing productivity and ease of development.
+Browser databases, including [RxDB](https://rxdb.info/), seamlessly integrate with popular JavaScript frameworks such as [Angular](./angular-database.md), [React.js](./react-database.md) (see [IndexedDB in React](./react-indexeddb.md)), [Vue.js](./vue-database.md), and [Svelte](../svelte.md). This integration allows developers to leverage the power of a database while working within the familiar environment of their preferred framework, enhancing productivity and ease of development.
 
 #### Store local data with encryption
 Security is a crucial aspect of data storage, especially when handling sensitive information. Browser databases, like RxDB, offer the capability to store local data with [encryption](../encryption.md), ensuring the confidentiality and protection of sensitive user data.
@@ -27073,7 +27371,7 @@ Frontend databases enable low-latency queries that run entirely on the client's 
 Realtime applications often require immediate updates based on data changes. By storing data locally and utilizing a frontend database, developers can build [realtime applications](./realtime-database.md) more easily. The database can observe data changes and automatically update the UI, providing a seamless and responsive user experience.
 
 #### Easier integration with JavaScript frameworks
-Frontend databases, including RxDB, are designed to integrate seamlessly with popular JavaScript frameworks such as [Angular](./angular-database.md), [React.js](./react-database.md), [Vue.js](./vue-database.md), and Svelte. These databases offer well-defined APIs and support that align with the specific requirements of these frameworks, enabling developers to leverage the full potential of the frontend database within their preferred development environment.
+Frontend databases, including RxDB, are designed to integrate seamlessly with popular JavaScript frameworks such as [Angular](./angular-database.md), [React.js](./react-database.md), [Vue.js](./vue-database.md), and [Svelte](../svelte.md). These databases offer well-defined APIs and support that align with the specific requirements of these frameworks, enabling developers to leverage the full potential of the frontend database within their preferred development environment.
 
 #### Simplified replication of database state
 Replicating database state between the frontend and backend can be challenging, especially when dealing with complex REST routes. Frontend databases, however, provide simple mechanisms for replicating database state. They offer intuitive replication algorithms that facilitate data synchronization between the frontend and backend, reducing the complexity and potential pitfalls associated with complex REST-based replication.
@@ -29375,7 +29673,7 @@ const user = await db.users.findOne('user1').exec();
 
 #### 2. Reactivity (The "Rx" in RxDB)
 
-Modern UIs ([React](../articles/react-database.md), [Vue](../articles/vue-database.md), [Angular](../articles/angular-database.md), Svelte) need to be reactive. When data changes, the view should update.
+Modern UIs ([React](../articles/react-database.md), [Vue](../articles/vue-database.md), [Angular](../articles/angular-database.md), [Svelte](../svelte.md)) need to be reactive. When data changes, the view should update.
 RxDB is built on **[RxJS](https://rxjs.dev/)**. Every query, document, or field can be observed.
 
 ```js
@@ -31224,7 +31522,7 @@ replicateRxCollection({
 });
 ```
 
-The same code runs in [React](./react-database.md), [Angular](./angular-database.md), [Vue](./vue-database.md), and Svelte. Only the binding between the observable and the component changes.
+The same code runs in [React](./react-database.md), [Angular](./angular-database.md), [Vue](./vue-database.md), and [Svelte](../svelte.md). Only the binding between the observable and the component changes.
 
 ### Local Database Performance
 
@@ -34404,7 +34702,7 @@ No. Real-time computing guarantees a maximum response time and needs a real-time
 
 No. Google's own documentation states "We recommend new customers start with Cloud Firestore", and the [documented limits](https://firebase.google.com/docs/database/usage/limits) of the Realtime Database are strict: 200,000 simultaneous connections and 1,000 writes/second per instance, 32 levels of nesting, and queries that can sort or filter on a property but not both. Billing at **$5/GB stored and $1/GB downloaded** rewards small, flat data and punishes client-side filtering. For [offline-first](../offline-first.md) apps, **[RxDB](https://rxdb.info)** keeps the database on the device and syncs with any backend you choose.
 
-**[RxDB](https://rxdb.info)** is a [local-first](./local-first-future.md) database that stores data in the browser through [IndexedDB, OPFS or SQLite](../rx-storage.md) and binds live query Observables directly to React, Angular, Vue and Svelte. The DOM updates whenever local or replicated state changes, and the [replication](../replication.md) works against your own HTTP, GraphQL, CouchDB, MongoDB or WebRTC backend, so the data and the backend stay yours.
+**[RxDB](https://rxdb.info)** is a [local-first](./local-first-future.md) database that stores data in the browser through [IndexedDB, OPFS or SQLite](../rx-storage.md) and binds live query Observables directly to [React](../react.md), [Angular](../angular.md), [Vue](../vue.md) and [Svelte](../svelte.md). The DOM updates whenever local or replicated state changes, and the [replication](../replication.md) works against your own HTTP, GraphQL, CouchDB, MongoDB or WebRTC backend, so the data and the backend stay yours.
 
 Yes. When your server has to stay the source of truth, run a [pull-only replication](../replicate-rx-collection.md#pull-only-replication) and treat the local database as a cached materialized view: reads and [reactive queries](../reactivity.md) come from local storage, writes go through your API, and the accepted state comes back on the pull stream. You keep local query speed and reactive UI updates, and you give up offline writes. **[Partial sync](../partial-sync.md)** scopes how much of the backend each client holds.
 
@@ -39339,7 +39637,7 @@ After creating the RxDB instance, you can share it across your application (for 
 
 ### Vue Reactivity and RxDB Observables
 
-RxDB queries return RxJS observables (`.$`). Vue can automatically update components when data changes if you manually subscribe and store results in Vue refs/reactive objects, or if you use RxDB's [custom reactivity for Vue](../reactivity.md).
+RxDB queries return RxJS observables (`.$`). Vue can automatically update components when data changes if you manually subscribe and store results in Vue refs/reactive objects, or if you use RxDB's [custom reactivity for Vue](../reactivity.md). The guide on [using RxDB with Vue](../vue.md) shows the full setup with a database plugin and refs.
 
 **Example with Vue 3 Composition API:**
 
@@ -39622,7 +39920,7 @@ This component subscribes to the collection's changes, [updating the UI](./optim
 
 #### Using Vue Signals
 
-If you're exploring Vue's reactivity transforms or signals, RxDB also offers [custom reactivity factories](../reactivity.md) ([premium plugins](/premium/) are required). This allows queries to emit data as signals instead of traditional Observables.
+If you're exploring Vue's reactivity transforms or signals, RxDB also offers [custom reactivity factories](../reactivity.md) ([premium plugins](/premium/) are required). This allows queries to emit data as signals instead of traditional Observables. The [Vue integration guide](../vue.md) shows how to render queries as Vue refs.
 
 ```ts
 const todosSignal = db.todos.find().$$; // $$ indicates a reactive result
@@ -42477,7 +42775,7 @@ The only platform-specific part of a React Native setup is database creation, wh
 
 ### Signals
 
-In addition to the React hooks shown on this page, RxDB also supports alternative reactivity models such as [signals](./reactivity.md). RxDB's core reactivity system can be configured to expose reactive values using different primitives instead of RxJS observables, which makes it possible to integrate RxDB with signal-based approaches in React or other frameworks. This is an advanced capability and is independent of the React integration described here. For more details about how RxDB's reactivity system works and how custom reactivity can be configured, see the [Reactivity documentation](./reactivity.md).
+In addition to the React hooks shown on this page, RxDB also supports alternative reactivity models such as [signals](./reactivity.md). RxDB's core reactivity system can be configured to expose reactive values using different primitives instead of RxJS observables, which makes it possible to integrate RxDB with signal-based approaches in React or other frameworks. This is how the integrations for [Angular](./angular.md) and [Vue](./vue.md) work, while [Svelte](./svelte.md) uses the observables directly as stores. This is an advanced capability and is independent of the React integration described here. For more details about how RxDB's reactivity system works and how custom reactivity can be configured, see the [Reactivity documentation](./reactivity.md).
 
 ### Follow Up
 
@@ -45467,6 +45765,614 @@ Because of the document based approach, TypeScript can know the exact type of th
 - Why jsonschema
 
 ##
+
+---
+
+## Svelte RxDB Integration with Stores and Runes
+
+import {Steps} from '@site/src/components/steps';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
+
+## Using RxDB with Svelte
+
+RxDB works in **Svelte** without an additional plugin. Each [RxQuery](./rx-query.md) and each [RxDocument](./rx-document.md) exposes an RxJS observable, and Svelte accepts an observable wherever it accepts a store. This means you can prefix an RxDB observable with `$` in a component and Svelte subscribes, re-renders, and unsubscribes for you.
+
+This page shows how to create the [RxDatabase](./rx-database.md), provide it to your components, and read and write data with the store syntax and with Svelte 5 runes. The same code runs in the browser, in [Capacitor](./capacitor-database.md), and in Tauri apps. Only the [storage](./rx-storage.md) differs between these platforms.
+
+### General Concept
+
+RxDB is internally reactive and emits changes via RxJS observables. All observables in RxDB are marked with a dollar sign at the end, like `query.$` or `document.name$`.
+
+The [Svelte store contract](https://svelte.dev/docs/svelte/stores#Store-contract) requires an object with a `subscribe()` method and explicitly allows that method to return an object with `unsubscribe()` for interoperability with RxJS. An RxDB observable fulfills this contract. When you write `$todos` in a component, Svelte subscribes to the `todos` observable and ends the subscription when the component is destroyed.
+
+There are two ways to bind RxDB data to a component:
+
+- **Store syntax**: Reference the observable with the `$` prefix. This is the shortest way and needs no cleanup code.
+- **Runes**: Subscribe inside of an `$effect` and write the results into `$state`. Use this when you want to process the results before rendering or when you work in a `.svelte.ts` module.
+
+### Usage
+
+#### Installation
+
+Install RxDB and RxJS into your Svelte project:
+
+```bash
+npm install rxdb rxjs
+```
+
+#### Create the Database
+
+Create the database in its own module, outside of your components. Components should never create or configure the database. They should only consume it.
+
+```ts
+// database.ts
+import { createRxDatabase } from 'rxdb';
+import type { RxCollection, RxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
+export type TodoDocType = {
+    id: string;
+    name: string;
+    done: boolean;
+    dueAt: string;
+    priority: number;
+};
+
+const todoSchema = {
+    title: 'todo schema',
+    version: 0,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
+    },
+    required: ['id', 'name', 'done', 'dueAt', 'priority'],
+    indexes: ['dueAt']
+} as const;
+
+export type MyCollections = {
+    todos: RxCollection<TodoDocType>;
+};
+export type MyDatabase = RxDatabase<MyCollections>;
+
+export async function createDatabase(): Promise<MyDatabase> {
+    const myDatabase = await createRxDatabase<MyCollections>({
+        name: 'mydatabase',
+        storage: getRxStorageLocalstorage()
+    });
+    await myDatabase.addCollections({
+        todos: {
+            schema: todoSchema
+        }
+    });
+
+    /**
+     * Start the replication
+     * or add middleware hooks here.
+     */
+
+    return myDatabase;
+}
+```
+
+#### Provide the Database to the App
+
+Wait for the database before you mount the app and pass it to the root component. The root component puts it into the Svelte context so that each child component can access it without a loading check.
+
+```ts
+// main.ts
+import { mount } from 'svelte';
+import App from './App.svelte';
+import { createDatabase } from './database';
+
+const myDatabase = await createDatabase();
+
+mount(App, {
+    target: document.getElementById('app')!,
+    props: { myDatabase }
+});
+```
+
+```svelte
+<!-- App.svelte -->
+<script lang="ts">
+    import { setContext } from 'svelte';
+    import type { MyDatabase } from './database';
+    import TodoList from './TodoList.svelte';
+
+    let { myDatabase }: { myDatabase: MyDatabase } = $props();
+    setContext('myDatabase', myDatabase);
+</script>
+
+<TodoList />
+```
+
+#### Render a Query with the Store Syntax
+
+Store the observable of a query in a variable and reference it with the `$` prefix. The component re-renders each time a matching document is inserted, updated, or deleted. The value is `undefined` until the query has emitted its first result.
+
+```svelte
+<!-- TodoList.svelte -->
+<script lang="ts">
+    import { getContext } from 'svelte';
+    import type { MyDatabase } from './database';
+
+    const myDatabase = getContext<MyDatabase>('myDatabase');
+
+    // Observable<RxDocument[]>
+    const todos = myDatabase.todos.find({
+        selector: {},
+        sort: [{ dueAt: 'asc' }]
+    }).$;
+
+    // Observable<number>
+    const openCount = myDatabase.todos.count({
+        selector: { done: false }
+    }).$;
+</script>
+
+{#if $todos === undefined}
+    <span>Loading...</span>
+{:else}
+    <ul>
+        {#each $todos as todo (todo.id)}
+            <li>{todo.name}</li>
+        {/each}
+    </ul>
+    <span>Open todos: {$openCount}</span>
+{/if}
+```
+
+No manual subscription or cleanup code is required. Svelte ends the subscription when the component is destroyed.
+
+#### Render a Query with Runes
+
+When you want to keep the query results in `$state`, subscribe to the observable inside of an `$effect`. The function that is returned from the effect runs when the component is destroyed, so the subscription is cleaned up there.
+
+```svelte
+<!-- TodoListRunes.svelte -->
+<script lang="ts">
+    import { getContext } from 'svelte';
+    import type { RxDocument } from 'rxdb';
+    import type { MyDatabase, TodoDocType } from './database';
+
+    const myDatabase = getContext<MyDatabase>('myDatabase');
+
+    let todos = $state.raw<RxDocument<TodoDocType>[]>([]);
+    let loading = $state(true);
+
+    $effect(() => {
+        const subscription = myDatabase.todos
+            .find({
+                selector: { done: false },
+                sort: [{ dueAt: 'asc' }]
+            })
+            .$.subscribe(result => {
+                todos = result;
+                loading = false;
+            });
+        return () => subscription.unsubscribe();
+    });
+</script>
+
+{#if loading}
+    <span>Loading...</span>
+{:else}
+    <ul>
+        {#each todos as todo (todo.id)}
+            <li>{todo.name}</li>
+        {/each}
+    </ul>
+{/if}
+```
+
+Use `$state.raw()` for query results. RxDocuments are class instances with their own change tracking, so they must not be wrapped into the deep proxies of `$state()`.
+
+#### Write Data
+
+Writes are done with the normal [RxCollection](./rx-collection.md) and RxDocument methods. Each query that is affected by the write emits a new result, so the components update without any additional code.
+
+```svelte
+<!-- TodoInsert.svelte -->
+<script lang="ts">
+    import { getContext } from 'svelte';
+    import type { MyDatabase } from './database';
+
+    const myDatabase = getContext<MyDatabase>('myDatabase');
+    let name = $state('');
+
+    async function addTodo(event: SubmitEvent) {
+        event.preventDefault();
+        await myDatabase.todos.insert({
+            id: 'todo-' + Date.now(),
+            name,
+            done: false,
+            dueAt: new Date().toISOString(),
+            priority: 5
+        });
+        name = '';
+    }
+</script>
+
+<form onsubmit={addTodo}>
+    <input bind:value={name} placeholder="What has to be done" />
+    <button type="submit">Add</button>
+</form>
+```
+
+To change or delete a document, call the methods of the RxDocument from the query result:
+
+```ts
+// update a document
+await todo.incrementalPatch({ done: true });
+
+// delete a document
+await todo.remove();
+```
+
+### Single Documents and Fields
+
+The store syntax is not limited to queries. A `findOne()` query emits a single document or `null`, and an RxDocument has observables for the whole document and for each field. This is useful for detail views and edit forms.
+
+```svelte
+<!-- TodoDetail.svelte -->
+<script lang="ts">
+    import { getContext } from 'svelte';
+    import type { MyDatabase } from './database';
+
+    let { todoId }: { todoId: string } = $props();
+    const myDatabase = getContext<MyDatabase>('myDatabase');
+
+    // Observable<RxDocument | null>
+    const todo = myDatabase.todos.findOne(todoId).$;
+</script>
+
+{#if $todo}
+    <span>{$todo.name} (priority {$todo.priority})</span>
+{/if}
+```
+
+When you already have an RxDocument, you can get observables from it directly:
+
+```ts
+// Observable with the latest state of the document
+const todo$ = todo.$;
+
+// Observable<string> with the value of a single field
+const name$ = todo.name$;
+
+// Observable<boolean> that emits true after the document was deleted
+const deleted$ = todo.deleted$;
+```
+
+### Replication Status
+
+An [RxReplicationState](./replication.md) exposes observables like `active$` and `error$`. Because they are observables, they also work with the store syntax and you can use them to show a sync indicator.
+
+```svelte
+<!-- SyncIndicator.svelte -->
+<script lang="ts">
+    import type { RxReplicationState } from 'rxdb/plugins/replication';
+
+    let { replicationState }: {
+        replicationState: RxReplicationState<any, any>
+    } = $props();
+
+    const active = replicationState.active$;
+</script>
+
+<span>{$active ? 'Syncing...' : 'Idle'}</span>
+```
+
+### SvelteKit and Server-Side Rendering
+
+The browser storages of RxDB need APIs like IndexedDB or localStorage, which do not exist on the server. In a SvelteKit app, create the database only in the browser, for example inside of `onMount()`, or disable server-side rendering for the routes that use RxDB with `export const ssr = false`.
+
+### FAQ
+
+Yes. **[RxDB](./rx-database.md)** observables work with the `$` store syntax in Svelte 5 components, and you can also subscribe inside of an `$effect` and write the results into `$state.raw()`. The RxDB Svelte example runs on Svelte 5.
+
+No. Svelte accepts RxJS observables as stores, so the observables of an **[RxQuery](./rx-query.md)** or an RxDocument can be used directly with the `$` prefix. There is no Svelte-specific RxDB package to install.
+
+No, not when you use the `$` store syntax. Svelte subscribes when the component is created and unsubscribes when it is destroyed. You only have to unsubscribe yourself when you call `.subscribe()` on an observable, which is done by returning a cleanup function from the `$effect`.
+
+For a quick start in the browser use the **[localStorage RxStorage](./rx-storage-localstorage.md)**. For bigger datasets use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) or the [OPFS RxStorage](./rx-storage-opfs.md). In Capacitor and Tauri apps the [SQLite RxStorage](./rx-storage-sqlite.md) is the recommended choice.
+
+### Follow Up
+
+- The [RxDB Svelte example](https://github.com/pubkey/rxdb/tree/master/examples/svelte) contains a full note-taking application that runs on Svelte 5.
+- Read how [signals and custom reactivity](./reactivity.md) work in RxDB when you want to use a different reactive primitive.
+- RxDB also has integrations for [React](./react.md), [Angular](./angular.md), and [Vue](./vue.md).
+- Start with the [RxDB Quickstart](./quickstart.md).
+
+---
+
+## Vue RxDB Integration with Refs and the Composition API
+
+import {Steps} from '@site/src/components/steps';
+import {HeadlineWithIcon} from '@site/src/components/headline-with-icon';
+import {Faq, FaqItem} from '@site/src/components/faq';
+
+## Using RxDB with Vue
+
+RxDB integrates into **Vue** through the `reactivity-vue` plugin. The plugin converts the observables of each [RxQuery](./rx-query.md) and each [RxDocument](./rx-document.md) into Vue refs, so that you can use them in a template like any other reactive state.
+
+This page shows how to create the [RxDatabase](./rx-database.md), provide it to your components with a Vue plugin, and read and write data with the Composition API. The same code runs in the browser, in [Electron](./electron-database.md), and in [Capacitor](./capacitor-database.md) apps. Only the [storage](./rx-storage.md) differs between these platforms.
+
+### General Concept
+
+RxDB is internally reactive and emits changes via RxJS observables. Vue tracks changes through refs. The `reactivity-vue` plugin bridges these two models: reactive values that are accessed with a double dollar sign like `query.$$` or `document.name$$` return a Vue [shallowRef](https://vuejs.org/api/reactivity-advanced.html#shallowref) instead of an observable.
+
+The ref subscribes to the observable when it is created and unsubscribes when the current effect scope is disposed. This means you have to access `$$` inside of `setup()` or `<script setup>`, where Vue ties the subscription to the lifetime of the component.
+
+### Usage
+
+#### Installation
+
+Install RxDB and RxJS into your Vue project:
+
+```bash
+npm install rxdb rxjs
+```
+
+#### Create the Database
+
+Create the database outside of your components and set `VueRxReactivityFactory` as the `reactivity` option. The returned Vue plugin provides the database to all components, and `useDatabase()` injects it.
+
+```ts
+// database.ts
+import { inject } from 'vue';
+import type { Plugin } from 'vue';
+import { createRxDatabase } from 'rxdb';
+import type { RxCollection, RxDatabase } from 'rxdb';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+import { VueRxReactivityFactory } from 'rxdb/plugins/reactivity-vue';
+import type { VueRefReactivityLambda } from 'rxdb/plugins/reactivity-vue';
+
+export type TodoDocType = {
+    id: string;
+    name: string;
+    done: boolean;
+    dueAt: string;
+    priority: number;
+};
+
+const todoSchema = {
+    title: 'todo schema',
+    version: 0,
+    primaryKey: 'id',
+    type: 'object',
+    properties: {
+        id: { type: 'string', maxLength: 100 },
+        name: { type: 'string' },
+        done: { type: 'boolean', default: false },
+        dueAt: { type: 'string', format: 'date-time', maxLength: 30 },
+        priority: { type: 'integer', minimum: 0, maximum: 10, multipleOf: 1 }
+    },
+    required: ['id', 'name', 'done', 'dueAt', 'priority'],
+    indexes: ['dueAt']
+} as const;
+
+// The Reactivity type parameter makes $$ return a typed Ref.
+export type MyCollections = {
+    todos: RxCollection<TodoDocType, {}, {}, {}, VueRefReactivityLambda>;
+};
+export type MyDatabase = RxDatabase<
+    MyCollections, any, any, VueRefReactivityLambda
+>;
+
+const KEY_DATABASE = Symbol('database');
+
+export function useDatabase(): MyDatabase {
+    return inject(KEY_DATABASE) as MyDatabase;
+}
+
+export async function createDatabase(): Promise<Plugin> {
+    const myDatabase = await createRxDatabase<
+        MyCollections, any, any, VueRefReactivityLambda
+    >({
+        name: 'mydatabase',
+        storage: getRxStorageLocalstorage(),
+        reactivity: VueRxReactivityFactory
+    });
+    await myDatabase.addCollections({
+        todos: {
+            schema: todoSchema
+        }
+    });
+
+    /**
+     * Start the replication
+     * or add middleware hooks here.
+     */
+
+    return {
+        install(app) {
+            app.provide(KEY_DATABASE, myDatabase);
+        }
+    };
+}
+```
+
+#### Provide the Database to the App
+
+Wait for the database before you mount the app. This way each component can use the database without a loading check.
+
+```ts
+// main.ts
+import { createApp } from 'vue';
+import App from './App.vue';
+import { createDatabase } from './database';
+
+const app = createApp(App);
+createDatabase().then(databasePlugin => {
+    app.use(databasePlugin).mount('#app');
+});
+```
+
+#### Render a Query
+
+Access the `$$` property of a query to get a ref with the query results. The ref updates each time a matching document is inserted, updated, or deleted. The value is `undefined` until the query has emitted its first result.
+
+```html
+<!-- TodoList.vue -->
+<script setup lang="ts">
+import { useDatabase } from './database';
+
+const myDatabase = useDatabase();
+
+// Ref<RxDocument[]>
+const todos = myDatabase.todos.find({
+    selector: {},
+    sort: [{ dueAt: 'asc' }]
+}).$$;
+
+// Ref<number>
+const openCount = myDatabase.todos.count({
+    selector: { done: false }
+}).$$;
+</script>
+
+<template>
+    <span v-if="!todos">Loading...</span>
+    <template v-else>
+        <ul>
+            <li v-for="todo in todos" :key="todo.id">{{ todo.name }}</li>
+        </ul>
+        <span>Open todos: {{ openCount }}</span>
+    </template>
+</template>
+```
+
+No manual subscription or cleanup code is required. The subscription ends when the component is unmounted.
+
+#### Write Data
+
+Writes are done with the normal [RxCollection](./rx-collection.md) and RxDocument methods. Each query that is affected by the write emits a new result, so the templates update without any additional code.
+
+```html
+<!-- TodoInsert.vue -->
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useDatabase } from './database';
+
+const myDatabase = useDatabase();
+const name = ref('');
+
+async function addTodo() {
+    await myDatabase.todos.insert({
+        id: 'todo-' + Date.now(),
+        name: name.value,
+        done: false,
+        dueAt: new Date().toISOString(),
+        priority: 5
+    });
+    name.value = '';
+}
+</script>
+
+<template>
+    <form @submit.prevent="addTodo">
+        <input v-model="name" placeholder="What has to be done" />
+        <button type="submit">Add</button>
+    </form>
+</template>
+```
+
+To change or delete a document, call the methods of the RxDocument from the query result:
+
+```ts
+// update a document
+await todo.incrementalPatch({ done: true });
+
+// delete a document
+await todo.remove();
+```
+
+### Refs for Single Documents and Fields
+
+Refs are not limited to queries. An RxDocument exposes a ref for the whole document, for each field, and for its deleted state. This is useful for detail views and edit forms.
+
+```html
+<!-- TodoDetail.vue -->
+<script setup lang="ts">
+import { useDatabase } from './database';
+
+const props = defineProps<{ todoId: string }>();
+const myDatabase = useDatabase();
+
+// Ref with the document, or null when no document matches
+const todo = myDatabase.todos.findOne(props.todoId).$$;
+</script>
+
+<template>
+    <span v-if="todo">{{ todo.name }} (priority {{ todo.priority }})</span>
+</template>
+```
+
+When you already have an RxDocument, you can get refs from it directly:
+
+```ts
+// Ref with the latest state of the document
+const todoRef = todo.$$;
+
+// Ref<string> with the value of a single field
+const nameRef = todo.name$$;
+
+// Ref<boolean> that is true after the document was deleted
+const deletedRef = todo.deleted$$;
+```
+
+All available reactive getters are listed in the [custom reactivity documentation](./reactivity.md#accessing-custom-reactivity-objects).
+
+### Using Observables Without the Plugin
+
+The reactivity plugin is optional. Each reactive value also has a single dollar sign variant like `query.$` that returns an RxJS `Observable`. You can subscribe to it and write the results into your own ref. In this case you have to unsubscribe when the component is unmounted.
+
+```html
+<script setup lang="ts">
+import { shallowRef, onUnmounted } from 'vue';
+import type { RxDocument } from 'rxdb';
+import { useDatabase } from './database';
+import type { TodoDocType } from './database';
+
+const myDatabase = useDatabase();
+const todos = shallowRef<RxDocument<TodoDocType>[]>([]);
+
+const subscription = myDatabase.todos
+    .find({ selector: { done: false } })
+    .$.subscribe(result => {
+        todos.value = result;
+    });
+
+onUnmounted(() => subscription.unsubscribe());
+</script>
+```
+
+The same pattern works for the observables of an [RxReplicationState](./replication.md) like `active$` and `error$` when you want to show a sync indicator.
+
+### FAQ
+
+Yes. The `reactivity-vue` plugin of **[RxDB](./rx-database.md)** returns Vue refs for queries, documents, and document fields. You access them with the double dollar sign inside of `<script setup>`, for example `collection.find().$$`, and use them in the template like any other ref.
+
+No, not when you use the `$$` refs of the **[reactivity plugin](./reactivity.md)**. The plugin registers the cleanup with `onScopeDispose()`, so the subscription ends when the component is unmounted. You only have to unsubscribe yourself when you call `.subscribe()` on an observable.
+
+Yes. Pinia and **[RxDB](./rx-database.md)** solve different problems. Keep persistent data in RxDB collections and query it with refs, and use Pinia for temporary UI state like the selected tab or an open dialog. Do not copy query results into a Pinia store, because the RxDB refs are already reactive.
+
+For a quick start in the browser use the **[localStorage RxStorage](./rx-storage-localstorage.md)**. For bigger datasets use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) or the [OPFS RxStorage](./rx-storage-opfs.md). In Capacitor and Electron apps the [SQLite RxStorage](./rx-storage-sqlite.md) is the recommended choice.
+
+### Follow Up
+
+- The [RxDB Vue example](https://github.com/pubkey/rxdb/tree/master/examples/vue) contains a full application with the database plugin, live queries, and replication.
+- Read how [signals and custom reactivity](./reactivity.md) work in RxDB.
+- Learn why RxDB fits Vue apps in the [Vue database article](./articles/vue-database.md) and how it compares to plain IndexedDB in [IndexedDB in Vue](./articles/vue-indexeddb.md).
+- RxDB also has integrations for [React](./react.md), [Angular](./angular.md), and [Svelte](./svelte.md).
+- Start with the [RxDB Quickstart](./quickstart.md).
 
 ---
 

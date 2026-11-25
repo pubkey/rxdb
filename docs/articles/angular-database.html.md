@@ -176,7 +176,7 @@ this.amount$ = this.dbService
 
 ### Use custom reactivity to have signals instead of rxjs observables
 
-RxDB supports adding custom reactivity factories that allow you to get angular signals out of the database instead of rxjs observables. [read more](../reactivity.md).
+RxDB supports adding custom reactivity factories that allow you to get angular signals out of the database instead of rxjs observables. The [Angular integration guide](../angular.md) shows how to set up the signals in a database service and how to render queries with them. [read more](../reactivity.md).
 
 ### Use Angular Services for Database creation
 To ensure proper separation of concerns and maintain a clean codebase, it is recommended to create an Angular service responsible for managing the RxDB database instance. This service can handle database creation, initialization, and provide methods for interacting with the database throughout your application.

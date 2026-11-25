@@ -234,7 +234,7 @@ constructor(private dbService: DatabaseService) {
 
 ### With Angular Signals
 
-Angular Signals are a newer approach for reactivity. RxDB supports them via a [custom reactivity](../reactivity.md) factory. You can convert RxJS Observables to Signals using Angular's `toSignal`:
+Angular Signals are a newer approach for reactivity. RxDB supports them via a [custom reactivity](../reactivity.md) factory, which is described step by step in the guide on [using RxDB with Angular](../angular.md). You can convert RxJS Observables to Signals using Angular's `toSignal`:
 
 ```ts
 import { RxReactivityFactory } from 'rxdb/plugins/core';

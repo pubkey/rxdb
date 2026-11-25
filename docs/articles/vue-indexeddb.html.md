@@ -176,7 +176,7 @@ This component subscribes to the collection's changes, [updating the UI](./optim
 
 ### Using Vue Signals
 
-If you're exploring Vue's reactivity transforms or signals, RxDB also offers [custom reactivity factories](../reactivity.md) ([premium plugins](/premium/) are required). This allows queries to emit data as signals instead of traditional Observables.
+If you're exploring Vue's reactivity transforms or signals, RxDB also offers [custom reactivity factories](../reactivity.md) ([premium plugins](/premium/) are required). This allows queries to emit data as signals instead of traditional Observables. The [Vue integration guide](../vue.md) shows how to render queries as Vue refs.
 
 ```ts
 const todosSignal = db.todos.find().$$; // $$ indicates a reactive result

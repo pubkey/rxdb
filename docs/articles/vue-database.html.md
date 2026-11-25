@@ -91,7 +91,7 @@ After creating the RxDB instance, you can share it across your application (for 
 
 ## Vue Reactivity and RxDB Observables
 
-RxDB queries return RxJS observables (`.$`). Vue can automatically update components when data changes if you manually subscribe and store results in Vue refs/reactive objects, or if you use RxDB's [custom reactivity for Vue](../reactivity.md).
+RxDB queries return RxJS observables (`.$`). Vue can automatically update components when data changes if you manually subscribe and store results in Vue refs/reactive objects, or if you use RxDB's [custom reactivity for Vue](../reactivity.md). The guide on [using RxDB with Vue](../vue.md) shows the full setup with a database plugin and refs.
 
 **Example with Vue 3 Composition API:**
 
