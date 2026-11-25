@@ -180,9 +180,10 @@ When creating a server or adding endpoints, you can specify a [CORS](https://dev
 Endpoint cors always overwrite server cors. The default is the wildcard `*` which allows all requests.
 
 ```ts
-const myServer = await startRxServer({
+const myServer = await createRxServer({
     database: myDatabase,
-    cors: 'http://example.com'
+    adapter: RxServerAdapterExpress,
+    cors: 'http://example.com',
     port: 443
 });
 const endpoint = await server.addReplicationEndpoint({
