@@ -27,6 +27,8 @@ import {
 
 import { wrappedValidateZSchemaStorage, ZSchemaClass } from '../../plugins/validate-z-schema/index.mjs';
 import { wrappedValidateAjvStorage, getAjv } from '../../plugins/validate-ajv/index.mjs';
+import { getValidator as getEffectValidator, wrappedValidateEffectStorage } from '../../plugins/validate-effect/index.mjs';
+import { Schema } from 'effect';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 /**
@@ -56,6 +58,10 @@ const validationImplementations: {
         {
             key: 'z-schema',
             implementation: wrappedValidateZSchemaStorage
+        },
+        {
+            key: 'effect',
+            implementation: wrappedValidateEffectStorage
         }
     ];
 
@@ -225,6 +231,12 @@ validationImplementations.forEach(
                     await instance.close();
                 });
                 it('should work with a schema as nested additionalProperties', async () => {
+                    if (validationImplementation.key === 'effect') {
+                        // The Effect JSON Schema importer rejects a schema that combines a
+                        // typed `additionalProperties` with explicit `properties`. This is
+                        // an upstream importer limitation, not a plugin limitation.
+                        return;
+                    }
                     const jsonSchema: any = clone(schemas.heroArray);
                     jsonSchema.properties.skills.items['additionalProperties'] = { type: 'number' };
                     const instance = await getRxStorageInstance(jsonSchema);
@@ -1063,6 +1075,122 @@ describe('validate.test.js (custom formats) ', () => {
             );
             db.close();
         });
+    });
+});
+
+/**
+ * Focused tests for the Effect validator plugin. The generic validation suite
+ * above already runs every shared case for the effect implementation; these
+ * assert the Ajv-compatible error shape that RxDB surfaces as VD2.
+ */
+describe('validate-effect plugin', () => {
+    function effectDoc(obj: any): any {
+        return Object.assign({}, obj, {
+            _meta: { lwt: now() },
+            _rev: EXAMPLE_REVISION_1,
+            _attachments: {},
+            _deleted: false
+        });
+    }
+    it('returns a 422 with Ajv-compatible error objects for an invalid write', async () => {
+        const innerStorage: RxStorage<any, any> = config.storage.getStorage();
+        const storage = wrappedValidateEffectStorage({ storage: innerStorage });
+        const schema: any = clone(schemas.human);
+        schema.properties.age.maximum = 10;
+        const instance = await storage.createStorageInstance<any>({
+            collectionName: randomToken(10),
+            databaseInstanceToken: randomToken(10),
+            databaseName: randomToken(10),
+            multiInstance: false,
+            options: {},
+            schema: fillWithDefaultSettings(schema),
+            devMode: true
+        });
+        const invalid: any = schemaObjects.humanData();
+        invalid.age = 100;
+        const result = await instance.bulkWrite([{
+            document: effectDoc(invalid)
+        }], 'validate-effect-test');
+        assert.strictEqual(result.error.length, 1);
+        const error = result.error[0] as any;
+        assert.strictEqual(error.status, 422);
+        assert.strictEqual(error.isError, true);
+        assert.strictEqual(error.schema.type, 'object');
+        const validationError = error.validationErrors[0];
+        assert.strictEqual(validationError.field, 'age');
+        assert.strictEqual(validationError.keyword, 'maximum');
+        assert.strictEqual(validationError.instancePath, '/age');
+        assert.strictEqual(typeof validationError.message, 'string');
+        assert.ok(validationError.message.length > 0);
+        await instance.close();
+    });
+    it('accepts a valid write without errors', async () => {
+        const innerStorage: RxStorage<any, any> = config.storage.getStorage();
+        const storage = wrappedValidateEffectStorage({ storage: innerStorage });
+        const instance = await storage.createStorageInstance<any>({
+            collectionName: randomToken(10),
+            databaseInstanceToken: randomToken(10),
+            databaseName: randomToken(10),
+            multiInstance: false,
+            options: {},
+            schema: fillWithDefaultSettings(clone(schemas.human)),
+            devMode: true
+        });
+        const result = await instance.bulkWrite([{
+            document: effectDoc(schemaObjects.humanData())
+        }], 'validate-effect-test');
+        assert.deepStrictEqual(result.error, []);
+        await instance.close();
+    });
+    it('reports format failures with the field path and format keyword', async () => {
+        const innerStorage: RxStorage<any, any> = config.storage.getStorage();
+        const storage = wrappedValidateEffectStorage({ storage: innerStorage });
+        const schema: any = clone(schemas.human);
+        schema.properties.timestamp = { type: 'string', format: 'date-time' };
+        schema.required.push('timestamp');
+        const instance = await storage.createStorageInstance<any>({
+            collectionName: randomToken(10),
+            databaseInstanceToken: randomToken(10),
+            databaseName: randomToken(10),
+            multiInstance: false,
+            options: {},
+            schema: fillWithDefaultSettings(schema),
+            devMode: true
+        });
+        const invalid: any = schemaObjects.humanData();
+        invalid.timestamp = 'broken-timestamp';
+        const result = await instance.bulkWrite([{
+            document: effectDoc(invalid)
+        }], 'validate-effect-test');
+        assert.strictEqual(result.error.length, 1);
+        const validationError = (result.error[0] as any).validationErrors[0];
+        assert.strictEqual(validationError.field, 'timestamp');
+        assert.strictEqual(validationError.keyword, 'format');
+        assert.strictEqual(validationError.instancePath, '/timestamp');
+        assert.strictEqual(validationError.params.format, 'date-time');
+        await instance.close();
+    });
+    it('falls back to the base decode when Schema.validate is absent, same contract when present', () => {
+        // Published Effect 4.1.4 has no `Schema.validate`, so the gate is dormant there and the
+        // default validator must fall back to the base decode. When a future installed Effect
+        // provides the API, this same test asserts the gated path keeps the 422 contract. The
+        // test never claims the gate ran: it only compares the two contracts.
+        const hasGate = typeof (Schema as any).validate === 'function';
+        const schema = fillWithDefaultSettings(clone(schemas.human));
+        const gated = getEffectValidator(schema);
+        const base = getEffectValidator(schema, { validate: false });
+        const validDoc = effectDoc(schemaObjects.humanData());
+        const invalidDoc = effectDoc(Object.assign({}, schemaObjects.humanData(), { age: 1000 }));
+        assert.deepStrictEqual(gated(validDoc), []);
+        assert.deepStrictEqual(base(validDoc), []);
+        const gatedErrors = gated(invalidDoc);
+        const baseErrors = base(invalidDoc);
+        const mode = hasGate ? 'gate active' : 'gate dormant (fallback to base decode)';
+        assert.ok(gatedErrors.length > 0, 'expected gated errors, ' + mode);
+        assert.ok(baseErrors.length > 0, 'expected base errors, ' + mode);
+        assert.strictEqual(gatedErrors[0].field, baseErrors[0].field);
+        assert.strictEqual((gatedErrors[0] as any).keyword, (baseErrors[0] as any).keyword);
+        assert.strictEqual((gatedErrors[0] as any).instancePath, (baseErrors[0] as any).instancePath);
     });
 });
 

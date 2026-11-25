@@ -115,6 +115,64 @@ The validation itself runs at the same speed as with `validate-ajv`, because ajv
 
 <PerformanceChart title="ajv vs. ajv-standalone on Memory Storage" data={PERFORMANCE_DATA_VALIDATION_AJV_STANDALONE} logScale={false} />
 
+### validate-effect
+
+The `validate-effect` plugin validates documents against the collection's JSON schema with [Effect Schema](https://effect.website/docs/schema/introduction/)'s stable Draft 2020-12 JSON Schema importer. It is useful when your app already depends on [Effect](https://effect.website/) and you do not want to add a second validator. Like the other validation wrappers, it wraps any `RxStorage` and validates every write. Failures are mapped to the same `RxValidationError` shape that the other validators produce.
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { wrappedValidateEffectStorage } from 'rxdb/plugins/validate-effect';
+
+const db = await createRxDatabase({
+    name: 'mydb',
+    storage: wrappedValidateEffectStorage({
+        storage: getRxStorageDexie()
+    })
+});
+```
+
+The plugin requires `effect` version 4.1.4 or newer.
+
+Performance was measured with RxDB's own validation benchmark in fast mode on published Effect 4.1.4, using the [Memory RxStorage](./rx-storage-memory.md). In one fast-mode run, time-to-first-insert was 0.77 ms with no validator, 2.75 ms with Ajv and 1.57 ms with this plugin. The insert of 3,000 documents measured 0.95 ms, 2.50 ms and 12.5 ms in the same order. These are one-host medians, not an SLA. The first insert is faster than Ajv, but bulk inserts are slower than Ajv. You can reproduce the numbers with `NODE_ENV=fast DEFAULT_STORAGE=memory npm run test:performance:validation`.
+
+#### Authoring the schema in Effect
+
+The core plugin validates a JSON schema, so you can use it with a plain RxDB JSON schema. To author the collection schema in Effect itself, use the external package [rxdb-effect-schema](https://github.com/nickchomey/rxdb-effect-schema). Its `effectSchemaToRxJsonSchema()` function converts an Effect schema into an RxDB JSON schema:
+
+```bash
+npm install github:nickchomey/rxdb-effect-schema
+```
+
+The package is distributed from its repository, not npm, and the import name stays `rxdb-effect-schema`.
+
+```ts
+import { Schema } from 'effect';
+import { effectSchemaToRxJsonSchema } from 'rxdb-effect-schema';
+
+const Hero = Schema.Struct({
+    id: Schema.String.check(Schema.isMaxLength(100)),
+    name: Schema.String
+});
+
+const heroSchema = effectSchemaToRxJsonSchema(Hero, {
+    version: 0,
+    primaryKey: 'id'
+});
+
+await db.addCollections({
+    heroes: { schema: heroSchema }
+});
+```
+
+RxDB requires `maxLength` on a string primary key field.
+
+The converter emits the RxDB JSON schema, so RxDB still stores a JSON schema and the `validate-effect` wrapper validates it with Effect. The `rxdb-effect-schema` package is external and maintained by its author. It does not ship as part of the core `validate-effect` plugin. Recursive schemas are rejected because RxDB does not support `$ref`. Effect refinements that the JSON Schema exporter cannot express do not survive the conversion.
+
+#### Boolean gate
+
+At runtime, the wrapper feature-detects the installed Effect. When the installed Effect exposes `Schema.validate`, the wrapper runs a boolean gate ahead of the detailed decode. Valid writes return through this fast path without the full decode, while rejected writes still run the detailed decode to build the 422 error. When `Schema.validate` is absent, the wrapper decodes every write with the base path. There is no API change and the 422 error contract stays the same.
+
 ### validate-z-schema
 
 Both `is-my-json-valid` and `validate-ajv` use `eval()` to perform validation which might not be wanted when `'unsafe-eval'` is not allowed in Content Security Policies. This one is using [z-schema](https://github.com/zaggino/z-schema) as validator which doesn't use `eval`.
