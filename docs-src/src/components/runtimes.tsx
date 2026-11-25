@@ -70,9 +70,9 @@ const styles: Record<string, CSSProperties> = {
  */
 const rows: Row[] = [
   { Icon: ReactIcon, href: '/articles/react-database.html', label: 'React' },
-  { Icon: AngularIcon, href: '/articles/angular-database.html', label: 'Angular' },
-  { Icon: VueIcon, href: '/articles/vue-database.html', label: 'Vue.js' },
-  { Icon: SvelteIcon, href: 'https://github.com/pubkey/rxdb/tree/master/examples/svelte', label: 'Svelte' },
+  { Icon: AngularIcon, href: '/angular.html', label: 'Angular' },
+  { Icon: VueIcon, href: '/vue.html', label: 'Vue.js' },
+  { Icon: SvelteIcon, href: '/svelte.html', label: 'Svelte' },
   { Icon: NodeIcon, href: '/nodejs-database.html', label: 'Node.js' },
   { Icon: DenoIcon, href: '/rx-storage-denokv.html', label: 'Deno', invert: true },
   { Icon: ElectronIcon, href: 'https://github.com/pubkey/rxdb/tree/master/examples/electron', label: 'Electron' },
