@@ -37,6 +37,8 @@ import {
     getRxStorageFilesystemNode
 } from 'rxdb-premium/plugins/storage-filesystem-node';
 import { getMemoryMappedRxStorage } from 'rxdb-premium/plugins/storage-memory-mapped';
+import { createRxServer } from 'rxdb-server/plugins/server';
+import { RxServerAdapterExpress } from 'rxdb-server/plugins/adapter-express';
 const myRxDatabase = await createRxDatabase({
     name: 'mydb',
     storage: getMemoryMappedRxStorage({
@@ -45,10 +47,11 @@ const myRxDatabase = await createRxDatabase({
         })
     })
 });
-await myDatabase.addCollections({/* ... */});
+await myRxDatabase.addCollections({/* ... */});
 
-const myServer = await startRxServer({
+const myServer = await createRxServer({
     database: myRxDatabase,
+    adapter: RxServerAdapterExpress,
     port: 443
 });
 ```
