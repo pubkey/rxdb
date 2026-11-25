@@ -201,9 +201,9 @@ An auth handler gets the given headers object as input and returns the auth data
 The `data` field can contain any data that can be used afterwards in the queryModifier and changeValidator.
 The `validUntil` field contains the unix timestamp in milliseconds at which the authentication is no longer valid.
 
-Notice that the RxServer does not check `validUntil` by itself. Instead the `authHandler` runs on every request and, on open streams like the replication `/pullStream` and the REST `/query/observe`, again before each event is sent. To end an expired session, throw an error in the `authHandler`. The request is then answered with `401 Unauthorized`, and an open stream is closed so that the client reconnects and gets the `401`.
+The `authHandler` runs on every request and, on open streams like the replication `/pullStream` and the REST `/query/observe`, again before each event is sent. When the returned `validUntil` has passed, or when the `authHandler` throws, the request is not allowed: it is answered with `401 Unauthorized`, and an open stream is closed so that the client reconnects and gets the `401`.
 
-For example your authHandler could get the `Authorization` header and parse the [JSON web token](https://jwt.io/) to identify the user and store the user id in the `data` field for later use. When the `exp` claim of the token has passed, the authHandler throws.
+For example your authHandler could get the `Authorization` header and parse the [JSON web token](https://jwt.io/) to identify the user and store the user id in the `data` field for later use. Notice that the `exp` claim of a JSON web token is in seconds, so set `validUntil: payload.exp * 1000`.
 
 ## Query modifier
 
