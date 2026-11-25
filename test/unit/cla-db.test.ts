@@ -122,8 +122,7 @@ describe('cla-db.test.ts', () => {
 
                 const db = await createRxDatabase({
                     name: 'cla_multi_mem_' + count + '_' + randomToken(8),
-                    storage: createMemoryTestStorage(),
-                    ignoreDuplicate: true
+                    storage: createMemoryTestStorage()
                 });
 
                 try {
@@ -179,8 +178,7 @@ describe('cla-db.test.ts', () => {
                 const db = await createRxDatabase({
                     name: 'cla_multi_dexie_' + count + '_' + randomToken(8),
                     storage: createDexieTestStorage(),
-                    multiInstance: false,
-                    ignoreDuplicate: true
+                    multiInstance: false
                 });
 
                 try {
@@ -217,8 +215,7 @@ describe('cla-db.test.ts', () => {
         it('supports insert, update, remove, and reactive query emissions', async () => {
             const db = await createRxDatabase({
                 name: 'cla_crud_' + randomToken(8),
-                storage: createMemoryTestStorage(),
-                ignoreDuplicate: true
+                storage: createMemoryTestStorage()
             });
 
             try {
@@ -285,8 +282,7 @@ describe('cla-db.test.ts', () => {
             const db1 = await createRxDatabase({
                 name: dbName,
                 storage,
-                multiInstance: false,
-                ignoreDuplicate: true
+                multiInstance: false
             });
 
             await db1.addCollections(buildCollectionsMap(16));
@@ -313,8 +309,7 @@ describe('cla-db.test.ts', () => {
             const db2 = await createRxDatabase({
                 name: dbName,
                 storage: createDexieTestStorage(),
-                multiInstance: false,
-                ignoreDuplicate: true
+                multiInstance: false
             });
 
             try {
@@ -340,8 +335,7 @@ describe('cla-db.test.ts', () => {
             const dbV0 = await createRxDatabase({
                 name: dbName,
                 storage: createDexieTestStorage(),
-                multiInstance: false,
-                ignoreDuplicate: true
+                multiInstance: false
             });
             await dbV0.addCollections({
                 orders: { schema: orderSchemaV0 }
@@ -358,8 +352,7 @@ describe('cla-db.test.ts', () => {
             const dbV1 = await createRxDatabase({
                 name: dbName,
                 storage: createDexieTestStorage(),
-                multiInstance: false,
-                ignoreDuplicate: true
+                multiInstance: false
             });
 
             try {
@@ -438,8 +431,7 @@ describe('cla-db.test.ts', () => {
 
             const db = await createRxDatabase({
                 name: 'cla_repl_' + randomToken(8),
-                storage: createMemoryTestStorage(),
-                ignoreDuplicate: true
+                storage: createMemoryTestStorage()
             });
 
             try {
