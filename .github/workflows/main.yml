@@ -1120,7 +1120,7 @@ jobs:
       # bun
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: '1.4.4'
+          bun-version: '1.4.5'
       - run: npm run test:bun:memory
 
       # deno (must be last because it messes up with file permissions)
