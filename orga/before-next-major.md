@@ -798,3 +798,14 @@ Todo:
 - Breaking: one message channel per `getRxStorage...()` call instead of one per url or key, which means more websocket connections.
 
 An implementation with tests is in the pull request [#9837](https://github.com/pubkey/rxdb/pull/9837) (first commit).
+
+## RxServer: the REST `/set` route must replace documents instead of patching them
+
+The REST endpoint of the [rxdb-server](https://github.com/pubkey/rxdb-server) writes existing documents in `/set` with `doc.patch()` (`src/plugins/server/endpoint-rest.ts`). Fields that the client leaves out keep their stored value, so a client cannot remove an optional field through `/set`, and `/set` behaves differently than its name and than `RxRestClient.set()` suggest.
+
+Todo:
+- Before the major release, add a `/patch` route to the REST endpoint and `RxRestClient.patch()` with the current `/set` behavior, so that clients that send partial documents have a way to keep working. This is not breaking and can be done in a normal release. The `/patch` route needs the same checks as `/set`: the stored-document check (also for deleted documents), the `queryModifier` matcher on the merged document, the `changeValidator`, and the merge of `serverOnlyFields`.
+- In the major, change `/set` to replace the whole document: write the client document as the new state and only keep the `serverOnlyFields` of the stored document (`mergeServerDocumentFields()`).
+- Pass the full new document state to the `changeValidator` of `/set`, not only the fields the client sent.
+- Update the REST paths in `docs-src/docs/rx-server.md`: `set` replaces documents, `patch` updates the given fields.
+- Breaking: clients that send partial documents to `/set` delete the fields they leave out. They have to send full documents or switch to `/patch`.
