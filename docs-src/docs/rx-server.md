@@ -165,12 +165,21 @@ const client = createRestClient(
 const response = await client.query({ selector: {} });
 ```
 
+With `patch()` you send only the fields that change. All other fields of the stored document keep their value:
+
+```ts
+await client.patch([
+    { id: 'todo1', done: true }
+]);
+```
+
 The REST endpoint exposes the following paths:
 
 - **query [POST]**: Fetch the results of a NoSQL query.
 - **query/observe [GET]**: Observe a query's results via [Server Send Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events).
 - **get [POST]**: Fetch multiple documents by their primary key.
 - **set [POST]**: Write multiple documents at once.
+- **patch [POST]**: Update multiple documents with the given fields, or insert them when they do not exist.
 - **delete [POST]**: Delete multiple documents by their primary key.
 
 
