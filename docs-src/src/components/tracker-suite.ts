@@ -2,8 +2,8 @@ import { onCopy, triggerTrackingEvent } from './trigger-event';
 
 /**
  * Starts the trackers that measure engagement (time on page, scroll depth,
- * visited urls, copy events, returning visitors, clicks from the console logs
- * and from discord). This module is lazy loaded by the Root component after
+ * visited urls, copy events, returning visitors, clicks from the console logs,
+ * from discord and from linkedin). This module is lazy loaded by the Root component after
  * the visitor granted the tracking consent, so it is not part of the main bundle.
  */
 export function startTrackerSuite() {
@@ -13,6 +13,7 @@ export function startTrackerSuite() {
     trackUrlChanges();
     triggerClickEventWhenFromCode();
     triggerClickEventWhenFromDiscord();
+    triggerClickEventWhenFromLinkedIn();
 }
 
 /**
@@ -43,6 +44,25 @@ function triggerClickEventWhenFromDiscord() {
     }
     triggerTrackingEvent(EVENT_ID, 3, 1, 'Lead');
     triggerTrackingEvent(EVENT_ID + '_' + urlParams.get('discord'), 0, 1);
+}
+
+/**
+ * All links that we post on linkedin (posts, comments, direct messages)
+ * have the ?linkedin=<label> param (or ?via=linkedin)
+ * so we can conversion-track people who came from linkedin.
+ */
+function triggerClickEventWhenFromLinkedIn() {
+    const EVENT_ID = 'via-linkedin';
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasParam = urlParams.has('linkedin') || urlParams.get('via') === 'linkedin';
+    if (!hasParam) {
+        return;
+    }
+    triggerTrackingEvent(EVENT_ID, 3, 1, 'Lead');
+    const label = urlParams.get('linkedin');
+    if (label) {
+        triggerTrackingEvent(EVENT_ID + '_' + label, 0, 1);
+    }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
