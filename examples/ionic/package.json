@@ -32,7 +32,7 @@
     "@capacitor/core": "8.5.3",
     "@capacitor/ios": "8.5.3",
     "@ionic/angular": "9.0.12",
-    "ionicons": "8.1.0",
+    "ionicons": "8.1.1",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.2",
     "tslib": "2.9.1",
