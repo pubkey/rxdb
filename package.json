@@ -628,7 +628,7 @@
     "@preact/signals-core": "1.14.5",
     "@rollup/plugin-commonjs": "29.0.3",
     "@rollup/plugin-node-resolve": "16.0.3",
-    "@stylistic/eslint-plugin": "5.10.0",
+    "@stylistic/eslint-plugin": "6.0.1",
     "@supabase/supabase-js": "2.119.2",
     "@testing-library/react": "16.3.3",
     "@types/assert": "1.5.11",
