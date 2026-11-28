@@ -31,7 +31,7 @@
     "@capacitor/android": "8.5.3",
     "@capacitor/core": "8.5.3",
     "@capacitor/ios": "8.5.3",
-    "@ionic/angular": "9.0.12",
+    "@ionic/angular": "9.0.13",
     "ionicons": "8.1.1",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.2",
